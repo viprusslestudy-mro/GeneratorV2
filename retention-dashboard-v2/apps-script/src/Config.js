@@ -6,9 +6,7 @@
 
 const CONFIG = {
   VERSION: '1.0.93.7',
-  DEBUG: false,
-
-  // ID таблицы с настройками (текущая таблица со скриптом)
+  DEBUG: false, // <--- ОБЯЗАТЕЛЬНО FALSE для продакшен-сборки
   SETTINGS_SPREADSHEET_ID: SpreadsheetApp.getActiveSpreadsheet().getId()
 };
 
@@ -566,4 +564,54 @@ function setupTranslations() {
   sheet.setColumnWidth(3, 400);
   
   Logger.log('[setupTranslations] Created ' + (data.length - 1) + ' translations');
+}
+
+/**
+ * Получить язык по умолчанию (Fallback для избежания ошибки)
+ * @returns {string} 'RU' или 'EN'
+ */
+function getDefaultLanguage() {
+try {
+  var ss = getSettingsSpreadsheet();
+  var sheet = ss.getSheetByName(SHEETS.APP_SETTINGS);
+  if (sheet) {
+    var data = sheet.getDataRange().getValues();
+    for (var i = 0; i < data.length; i++) {
+      var key = String(data[i][0] || '').trim().toLowerCase();
+      if (key === 'default_language' || key === 'язык по умолчанию') {
+        var val = String(data[i][1] || '').trim().toUpperCase();
+        if (val === 'EN') return 'EN';
+        return 'RU';
+      }
+    }
+  }
+} catch (e) {
+  Logger.log('[getDefaultLanguage] Error: ' + e.message);
+}
+return 'RU'; // Дефолтное значение
+}
+
+/**
+ * Показывать ли переключатель языка (Fallback)
+ * @returns {boolean}
+ */
+function getShowLanguageSwitcher() {
+try {
+  var ss = getSettingsSpreadsheet();
+  var sheet = ss.getSheetByName(SHEETS.APP_SETTINGS);
+  if (sheet) {
+    var data = sheet.getDataRange().getValues();
+    for (var i = 0; i < data.length; i++) {
+      var key = String(data[i][0] || '').trim().toLowerCase();
+      if (key === 'show_language_switcher' || key === 'показывать выбор языка') {
+        var val = String(data[i][1] || '').trim().toUpperCase();
+        if (val === 'ON' || val === 'TRUE' || val === 'ДА' || val === 'YES' || val === '1') {
+          return true;
+        }
+        return false;
+      }
+    }
+  }
+} catch (e) { }
+return false;
 }

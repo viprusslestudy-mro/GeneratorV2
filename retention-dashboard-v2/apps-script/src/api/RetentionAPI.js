@@ -35,7 +35,9 @@ function api_getRetentionReport() {
     
     Logger.log('[API] Report generated: ' + reportJSON.periodsCount + ' periods');
     
-    return reportJSON;
+    // Возвращаем строку! React (в gasApi.js) её сам распарсит.
+    // Это предотвращает потерю данных при передаче сложных объектов.
+    return JSON.stringify(reportJSON);
     
   } catch (e) {
     Logger.log('[API] ERROR: ' + e.message);
@@ -49,22 +51,22 @@ function api_getRetentionReport() {
  */
 function api_getUISettings() {
   try {
-    return {
+    return JSON.stringify({
       financeTabs: getFinanceTabLabelsFromSheet_(),
       channelTabs: getChannelTabLabelsFromSheet_(),
       showEmptyMetrics: getShowEmptyMetrics(),
       disabledLabel: getDisabledMetricLabel(),
       autoCalcChannelTotals: getAutoCalcChannelTotals()
-    };
+    });
   } catch (e) {
     Logger.log('[API] getUISettings error: ' + e.message);
-    return {
+    return JSON.stringify({
       financeTabs: {},
       channelTabs: {},
       showEmptyMetrics: false,
       disabledLabel: '—',
       autoCalcChannelTotals: true
-    };
+    });
   }
 }
 
@@ -75,7 +77,7 @@ function api_getUISettings() {
 function api_getSources() {
   try {
     var sources = getActiveDataSourcesV3();
-    return sources.map(function(s) {
+    return JSON.stringify(sources.map(function(s) {
       return {
         key: s.key,
         name: s.name,
@@ -83,9 +85,9 @@ function api_getSources() {
         icon: s.icon,
         color: s.color
       };
-    });
+    }));
   } catch (e) {
     Logger.log('[API] getSources error: ' + e.message);
-    return [];
+    return JSON.stringify([]);
   }
 }

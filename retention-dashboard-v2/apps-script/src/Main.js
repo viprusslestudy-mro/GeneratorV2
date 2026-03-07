@@ -940,12 +940,13 @@ function showReactDashboard() {
  * Получить HTML React приложения
  */
 function getReactAppHTML() {
-  if (CONFIG.DEBUG) {
-    // Dev режим: редирект на localhost
-    return '<!DOCTYPE html><html><head><title>Redirect</title></head><body>' +
-           '<script>window.location.href="http://localhost:5173";</script></body></html>';
+  // CONFIG.DEBUG должен быть false при деплое!
+  if (typeof CONFIG !== 'undefined' && CONFIG.DEBUG) {
+    return '<!DOCTYPE html><html><head><title>Redirect</title></head><body style="margin:0;padding:0;overflow:hidden;">' +
+           '<iframe src="http://localhost:5173" style="width:100vw;height:100vh;border:none;"></iframe>' +
+           '</body></html>';
   }
   
-  // Production: встроенный HTML (после build)
-  return HtmlService.createHtmlOutputFromFile('index').getContent();
+  // Читаем собранный Vite файл. Важно: при сборке он должен попасть в apps-script/src/dist/index.html
+  return HtmlService.createHtmlOutputFromFile('dist/index').getContent();
 }
