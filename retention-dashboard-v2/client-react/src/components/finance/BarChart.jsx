@@ -71,10 +71,12 @@ export function BarChart() {
     );
   };
 
-  // Легенда (кэшировано)
+  // Легенда: если месяц выбран - показываем его значение, иначе сумму
   const total = useMemo(() => {
-    return chartData.reduce((sum, d) => sum + d.value, 0);
-  }, [chartData]);
+    if (!selectedPeriod) return chartData.reduce((sum, d) => sum + d.value, 0);
+    const periodData = chartData.find(d => d.periodKey === selectedPeriod);
+    return periodData ? periodData.value : 0;
+  }, [chartData, selectedPeriod]);
 
   const renderLegend = () => (
     <div className={styles.legend}>

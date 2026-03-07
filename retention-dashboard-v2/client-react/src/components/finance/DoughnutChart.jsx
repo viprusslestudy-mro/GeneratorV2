@@ -32,13 +32,19 @@ function getCardValueFromPeriod(period, cardId) {
 export function DoughnutChart() {
   // Простые селекторы
   const periods = useRetentionStore(selectPeriods);
+  const selectedPeriod = useRetentionStore(state => state.selectedPeriod);
 
   // Подготовка данных (кэшировано)
   const chartData = useMemo(() => {
     let casinoTotal = 0;
     let sportTotal = 0;
     
-    periods.forEach(p => {
+    // Если выбран месяц — берем только его, иначе все месяцы
+    const periodsToUse = selectedPeriod 
+      ? periods.filter(p => p.key === selectedPeriod) 
+      : periods;
+    
+    periodsToUse.forEach(p => {
       casinoTotal += getCardValueFromPeriod(p, 'casino_stake_amount') || 0;
       sportTotal += getCardValueFromPeriod(p, 'sport_stake_amount') || 0;
     });
@@ -48,7 +54,7 @@ export function DoughnutChart() {
     if (sportTotal > 0) data.push({ name: 'Sport', value: sportTotal });
     
     return data;
-  }, [periods]);
+  }, [periods, selectedPeriod]);
 
   // Если нет данных - не показываем компонент
   if (chartData.length === 0) return null;

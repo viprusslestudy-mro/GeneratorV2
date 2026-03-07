@@ -84,12 +84,20 @@ export function FinanceChart() {
     );
   };
 
-  // Легенда (кэшировано)
+  // Легенда: если месяц выбран - показываем его значение, иначе сумму
   const legendData = useMemo(() => {
-    const deposits = chartData.reduce((sum, d) => sum + d.deposits, 0);
-    const profit = chartData.reduce((sum, d) => sum + d.profit, 0);
-    return { deposits, profit };
-  }, [chartData]);
+    if (!selectedPeriod) {
+      return {
+        deposits: chartData.reduce((sum, d) => sum + d.deposits, 0),
+        profit: chartData.reduce((sum, d) => sum + d.profit, 0)
+      };
+    }
+    const pData = chartData.find(d => d.periodKey === selectedPeriod);
+    return {
+      deposits: pData ? pData.deposits : 0,
+      profit: pData ? pData.profit : 0
+    };
+  }, [chartData, selectedPeriod]);
 
   const renderLegend = () => (
     <div className={styles.customLegend}>
