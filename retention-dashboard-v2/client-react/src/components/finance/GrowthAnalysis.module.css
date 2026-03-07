@@ -59,26 +59,28 @@
 .metricItem {
   background: white;
   border-radius: 14px;
-  padding: 14px 16px;
+  padding: 16px 18px;
   display: flex;
   justify-content: space-between;
   align-items: center;
   cursor: pointer;
   transition: var(--transition-normal);
-  border: 2px solid transparent;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+  /* ДОБАВЛЕНА ЧЕТКАЯ РАМКА И ТЕНЬ */
+  border: 1px solid rgba(0, 0, 0, 0.08); 
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
 }
 
 .metricItem:hover {
   transform: translateX(4px);
-  border-color: rgba(255, 179, 0, 0.3);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  border-color: rgba(255, 179, 0, 0.4);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
 }
 
 .metricItem.active {
   border-color: var(--primary-accent);
+  border-width: 2px; /* Усиливаем границу */
   background: linear-gradient(135deg, #fffef5 0%, #fff8e1 100%);
-  box-shadow: 0 6px 20px rgba(255, 179, 0, 0.2);
+  box-shadow: 0 8px 24px rgba(255, 179, 0, 0.2); /* Желтая тень */
 }
 
 .metricInfo {

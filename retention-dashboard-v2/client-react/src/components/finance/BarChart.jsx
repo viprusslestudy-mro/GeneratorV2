@@ -96,47 +96,49 @@ export function BarChart() {
           <div className={styles.subtitle}>Month comparison</div>
         </div>
         
-        <div className={styles.chartWrapper}>
-          <ResponsiveContainer width="100%" height={380}>
-            <RechartsBarChart 
-              data={chartData}
-              margin={{ top: 20, right: 30, left: 20, bottom: 20 }}
-            >
-              <CartesianGrid strokeDasharray="3 3" stroke="rgba(0,0,0,0.05)" />
-              
-              <XAxis 
-                dataKey="name" 
-                stroke="#666"
-                style={{ fontSize: '12px', fontWeight: 600 }}
-              />
-              
-              <YAxis 
-                stroke="#666"
-                style={{ fontSize: '12px', fontWeight: 600 }}
-                tickFormatter={(value) => formatCompact(value)}
-              />
-              
-              <Tooltip content={<CustomTooltip />} />
-              
-              <Bar 
-                dataKey="value" 
-                radius={[8, 8, 0, 0]}
+        <div className={styles.chartWrapper} style={{ overflowX: 'auto', overflowY: 'hidden' }}>
+          <div style={{ minWidth: '800px', height: '380px' }}> {/* <- Это заставит график появиться скроллом, если экран узкий, а месяцев много */}
+            <ResponsiveContainer width="100%" height="100%">
+              <RechartsBarChart 
+                data={chartData}
+                margin={{ top: 20, right: 30, left: 20, bottom: 20 }}
               >
-                {chartData.map((entry, index) => {
-                  const isSelected = index === selectedIndex;
-                  return (
-                    <Cell 
-                      key={`cell-${index}`}
-                      fill={isSelected ? '#ff9800' : '#ffb300'}
-                      stroke={isSelected ? '#ff6b00' : 'transparent'}
-                      strokeWidth={isSelected ? 3 : 0}
-                      opacity={isSelected ? 1 : 0.8}
-                    />
-                  );
-                })}
-              </Bar>
-            </RechartsBarChart>
-          </ResponsiveContainer>
+                <CartesianGrid strokeDasharray="3 3" stroke="rgba(0,0,0,0.05)" />
+                
+                {/* ИСПРАВЛЕНИЕ ШРИФТА ОСЕЙ */}
+                <XAxis 
+                  dataKey="name" 
+                  stroke="#666"
+                  style={{ fontSize: '15px', fontFamily: 'Montserrat, sans-serif', fontWeight: 700 }} 
+                />
+                <YAxis 
+                  stroke="#666"
+                  style={{ fontSize: '15px', fontFamily: 'Montserrat, sans-serif', fontWeight: 700 }}
+                  tickFormatter={(value) => formatCompact(value)}
+                />
+                
+                <Tooltip content={<CustomTooltip />} />
+                
+                <Bar 
+                  dataKey="value" 
+                  radius={[8, 8, 0, 0]}
+                >
+                  {chartData.map((entry, index) => {
+                    const isSelected = index === selectedIndex;
+                    return (
+                      <Cell 
+                        key={`cell-${index}`}
+                        fill={isSelected ? '#ff9800' : '#ffb300'}
+                        stroke={isSelected ? '#ff6b00' : 'transparent'}
+                        strokeWidth={isSelected ? 3 : 0}
+                        opacity={isSelected ? 1 : 0.8}
+                      />
+                    );
+                  })}
+                </Bar>
+              </RechartsBarChart>
+            </ResponsiveContainer>
+          </div>
         </div>
 
         {renderLegend()}

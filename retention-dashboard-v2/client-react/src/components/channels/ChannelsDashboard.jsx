@@ -11,9 +11,9 @@ import { ChannelsLineChart } from './ChannelsLineChart';
 import { ChannelsBarChart } from './ChannelsBarChart';
 import { ChannelsDoughnutChart } from './ChannelsDoughnutChart';
 import { ChannelsTable } from './ChannelsTable';
+import { useRetentionStore, selectPeriods } from '../../store/retentionStore';
 import styles from './ChannelsDashboard.module.css';
 
-// Маппинг метрик для KPI (как в старом коде)
 const CONTACTS_KEYS = [
   { ch: 'mail', metric: 'sent' }, { ch: 'push', metric: 'sent' },
   { ch: 'sms', metric: 'sent' }, { ch: 'tg', metric: 'sent' },
@@ -37,6 +37,7 @@ const CLICKS_KEYS = [
 
 export function ChannelsDashboard() {
   const { currentPeriodData } = usePeriodFilter();
+  const periods = useRetentionStore(selectPeriods);
 
   if (!currentPeriodData || !currentPeriodData.hasChannels) {
     return (
@@ -46,20 +47,25 @@ export function ChannelsDashboard() {
     );
   }
 
-  // Helper для получения значения карточки
-  const getCardValue = (chKey, metricKey) => {
-    const ch = currentPeriodData.channelCards?.[chKey];
+  // Находим предыдущий период (для подсчета дельт)
+  const currentIndex = periods.findIndex(p => p.key === currentPeriodData.key);
+  const prevPeriodData = currentIndex > 0 ? periods[currentIndex - 1] : null;
+
+  // Helper для получения значения
+  const getCardValue = (periodData, chKey, metricKey) => {
+    const ch = periodData?.channelCards?.[chKey];
     if (!ch || !ch.cards) return null;
     const card = ch.cards.find(c => c.id === `${chKey}_${metricKey}`);
     return card?.value ?? null;
   };
 
-  // Агрегация данных по маппингу
-  const aggregateByMap = (keysMap) => {
+  // Helper для агрегации
+  const aggregateByMap = (periodData, keysMap) => {
+    if (!periodData) return null;
     let total = 0;
     let hasAny = false;
     keysMap.forEach(({ ch, metric }) => {
-      const val = getCardValue(ch, metric);
+      const val = getCardValue(periodData, ch, metric);
       if (val !== null && val !== undefined) {
         hasAny = true;
         total += Number(val);
@@ -68,11 +74,24 @@ export function ChannelsDashboard() {
     return hasAny ? total : null;
   };
 
-  // Вычисляем KPI
-  const contacts = aggregateByMap(CONTACTS_KEYS) || 0;
-  const conversions = aggregateByMap(CONVERSIONS_KEYS) || 0;
-  const clicks = aggregateByMap(CLICKS_KEYS) || 0;
+  // Вычисляем KPI для текущего месяца
+  const contacts = aggregateByMap(currentPeriodData, CONTACTS_KEYS) || 0;
+  const conversions = aggregateByMap(currentPeriodData, CONVERSIONS_KEYS) || 0;
+  const clicks = aggregateByMap(currentPeriodData, CLICKS_KEYS) || 0;
   const conversionRate = contacts > 0 ? (conversions / contacts) : 0;
+
+  // Вычисляем KPI для предыдущего месяца
+  const prevContacts = aggregateByMap(prevPeriodData, CONTACTS_KEYS);
+  const prevConversions = aggregateByMap(prevPeriodData, CONVERSIONS_KEYS);
+  const prevClicks = aggregateByMap(prevPeriodData, CLICKS_KEYS);
+  const prevConversionRate = prevContacts > 0 ? (prevConversions / prevContacts) : null;
+
+  // Helper для вычисления строки дельты (например, "+15.2%")
+  const calcDiff = (curr, prev) => {
+    if (prev === null || prev === undefined || prev === 0) return '';
+    const diff = ((curr - prev) / Math.abs(prev)) * 100;
+    return `${diff > 0 ? '+' : ''}${diff.toFixed(1)}% vs prev.`;
+  };
 
   // Формируем KPI карточки
   const kpiMetrics = [
@@ -80,6 +99,7 @@ export function ChannelsDashboard() {
       id: 'total_contacts',
       title: 'Total Contacts',
       value: contacts,
+      diff: calcDiff(contacts, prevContacts),
       valueFormat: 'integer',
       icon: '✉️'
     },
@@ -87,13 +107,15 @@ export function ChannelsDashboard() {
       id: 'total_conversions',
       title: 'Total Conversions',
       value: conversions,
+      diff: calcDiff(conversions, prevConversions),
       valueFormat: 'integer',
       icon: '🎯'
     },
     {
       id: 'conversion_rate',
       title: 'Conversion Rate',
-      value: conversionRate,
+      value: conversionRate, // Не умножаем на 100, formatValue('percent') сделает это
+      diff: calcDiff(conversionRate, prevConversionRate),
       valueFormat: 'percent',
       icon: '📊'
     },
@@ -101,6 +123,7 @@ export function ChannelsDashboard() {
       id: 'total_clicks',
       title: 'Total Clicks',
       value: clicks,
+      diff: calcDiff(clicks, prevClicks),
       valueFormat: 'integer',
       icon: '🖱️'
     }
@@ -108,7 +131,6 @@ export function ChannelsDashboard() {
 
   return (
     <div className={styles.dashboard}>
-      {/* Заголовок */}
       <div className={styles.header}>
         <h1>
           <span className={styles.headerIcon}>📈</span>
@@ -117,8 +139,7 @@ export function ChannelsDashboard() {
         </h1>
       </div>
 
-      {/* KPI Карточки */}
-      <Card title="Overall Channels KPI">
+      <Card>
         <div className={styles.kpiGrid}>
           {kpiMetrics.map(metric => (
             <MetricCard key={metric.id} metric={metric} />
@@ -126,19 +147,15 @@ export function ChannelsDashboard() {
         </div>
       </Card>
 
-      {/* Growth Analysis (Sidebar + Detail Chart) */}
       <ChannelsGrowth />
 
-      {/* Графики (2 колонки: Bar + Doughnut) */}
       <div className={styles.chartsRow}>
         <ChannelsBarChart />
         <ChannelsDoughnutChart />
       </div>
 
-      {/* Line Chart (на всю ширину) */}
       <ChannelsLineChart />
 
-      {/* Детальная таблица по каналам */}
       <ChannelsTable period={currentPeriodData} />
     </div>
   );

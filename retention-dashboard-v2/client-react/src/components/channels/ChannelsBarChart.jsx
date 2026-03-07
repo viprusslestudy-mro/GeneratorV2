@@ -70,7 +70,8 @@ export function ChannelsBarChart() {
       const period = periods[periodIndex];
       const dataPoint = {
         name: period.label.split(' ').map((p,i) => i===0 ? p.substring(0,3) : p.substring(2)).join(' '),
-        periodIndex
+        periodIndex,
+        periodKey: period.key
       };
 
       availableChannels.forEach(ch => {
@@ -106,6 +107,33 @@ export function ChannelsBarChart() {
     );
   };
 
+  // Легенда (пересчитывается при смене месяца)
+  const renderLegend = () => {
+    return (
+      <div className={styles.legend}>
+        {availableChannels.map(ch => {
+          // Считаем тотал за все время
+          const totalAllTime = chartData.reduce((sum, d) => sum + (d[ch.key] || 0), 0);
+          
+          // Выбираем: если выбран месяц, берем его значение. Иначе тотал.
+          const valueToShow = selectedPeriod 
+            ? (chartData.find(d => d.periodKey === selectedPeriod)?.[ch.key] || 0)
+            : totalAllTime;
+
+          if (valueToShow === 0) return null; // Скрываем пустые в легенде
+
+          return (
+            <div key={ch.key} className={styles.legendItem}>
+              <div className={styles.legendDot} style={{ background: ch.color }} />
+              <span>{CHANNEL_ICONS[ch.key]} {ch.name}</span>
+              <span className={styles.legendValue}>{formatCompact(valueToShow)}</span>
+            </div>
+          );
+        })}
+      </div>
+    );
+  };
+
   return (
     <Card>
       <div className={styles.container}>
@@ -121,8 +149,16 @@ export function ChannelsBarChart() {
               margin={{ top: 20, right: 30, left: 20, bottom: 20 }}
             >
               <CartesianGrid strokeDasharray="3 3" stroke="rgba(0,0,0,0.05)" />
-              <XAxis dataKey="name" stroke="#666" style={{ fontSize: '12px', fontWeight: 600 }} />
-              <YAxis stroke="#666" style={{ fontSize: '12px', fontWeight: 600 }} tickFormatter={formatCompact} />
+              <XAxis 
+                dataKey="name" 
+                stroke="#666" 
+                style={{ fontSize: '15px', fontFamily: 'Montserrat, sans-serif', fontWeight: 700 }} 
+              />
+              <YAxis 
+                stroke="#666" 
+                style={{ fontSize: '15px', fontFamily: 'Montserrat, sans-serif', fontWeight: 700 }} 
+                tickFormatter={formatCompact} 
+              />
               <Tooltip content={<CustomTooltip />} />
               
               {availableChannels.map((ch, i) => (
@@ -147,6 +183,7 @@ export function ChannelsBarChart() {
             </BarChart>
           </ResponsiveContainer>
         </div>
+        {renderLegend()}
       </div>
     </Card>
   );

@@ -132,52 +132,54 @@ export function FinanceChart() {
         </div>
 
         {/* График */}
-        <div className={styles.chartWrapper}>
-          <ResponsiveContainer width="100%" height={380}>
-            <LineChart 
-              data={chartData}
-              margin={{ top: 20, right: 30, left: 20, bottom: 20 }}
-            >
-              <CartesianGrid strokeDasharray="3 3" stroke="rgba(0,0,0,0.05)" />
-              
-              <XAxis 
-                dataKey="name" 
-                stroke="#666"
-                style={{ fontSize: '12px', fontWeight: 600 }}
-              />
-              
-              <YAxis 
-                stroke="#666"
-                style={{ fontSize: '12px', fontWeight: 600 }}
-                tickFormatter={(value) => formatCompact(value)}
-              />
-              
-              <Tooltip content={<CustomTooltip />} />
-              
-              {/* Deposits Line (пунктирная) */}
-              <Line
-                type="monotone"
-                dataKey="deposits"
-                name="deposits"
-                stroke="#888888"
-                strokeWidth={2}
-                strokeDasharray="6 6"
-                dot={renderDot('#888888')}
-                activeDot={{ r: 8, fill: '#888888', stroke: '#fff', strokeWidth: 2 }}
-              />
-              
-              {/* Profit Line (сплошная) */}
-              <Line
-                type="monotone"
-                dataKey="profit"
-                name="profit"
-                stroke="#ffb300"
-                strokeWidth={4}
-                dot={renderDot('#ffb300')}
-                activeDot={{ r: 10, fill: '#ffb300', stroke: '#fff', strokeWidth: 3 }}
-              />
-            </LineChart>
-          </ResponsiveContainer>
+        <div className={styles.chartWrapper} style={{ overflowX: 'auto', overflowY: 'hidden' }}>
+          <div style={{ minWidth: '800px', height: '380px' }}> {/* <- Это заставит график появиться скроллом, если экран узкий, а месяцев много */}
+            <ResponsiveContainer width="100%" height="100%">
+              <LineChart 
+                data={chartData}
+                margin={{ top: 20, right: 30, left: 20, bottom: 20 }}
+              >
+                <CartesianGrid strokeDasharray="3 3" stroke="rgba(0,0,0,0.05)" />
+                
+                {/* ИСПРАВЛЕНИЕ ШРИФТА ОСЕЙ */}
+                <XAxis 
+                  dataKey="name" 
+                  stroke="#666"
+                  style={{ fontSize: '15px', fontFamily: 'Montserrat, sans-serif', fontWeight: 700 }} 
+                />
+                <YAxis 
+                  stroke="#666"
+                  style={{ fontSize: '15px', fontFamily: 'Montserrat, sans-serif', fontWeight: 700 }}
+                  tickFormatter={(value) => formatCompact(value)}
+                />
+                
+                <Tooltip content={<CustomTooltip />} />
+                
+                {/* Deposits Line (пунктирная) */}
+                <Line
+                  type="monotone"
+                  dataKey="deposits"
+                  name="deposits"
+                  stroke="#888888"
+                  strokeWidth={2}
+                  strokeDasharray="6 6"
+                  dot={renderDot('#888888')}
+                  activeDot={{ r: 8, fill: '#888888', stroke: '#fff', strokeWidth: 2 }}
+                />
+                
+                {/* Profit Line (сплошная) */}
+                <Line
+                  type="monotone"
+                  dataKey="profit"
+                  name="profit"
+                  stroke="#ffb300"
+                  strokeWidth={4}
+                  dot={renderDot('#ffb300')}
+                  activeDot={{ r: 10, fill: '#ffb300', stroke: '#fff', strokeWidth: 3 }}
+                />
+              </LineChart>
+            </ResponsiveContainer>
+          </div>
         </div>
 
         {/* Легенда */}

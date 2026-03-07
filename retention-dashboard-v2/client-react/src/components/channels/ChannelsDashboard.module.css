@@ -5,9 +5,9 @@
  */
 
 .dashboard {
-  max-width: 1400px;
-  margin: 0 auto;
-  padding: 20px;
+  width: 100%;
+  max-width: 1800px; /* Делаем дашборд широким */
+  padding: 24px 40px; /* Уменьшили отступы слева/справа (было margin: 0 auto, стало шире) */
   display: flex;
   flex-direction: column;
   gap: var(--spacing-lg);
@@ -16,6 +16,9 @@
 /* ═══ HEADER ═══ */
 .header {
   margin-bottom: var(--spacing-md);
+  display: flex;
+  justify-content: center; /* Центрируем шапку */
+  text-align: center;
 }
 
 .header h1 {
@@ -25,6 +28,7 @@
   margin: 0;
   display: flex;
   align-items: center;
+  justify-content: center; /* Центрируем содержимое */
   gap: var(--spacing-md);
   flex-wrap: wrap;
 }

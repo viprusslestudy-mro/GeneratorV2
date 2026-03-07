@@ -8,47 +8,7 @@ import { Card } from '../shared/Card/Card';
 import { useRetentionStore, selectFinanceTabs, selectPeriods } from '../../store/retentionStore';
 import { formatValue, sanitizeDiffValue, getDiffClass, getCellBackground } from '../../utils/formatters';
 import styles from './FinanceTable.module.css';
-
-const TABLE_CONFIGS = {
-  deposits: [
-    { key: 'total_deposits_count', label: 'Total Deposits Count', format: 'integer' },
-    { key: 'total_deposits_amount', label: 'Total Deposits Sum', format: 'currency' },
-    { key: 'avg_deposits_per_day', label: 'Avg Deposits / Day', format: 'decimal' },
-    { key: 'avg_deposits_amount_per_day', label: 'Avg Amount / Day', format: 'currency' },
-    { key: 'ftd_amount', label: 'FTD Amount', format: 'currency' },
-    { key: 'redep_1m_amount', label: 'Redeposit 1M Amount', format: 'currency' },
-    { key: 'redep_1m_ratio', label: 'Redeposit 1M / FTD (%)', format: 'percent' },
-    { key: 'redep_1m_plus_amount', label: 'Redeposit 1M+ Amount', format: 'currency' },
-    { key: 'redep_1m_plus_ratio', label: 'Redeposit 1M+ / Total (%)', format: 'percent' }
-  ],
-  sport: [
-    { key: 'sport_stake_amount', label: 'Total Stakes Amount', format: 'currency' },
-    { key: 'sport_stake_count', label: 'Total Stakes Count', format: 'integer' },
-    { key: 'sport_bet_profit', label: 'Bet Profit', format: 'currency' },
-    { key: 'sport_avg_stake_per_day', label: 'Avg Stakes / Day', format: 'currency' },
-    { key: 'sport_avg_count_per_day', label: 'Avg Count / Day', format: 'decimal' },
-    { key: 'sport_avg_bettors_per_day', label: 'Avg Bettors / Day', format: 'decimal' }
-  ],
-  casino: [
-    { key: 'casino_stake_amount', label: 'Total Stakes Amount', format: 'currency' },
-    { key: 'casino_stake_count', label: 'Total Stakes Count', format: 'integer' },
-    { key: 'casino_bet_profit', label: 'Bet Profit', format: 'currency' },
-    { key: 'casino_avg_stake_per_day', label: 'Avg Stakes / Day', format: 'currency' },
-    { key: 'casino_avg_count_per_day', label: 'Avg Count / Day', format: 'decimal' },
-    { key: 'casino_avg_bettors_per_day', label: 'Avg Bettors / Day', format: 'decimal' }
-  ],
-  profit: [
-    { key: 'total_profit', label: 'Total Profit', format: 'currency' },
-    { key: 'avg_profit_per_day', label: 'Avg Profit / Day', format: 'currency' },
-    { key: 'bonuses_issued', label: 'Bonuses Issued', format: 'currency' },
-    { key: 'bonus_to_deposits_ratio', label: 'Bonuses / Deposits (%)', format: 'percent' }
-  ],
-  structure: [
-    { key: 'total_stake_amount', label: 'Total Bets', format: 'currency' },
-    { key: 'sport_stake_percent', label: 'Sport %', format: 'percent' },
-    { key: 'casino_stake_percent', label: 'Casino %', format: 'percent' }
-  ]
-};
+import { FINANCE_TABLE_CONFIGS } from '../../config/metricsConfig';
 
 export function FinanceTable() {
   const financeTabs = useRetentionStore(selectFinanceTabs);
@@ -60,7 +20,7 @@ export function FinanceTable() {
   // Доступные вкладки (скрываем те, где все метрики выключены)
   const availableSections = useMemo(() => {
     return Object.keys(financeTabs).filter(sectionKey => {
-      const config = TABLE_CONFIGS[sectionKey] || [];
+      const config = FINANCE_TABLE_CONFIGS[sectionKey] || [];
       return config.some(metric => {
         return financePeriodsData.some(p => {
           const card = (p.cards || []).find(c => c.id === metric.key);
@@ -78,7 +38,7 @@ export function FinanceTable() {
     }
   }, [availableSections, activeSection]);
 
-  const sectionConfig = TABLE_CONFIGS[activeSection] || [];
+  const sectionConfig = FINANCE_TABLE_CONFIGS[activeSection] || [];
 
   // Получаем данные для конкретной метрики по всем периодам
   const getMetricData = (metricKey) => {
@@ -125,7 +85,11 @@ export function FinanceTable() {
     }
 
     let diffStr = sanitizeDiffValue(cellData.diff);
-    if (diffStr && diffStr !== '—') {
+    
+    // ДИНАМИЧЕСКИЙ БАЗОВЫЙ МЕСЯЦ: Первый видимый месяц всегда пустой по изменениям
+    if (isFirstPeriod) {
+      diffStr = '—';
+    } else if (diffStr && diffStr !== '—') {
       const numVal = parseFloat(String(diffStr).replace('%', '').replace(',', '.').replace(/\s/g, ''));
       if (!isNaN(numVal) && numVal > 0 && !diffStr.startsWith('+')) diffStr = '+' + diffStr;
     }
@@ -147,7 +111,7 @@ export function FinanceTable() {
   if (availableSections.length === 0) return null;
 
   return (
-    <Card title="📋 Detailed Metrics">
+    <Card>
       <div className={styles.tabs}>
         {availableSections.map(key => (
           <button key={key} className={`${styles.tab} ${activeSection === key ? styles.active : ''}`} onClick={() => setActiveSection(key)}>

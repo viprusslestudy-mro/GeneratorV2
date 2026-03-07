@@ -31,15 +31,6 @@ const CHANNEL_ICONS = {
   wa: '📞', webpush: '🌐', popup: '🔔'
 };
 
-// Подметрики (универсальные для каналов)
-const SUBMETRICS = [
-  { key: 'sent', label: 'Sent' },
-  { key: 'delivered', label: 'Delivered' },
-  { key: 'opened', label: 'Opened' },
-  { key: 'click', label: 'Clicked' },
-  { key: 'conversions', label: 'Conversions' }
-];
-
 export function ChannelsGrowth() {
   const [selectedChannelKey, setSelectedChannelKey] = useState(null);
   const [showAllChannels, setShowAllChannels] = useState(false);
@@ -54,41 +45,67 @@ export function ChannelsGrowth() {
     return periods.map((p, i) => (p.hasChannels ? i : -1)).filter(i => i !== -1);
   }, [periods]);
 
-  // Получить доступные каналы из текущего периода
-  const availableChannels = useMemo(() => {
-    const period = periods.find(p => p.key === selectedPeriod);
-    if (!period || !period.channelCards) return [];
-    
-    return Object.entries(period.channelCards)
-      .filter(([key, data]) => key !== 'total' && !data.fullyDisabled)
-      .map(([key, data]) => ({
-        key,
-        name: data.name || key,
-        icon: data.icon || CHANNEL_ICONS[key] || '📊',
-        color: CHANNEL_COLORS[key] || '#9c27b0'
-      }));
-  }, [periods, selectedPeriod]);
+  // ДИНАМИЧЕСКАЯ СБОРКА КАНАЛОВ И ИХ МЕТРИК ИЗ ДАННЫХ
+  const { availableChannels, channelConfigs } = useMemo(() => {
+    const channelsMap = new Map();
+    const configs = {};
+
+    periods.forEach(p => {
+      if (p.hasChannels && p.channelCards) {
+        Object.entries(p.channelCards).forEach(([chKey, chData]) => {
+          if (chKey === 'total' || chData.fullyDisabled) return;
+          
+          if (!channelsMap.has(chKey)) {
+            channelsMap.set(chKey, {
+              key: chKey,
+              name: chData.name || chKey,
+              icon: chData.icon || CHANNEL_ICONS[chKey] || '📊',
+              color: CHANNEL_COLORS[chKey] || '#9c27b0'
+            });
+          }
+
+          if (!configs[chKey]) configs[chKey] = [];
+          (chData.cards || []).forEach(card => {
+            const mKey = card.id.replace(`${chKey}_`, '');
+            if (!configs[chKey].some(m => m.key === mKey)) {
+              configs[chKey].push({ key: mKey, label: card.title });
+            }
+          });
+        });
+      }
+    });
+
+    return {
+      availableChannels: Array.from(channelsMap.values()),
+      channelConfigs: configs
+    };
+  }, [periods]);
+
+  // Список метрик для выпадающего списка (динамический!)
+  const dynamicSubmetrics = useMemo(() => {
+    if (showAllChannels || !selectedChannelKey) {
+      return [{ key: 'sent', label: 'Sent' }, { key: 'conversions', label: 'Conversions' }];
+    }
+    return channelConfigs[selectedChannelKey] || [];
+  }, [showAllChannels, selectedChannelKey, channelConfigs]);
 
   // Устанавливаем первый канал по умолчанию
   if (!selectedChannelKey && availableChannels.length > 0) {
     setSelectedChannelKey(availableChannels[0].key);
   }
 
-  // Получить значение карточки канала
   const getChannelValue = (period, chKey, metric) => {
     if (!period?.channelCards?.[chKey]?.cards) return null;
     const card = period.channelCards[chKey].cards.find(c => c.id === `${chKey}_${metric}`);
     return card?.value ?? null;
   };
 
-  // Получить diff карточки канала
   const getChannelDiff = (period, chKey, metric) => {
     if (!period?.channelCards?.[chKey]?.cards) return '';
     const card = period.channelCards[chKey].cards.find(c => c.id === `${chKey}_${metric}`);
     return card?.diff || '';
   };
 
-  // Подготовка данных для сайдбара
   const sidebarData = useMemo(() => {
     return availableChannels.map(ch => {
       const values = periods.map(p => getChannelValue(p, ch.key, 'sent'));
@@ -100,12 +117,15 @@ export function ChannelsGrowth() {
       const selectedIndex = periods.findIndex(p => p.key === selectedPeriod);
       const filteredIndex = channelIndices.indexOf(selectedIndex);
       
-      const currentDiff = filteredIndex >= 0 ? filteredDiffs[filteredIndex] : '';
+      const isFirstPeriod = filteredIndex === 0; // БАЗОВЫЙ МЕСЯЦ
+      const currentDiff = filteredIndex > 0 ? filteredDiffs[filteredIndex] : '';
       const currentValue = filteredIndex >= 0 ? filteredValues[filteredIndex] : 0;
       
       const diffNum = parseDiffToNumber(currentDiff);
-      const displayValue = currentDiff && currentDiff !== '—'
-        ? `${diffNum >= 0 ? '+' : ''}${diffNum.toFixed(1)}%`
+      
+      // Если это первый месяц, показываем значение
+      const displayValue = (currentDiff && currentDiff !== '—' && !isFirstPeriod)
+        ? `${diffNum >= 0 ? '+' : ''}${diffNum.toFixed(1)}%` 
         : formatCompact(currentValue);
 
       return {
@@ -116,11 +136,11 @@ export function ChannelsGrowth() {
     });
   }, [availableChannels, periods, channelIndices, selectedPeriod]);
 
-  // Подготовка данных для графика
   const chartData = useMemo(() => {
     const metricKey = selectedSubmetric;
     
-    return channelIndices.map(periodIndex => {
+    return channelIndices.map((periodIndex, idx) => {
+      const isFirst = idx === 0; // БАЗОВЫЙ МЕСЯЦ
       const period = periods[periodIndex];
       const dataPoint = {
         name: period.label.split(' ').map((p,i) => i===0 ? p.substring(0,3) : p.substring(2)).join(' '),
@@ -131,12 +151,12 @@ export function ChannelsGrowth() {
         availableChannels.forEach(ch => {
           const diffStr = getChannelDiff(period, ch.key, metricKey);
           const val = getChannelValue(period, ch.key, metricKey) || 0;
-          dataPoint[ch.key] = chartMode === 'absolute' ? val : parseDiffToNumber(diffStr);
+          dataPoint[ch.key] = chartMode === 'absolute' ? val : (isFirst ? 0 : parseDiffToNumber(diffStr));
         });
       } else if (selectedChannelKey) {
         const diffStr = getChannelDiff(period, selectedChannelKey, metricKey);
         const val = getChannelValue(period, selectedChannelKey, metricKey) || 0;
-        dataPoint.value = chartMode === 'absolute' ? val : parseDiffToNumber(diffStr);
+        dataPoint.value = chartMode === 'absolute' ? val : (isFirst ? 0 : parseDiffToNumber(diffStr));
       }
 
       return dataPoint;
@@ -145,7 +165,6 @@ export function ChannelsGrowth() {
 
   const currentChannel = availableChannels.find(c => c.key === selectedChannelKey);
 
-  // Кастомный Tooltip
   const CustomTooltip = ({ active, payload }) => {
     if (!active || !payload || !payload.length) return null;
     
@@ -172,7 +191,6 @@ export function ChannelsGrowth() {
   return (
     <Card>
       <div className={styles.container}>
-        {/* Sidebar */}
         <div className={styles.sidebar}>
           <button 
             className={`${styles.showAllBtn} ${showAllChannels ? styles.active : ''}`}
@@ -185,9 +203,7 @@ export function ChannelsGrowth() {
             {sidebarData.map(ch => (
               <div 
                 key={ch.key}
-                className={`${styles.metricItem} ${
-                  !showAllChannels && selectedChannelKey === ch.key ? styles.active : ''
-                }`}
+                className={`${styles.metricItem} ${!showAllChannels && selectedChannelKey === ch.key ? styles.active : ''}`}
                 onClick={() => {
                   setShowAllChannels(false);
                   setSelectedChannelKey(ch.key);
@@ -205,16 +221,11 @@ export function ChannelsGrowth() {
           </div>
         </div>
 
-        {/* Detail Chart */}
         <div className={styles.detailChart}>
           <div className={styles.detailHeader}>
             <div className={styles.detailTitle}>
-              <span className={styles.detailEmoji}>
-                {showAllChannels ? '✨' : currentChannel?.icon}
-              </span>
-              <span className={styles.detailName}>
-                {showAllChannels ? 'All Channels' : currentChannel?.name}
-              </span>
+              <span className={styles.detailEmoji}>{showAllChannels ? '✨' : currentChannel?.icon}</span>
+              <span className={styles.detailName}>{showAllChannels ? 'All Channels' : currentChannel?.name}</span>
             </div>
 
             <div className={styles.controlsRow}>
@@ -234,8 +245,9 @@ export function ChannelsGrowth() {
                   className={styles.submetricSelect}
                   value={selectedSubmetric}
                   onChange={e => setSelectedSubmetric(e.target.value)}
+                  disabled={showAllChannels}
                 >
-                  {SUBMETRICS.map(sub => (
+                  {dynamicSubmetrics.map(sub => (
                     <option key={sub.key} value={sub.key}>{sub.label}</option>
                   ))}
                 </select>
@@ -243,56 +255,58 @@ export function ChannelsGrowth() {
             </div>
           </div>
 
-          <div className={styles.chartWrapper}>
-            <ResponsiveContainer width="100%" height={400}>
-              {showAllChannels ? (
-                <LineChart data={chartData} margin={{ top: 20, right: 30, left: 20, bottom: 20 }}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="rgba(0,0,0,0.06)" />
-                  <XAxis dataKey="name" stroke="#666" style={{ fontSize: '13px', fontWeight: 700 }} />
-                  <YAxis 
-                    stroke="#666" 
-                    style={{ fontSize: '13px', fontWeight: 700 }}
-                    tickFormatter={v => chartMode === 'absolute' ? formatCompact(v) : `${v > 0 ? '+' : ''}${v}%`}
-                  />
-                  <Tooltip content={<CustomTooltip />} />
-                  {availableChannels.map(ch => (
-                    <Line
-                      key={ch.key}
-                      type="monotone"
-                      dataKey={ch.key}
-                      stroke={ch.color}
-                      strokeWidth={3}
-                      dot={{ r: 5, fill: '#fff', strokeWidth: 2, stroke: ch.color }}
+          <div className={styles.chartWrapper} style={{ overflowX: 'auto', overflowY: 'hidden' }}>
+            <div style={{ minWidth: '800px', height: '400px' }}>
+              <ResponsiveContainer width="100%" height="100%">
+                {showAllChannels ? (
+                  <LineChart data={chartData} margin={{ top: 20, right: 30, left: 20, bottom: 20 }}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="rgba(0,0,0,0.06)" />
+                    <XAxis dataKey="name" stroke="#666" style={{ fontSize: '15px', fontFamily: 'Montserrat, sans-serif', fontWeight: 700 }} />
+                    <YAxis 
+                      stroke="#666" 
+                      style={{ fontSize: '15px', fontFamily: 'Montserrat, sans-serif', fontWeight: 700 }}
+                      tickFormatter={v => chartMode === 'absolute' ? formatCompact(v) : `${v > 0 ? '+' : ''}${v}%`}
                     />
-                  ))}
-                </LineChart>
-              ) : (
-                <AreaChart data={chartData} margin={{ top: 20, right: 30, left: 20, bottom: 20 }}>
-                  <defs>
-                    <linearGradient id="colorChannels" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%" stopColor={currentChannel?.color || '#9c27b0'} stopOpacity={0.3}/>
-                      <stop offset="95%" stopColor={currentChannel?.color || '#9c27b0'} stopOpacity={0.05}/>
-                    </linearGradient>
-                  </defs>
-                  <CartesianGrid strokeDasharray="3 3" stroke="rgba(0,0,0,0.06)" />
-                  <XAxis dataKey="name" stroke="#666" style={{ fontSize: '13px', fontWeight: 700 }} />
-                  <YAxis 
-                    stroke="#666" 
-                    style={{ fontSize: '13px', fontWeight: 700 }}
-                    tickFormatter={v => chartMode === 'absolute' ? formatCompact(v) : `${v > 0 ? '+' : ''}${v}%`}
-                  />
-                  <Tooltip content={<CustomTooltip />} />
-                  <Area
-                    type="monotone"
-                    dataKey="value"
-                    stroke={currentChannel?.color || '#9c27b0'}
-                    strokeWidth={4}
-                    fill="url(#colorChannels)"
-                    dot={{ r: 6, fill: '#fff', strokeWidth: 3, stroke: currentChannel?.color || '#9c27b0' }}
-                  />
-                </AreaChart>
-              )}
-            </ResponsiveContainer>
+                    <Tooltip content={<CustomTooltip />} />
+                    {availableChannels.map(ch => (
+                      <Line
+                        key={ch.key}
+                        type="monotone"
+                        dataKey={ch.key}
+                        stroke={ch.color}
+                        strokeWidth={3}
+                        dot={{ r: 5, fill: '#fff', strokeWidth: 2, stroke: ch.color }}
+                      />
+                    ))}
+                  </LineChart>
+                ) : (
+                  <AreaChart data={chartData} margin={{ top: 20, right: 30, left: 20, bottom: 20 }}>
+                    <defs>
+                      <linearGradient id="colorChannels" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="5%" stopColor={currentChannel?.color || '#9c27b0'} stopOpacity={0.3}/>
+                        <stop offset="95%" stopColor={currentChannel?.color || '#9c27b0'} stopOpacity={0.05}/>
+                      </linearGradient>
+                    </defs>
+                    <CartesianGrid strokeDasharray="3 3" stroke="rgba(0,0,0,0.06)" />
+                    <XAxis dataKey="name" stroke="#666" style={{ fontSize: '15px', fontFamily: 'Montserrat, sans-serif', fontWeight: 700 }} />
+                    <YAxis 
+                      stroke="#666" 
+                      style={{ fontSize: '15px', fontFamily: 'Montserrat, sans-serif', fontWeight: 700 }}
+                      tickFormatter={v => chartMode === 'absolute' ? formatCompact(v) : `${v > 0 ? '+' : ''}${v}%`}
+                    />
+                    <Tooltip content={<CustomTooltip />} />
+                    <Area
+                      type="monotone"
+                      dataKey="value"
+                      stroke={currentChannel?.color || '#9c27b0'}
+                      strokeWidth={4}
+                      fill="url(#colorChannels)"
+                      dot={{ r: 6, fill: '#fff', strokeWidth: 3, stroke: currentChannel?.color || '#9c27b0' }}
+                    />
+                  </AreaChart>
+                )}
+              </ResponsiveContainer>
+            </div>
           </div>
         </div>
       </div>

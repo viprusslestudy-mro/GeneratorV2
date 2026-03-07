@@ -80,10 +80,10 @@
 .legendItem {
   display: flex;
   align-items: center;
-  gap: 10px;
-  font-size: 13px;
+  gap: 12px;
+  font-size: 15px;
   font-weight: 700;
-  padding: 8px 16px;
+  padding: 10px 20px;
   background: white;
   border: 1px solid rgba(0, 0, 0, 0.05);
   border-radius: 40px;
@@ -91,14 +91,41 @@
 }
 
 .legendDot {
-  width: 12px;
-  height: 12px;
+  width: 14px;
+  height: 14px;
   border-radius: 50%;
 }
 
 .legendValue {
-  font-weight: 800;
-  opacity: 0.8;
-  padding-left: 8px;
-  border-left: 1px solid rgba(0, 0, 0, 0.1);
+  font-size: 16px;
+  font-weight: 900;
+  opacity: 0.9;
+  padding-left: 10px;
+  border-left: 2px solid rgba(0, 0, 0, 0.08);
+}
+
+/* ═══ НОВЫЙ ТЕКСТ В ЦЕНТРЕ ═══ */
+.centerOverlay {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  text-align: center;
+  pointer-events: none; /* Чтобы не мешал наводить мышку на график */
+  z-index: 10;
+}
+
+.centerLabel {
+  font-size: 2rem;
+  font-weight: 900;
+  color: var(--text-main);
+  line-height: 1.1;
+}
+
+.centerSubLabel {
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
 }

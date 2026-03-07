@@ -43,12 +43,16 @@ export function ChannelsDoughnutChart() {
       }
     });
 
+    // ИСПРАВЛЕНИЕ: Если нет данных, создаем фейковый сегмент для отрисовки серого кольца
+    if (data.length === 0) {
+      data.push({ name: 'No Data', value: 1, isEmpty: true, color: '#eeeeee' });
+    }
+
     return data.sort((a, b) => b.value - a.value); // Сортируем по убыванию
   }, [periods, selectedPeriod]);
 
-  if (chartData.length === 0) return null;
-
-  const total = chartData.reduce((sum, d) => sum + d.value, 0);
+  const isZeroState = chartData[0]?.isEmpty;
+  const total = isZeroState ? 0 : chartData.reduce((sum, d) => sum + d.value, 0);
 
   const CustomTooltip = ({ active, payload }) => {
     if (!active || !payload || !payload.length) return null;
@@ -66,34 +70,6 @@ export function ChannelsDoughnutChart() {
     );
   };
 
-  const renderCenterLabel = ({ cx, cy }) => (
-    <g>
-      <text x={cx} y={cy - 10} textAnchor="middle" className={styles.centerLabel}>
-        {formatCompact(total)}
-      </text>
-      <text x={cx} y={cy + 15} textAnchor="middle" className={styles.centerSubLabel}>
-        Total Sent
-      </text>
-    </g>
-  );
-
-  const renderLegend = () => (
-    <div className={styles.legend}>
-      {chartData.map((entry, index) => {
-        const percent = total > 0 ? ((entry.value / total) * 100).toFixed(1) : 0;
-        const icon = CHANNEL_ICONS[entry.key] || '📊';
-        
-        return (
-          <div key={index} className={styles.legendItem}>
-            <div className={styles.legendDot} style={{ background: entry.color }} />
-            <span>{icon} {entry.name}</span>
-            <span className={styles.legendValue}>{percent}%</span>
-          </div>
-        );
-      })}
-    </div>
-  );
-
   return (
     <Card>
       <div className={styles.container}>
@@ -102,30 +78,54 @@ export function ChannelsDoughnutChart() {
           <div className={styles.subtitle}>By channels for current period</div>
         </div>
         
-        <div className={styles.chartWrapper}>
+        {/* ИСПРАВЛЕНИЕ ПОЗИЦИОНИРОВАНИЯ ТЕКСТА */}
+        <div className={styles.chartWrapper} style={{ position: 'relative', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+          
+          {/* ТЕКСТ СТРОГО ПО ЦЕНТРУ */}
+          <div style={{ position: 'absolute', textAlign: 'center', pointerEvents: 'none', zIndex: 10 }}>
+            <div style={{ fontSize: '2rem', fontWeight: 900, color: '#1a1a1a', lineHeight: 1.1 }}>
+              {isZeroState ? '0' : formatCompact(total)}
+            </div>
+            <div style={{ fontSize: '0.9rem', fontWeight: 700, color: '#666', textTransform: 'uppercase' }}>
+              Total Sent
+            </div>
+          </div>
+
           <ResponsiveContainer width="100%" height={380}>
             <PieChart>
               <Pie
                 data={chartData}
                 cx="50%"
                 cy="50%"
-                innerRadius={80}
-                outerRadius={120}
+                innerRadius={90}
+                outerRadius={130}
                 paddingAngle={5}
                 dataKey="value"
-                labelLine={false}
-                label={renderCenterLabel}
+                stroke="none"
               >
                 {chartData.map((entry, index) => (
-                  <Cell key={`cell-${index}`} fill={entry.color} stroke="#fff" strokeWidth={4} />
+                  <Cell key={`cell-${index}`} fill={entry.color} />
                 ))}
               </Pie>
-              <Tooltip content={<CustomTooltip />} />
+              {!isZeroState && <Tooltip content={<CustomTooltip />} />}
             </PieChart>
           </ResponsiveContainer>
         </div>
 
-        {renderLegend()}
+        <div className={styles.legend}>
+          {chartData.map((entry, index) => {
+            const percent = total > 0 ? ((entry.value / total) * 100).toFixed(1) : 0;
+            const icon = CHANNEL_ICONS[entry.key] || '📊';
+            
+            return (
+              <div key={index} className={styles.legendItem}>
+                <div className={styles.legendDot} style={{ background: entry.color }} />
+                <span>{icon} {entry.name}</span>
+                <span className={styles.legendValue}>{percent}%</span>
+              </div>
+            );
+          })}
+        </div>
       </div>
     </Card>
   );

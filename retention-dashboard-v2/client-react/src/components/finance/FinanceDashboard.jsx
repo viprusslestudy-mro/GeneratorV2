@@ -45,8 +45,8 @@ export function FinanceDashboard() {
         </h1>
       </div>
 
-      {/* KPI Карточки */}
-      <Card title="Key Metrics">
+      {/* KPI Карточки (УБРАН title="Key Metrics") */}
+      <Card>
         <div className={styles.kpiGrid}>
           {kpiMetrics.map(metric => (
             <MetricCard key={metric.id} metric={metric} />
@@ -68,28 +68,6 @@ export function FinanceDashboard() {
 
       {/* Детальная таблица */}
       <FinanceTable period={currentPeriodData} />
-
-      {/* Информация о периоде */}
-      <Card title="Period Info">
-        <div className={styles.info}>
-          <div className={styles.infoRow}>
-            <span className={styles.infoLabel}>📈 Total Metrics:</span>
-            <span className={styles.infoValue}>{currentPeriodData.cards.length}</span>
-          </div>
-          <div className={styles.infoRow}>
-            <span className={styles.infoLabel}>📊 Categories:</span>
-            <span className={styles.infoValue}>
-              {Array.from(new Set(currentPeriodData.cards.map(c => c.category))).join(', ')}
-            </span>
-          </div>
-          <div className={styles.infoRow}>
-            <span className={styles.infoLabel}>✅ Finance Data:</span>
-            <span className={styles.infoValue}>
-              {currentPeriodData.hasFinance ? 'Available' : 'No data'}
-            </span>
-          </div>
-        </div>
-      </Card>
     </div>
   );
 }
