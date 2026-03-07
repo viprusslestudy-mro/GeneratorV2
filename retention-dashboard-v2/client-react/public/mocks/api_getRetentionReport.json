@@ -1,0 +1,203 @@
+{
+  "project": "RETENZA",
+  "reportTitle": "Retention Dashboard",
+  "generatedAt": "2025-01-16T10:00:00.000Z",
+  "periodsCount": 3,
+  "periods": [
+    {
+      "key": "2024-11",
+      "label": "Ноябрь 2024",
+      "enabled": true,
+      "hasFinance": true,
+      "hasChannels": true,
+      "cards": [
+        {
+          "id": "total_deposits_count",
+          "title": "Тотал кол-во депозитов",
+          "value": 1234,
+          "diff": "+15.5%",
+          "valueFormat": "integer",
+          "icon": "💰",
+          "category": "deposits",
+          "order": 1
+        },
+        {
+          "id": "total_deposits_amount",
+          "title": "Тотал сумма депозитов",
+          "value": 567890,
+          "diff": "+12.3%",
+          "valueFormat": "currency",
+          "icon": "💳",
+          "category": "deposits",
+          "order": 2
+        },
+        {
+          "id": "total_profit",
+          "title": "Тотал профит",
+          "value": 123456,
+          "diff": "+8.9%",
+          "valueFormat": "currency",
+          "icon": "📈",
+          "category": "profit",
+          "order": 3
+        },
+        {
+          "id": "ftd_amount",
+          "title": "Сумма ФТД",
+          "value": 234567,
+          "diff": "+20.1%",
+          "valueFormat": "currency",
+          "icon": "🆕",
+          "category": "deposits",
+          "order": 4
+        }
+      ],
+      "channelCards": {
+        "push": {
+          "name": "App Push",
+          "icon": "📱",
+          "cards": [
+            {
+              "id": "push_sent",
+              "title": "Sent",
+              "value": 50000,
+              "diff": "+10%",
+              "valueFormat": "integer",
+              "disabled": false,
+              "order": 1
+            }
+          ],
+          "fullyDisabled": false
+        }
+      },
+      "totalChannels": {
+        "sent": 50000,
+        "conversions": 2500,
+        "click": 7500
+      }
+    },
+    {
+      "key": "2024-12",
+      "label": "Декабрь 2024",
+      "enabled": true,
+      "hasFinance": true,
+      "hasChannels": true,
+      "cards": [
+        {
+          "id": "total_deposits_count",
+          "title": "Тотал кол-во депозитов",
+          "value": 1456,
+          "diff": "+18%",
+          "valueFormat": "integer",
+          "icon": "💰",
+          "category": "deposits",
+          "order": 1
+        },
+        {
+          "id": "total_deposits_amount",
+          "title": "Тотал сумма депозитов",
+          "value": 645000,
+          "diff": "+13.6%",
+          "valueFormat": "currency",
+          "icon": "💳",
+          "category": "deposits",
+          "order": 2
+        }
+      ],
+      "channelCards": {
+        "push": {
+          "name": "App Push",
+          "icon": "📱",
+          "cards": [
+            {
+              "id": "push_sent",
+              "title": "Sent",
+              "value": 55000,
+              "diff": "+10%",
+              "valueFormat": "integer",
+              "disabled": false,
+              "order": 1
+            }
+          ],
+          "fullyDisabled": false
+        }
+      },
+      "totalChannels": {
+        "sent": 55000,
+        "conversions": 2800,
+        "click": 8200
+      }
+    },
+    {
+      "key": "2025-01",
+      "label": "Январь 2025",
+      "enabled": true,
+      "hasFinance": true,
+      "hasChannels": true,
+      "cards": [
+        {
+          "id": "total_deposits_count",
+          "title": "Тотал кол-во депозитов",
+          "value": 1678,
+          "diff": "+15.2%",
+          "valueFormat": "integer",
+          "icon": "💰",
+          "category": "deposits",
+          "order": 1
+        }
+      ],
+      "channelCards": {
+        "push": {
+          "name": "App Push",
+          "icon": "📱",
+          "cards": [
+            {
+              "id": "push_sent",
+              "title": "Sent",
+              "value": 60000,
+              "diff": "+9.1%",
+              "valueFormat": "integer",
+              "disabled": false,
+              "order": 1
+            }
+          ],
+          "fullyDisabled": false
+        }
+      },
+      "totalChannels": {
+        "sent": 60000,
+        "conversions": 3200,
+        "click": 9000
+      }
+    }
+  ],
+  "ui": {
+    "financeTabs": {
+      "deposits": "ДЕПОЗИТЫ",
+      "sport": "СПОРТ",
+      "casino": "КАЗИНО",
+      "profit": "ПРОФИТ И БОНУСЫ"
+    },
+    "channelTabs": {
+      "mail": "E-mail",
+      "push": "App Push",
+      "sms": "SMS"
+    }
+  },
+  "localization": {
+    "defaultLang": "RU",
+    "showSwitcher": false
+  },
+  "baseMonths": {
+    "finance": "2024-11",
+    "channels": "2024-11"
+  },
+  "summary": {
+    "totalDepositsCount": 4368,
+    "totalDepositsAmount": 1437890,
+    "totalProfit": 350000
+  },
+  "meta": {
+    "version": "1.0.93.7"
+  }
+}

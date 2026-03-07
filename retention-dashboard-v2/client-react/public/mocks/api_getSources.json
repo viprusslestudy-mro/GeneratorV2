@@ -1,0 +1,16 @@
+[
+  {
+    "key": "retention",
+    "name": "Retention",
+    "template": "Retention",
+    "icon": "📊",
+    "color": "#9c27b0"
+  },
+  {
+    "key": "support",
+    "name": "Support",
+    "template": "Support",
+    "icon": "🎧",
+    "color": "#2196f3"
+  }
+]

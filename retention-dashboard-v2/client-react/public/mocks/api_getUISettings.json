@@ -1,0 +1,19 @@
+{
+  "financeTabs": {
+    "deposits": "ДЕПОЗИТЫ",
+    "sport": "СПОРТ",
+    "casino": "КАЗИНО",
+    "profit": "ПРОФИТ И БОНУСЫ"
+  },
+  "channelTabs": {
+    "mail": "E-mail",
+    "push": "App Push",
+    "webpush": "Web-Push",
+    "sms": "SMS",
+    "tg": "Telegram",
+    "wa": "WhatsApp"
+  },
+  "showEmptyMetrics": false,
+  "disabledLabel": "—",
+  "autoCalcChannelTotals": true
+}
