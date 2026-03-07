@@ -130,7 +130,7 @@ export function ChannelsDashboard() {
   ];
 
   return (
-    <div className={styles.dashboard}>
+    <div className="page-container">
       <div className={styles.header}>
         <h1>
           <span className={styles.headerIcon}>📈</span>

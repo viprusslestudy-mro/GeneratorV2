@@ -1,0 +1,121 @@
+{
+  "period": {
+    "label": "Февраль 2026",
+    "monthNum": 2,
+    "year": 2026,
+    "key": "2026-02"
+  },
+  "availablePeriods": [
+    { "label": "Январь 2026", "key": "2026-01", "hasKPI": true, "hasTags": true },
+    { "label": "Февраль 2026", "key": "2026-02", "hasKPI": true, "hasTags": true }
+  ],
+  "byPeriod": {
+    "2026-01": {
+      "period": { "label": "Январь 2026", "key": "2026-01" },
+      "liveChat": {
+        "totalChats": 12000,
+        "chatSatisfaction": 88.5,
+        "firstResponseTime": 55,
+        "avgResponseTime": 140,
+        "avgChatDuration": 9.2,
+        "missedChats": 210,
+        "ratedGood": 10620,
+        "ratedBad": 1380,
+        "weeklyKPI": [
+          { "label": "Week 1", "dates": "01.01 - 07.01", "totalChats": 2800, "satisfaction": 87.0 },
+          { "label": "Week 2", "dates": "08.01 - 14.01", "totalChats": 3200, "satisfaction": 89.1 },
+          { "label": "Week 3", "dates": "15.01 - 21.01", "totalChats": 3100, "satisfaction": 88.8 },
+          { "label": "Week 4", "dates": "22.01 - 28.01", "totalChats": 2900, "satisfaction": 89.5 }
+        ],
+        "byLocale": {
+          "RU": { "totalChats": 7000, "satisfaction": 86.5, "firstResponse": 60, "avgResponse": 150, "chatDuration": 9.5, "missedChats": 150 },
+          "EN": { "totalChats": 5000, "satisfaction": 91.0, "firstResponse": 45, "avgResponse": 120, "chatDuration": 8.0, "missedChats": 60 }
+        }
+      }
+    },
+    "2026-02": {
+      "period": { "label": "Февраль 2026", "key": "2026-02" },
+      "liveChat": {
+        "totalChats": 14500,
+        "chatSatisfaction": 92.5,
+        "firstResponseTime": 45,
+        "avgResponseTime": 120,
+        "avgChatDuration": 8.5,
+        "missedChats": 150,
+        "ratedGood": 13412,
+        "ratedBad": 1088,
+        "weeklyKPI": [
+          { "label": "Week 1", "dates": "01.02 - 07.02", "totalChats": 3500, "satisfaction": 91.2 },
+          { "label": "Week 2", "dates": "08.02 - 14.02", "totalChats": 4100, "satisfaction": 93.0 },
+          { "label": "Week 3", "dates": "15.02 - 21.02", "totalChats": 3900, "satisfaction": 92.8 },
+          { "label": "Week 4", "dates": "22.02 - 28.02", "totalChats": 3000, "satisfaction": 93.5 }
+        ],
+        "byLocale": {
+          "RU": { "totalChats": 8500, "satisfaction": 90.5, "firstResponse": 50, "avgResponse": 130, "chatDuration": 9.0, "missedChats": 100 },
+          "EN": { "totalChats": 6000, "satisfaction": 95.0, "firstResponse": 35, "avgResponse": 105, "chatDuration": 7.5, "missedChats": 50 }
+        }
+      }
+    }
+  },
+  "liveChat": {
+    "totalChats": 14500,
+    "chatSatisfaction": 92.5,
+    "firstResponseTime": 45,
+    "avgResponseTime": 120,
+    "avgChatDuration": 8.5,
+    "missedChats": 150,
+    "ratedGood": 13412,
+    "ratedBad": 1088,
+    "weeklyKPI": [
+      { "label": "Week 1", "dates": "01.02 - 07.02", "totalChats": 3500, "satisfaction": 91.2 },
+      { "label": "Week 2", "dates": "08.02 - 14.02", "totalChats": 4100, "satisfaction": 93.0 },
+      { "label": "Week 3", "dates": "15.02 - 21.02", "totalChats": 3900, "satisfaction": 92.8 },
+      { "label": "Week 4", "dates": "22.02 - 28.02", "totalChats": 3000, "satisfaction": 93.5 }
+    ],
+    "byLocale": {
+      "RU": {
+        "totalChats": 8500,
+        "satisfaction": 90.5,
+        "firstResponse": 50,
+        "avgResponse": 130,
+        "chatDuration": 9.0,
+        "missedChats": 100,
+        "weeklyKPI": [
+          { "label": "Week 1", "dates": "01.02 - 07.02", "totalChats": 2000, "satisfaction": 90.0 },
+          { "label": "Week 2", "dates": "08.02 - 14.02", "totalChats": 2500, "satisfaction": 91.0 }
+        ]
+      },
+      "EN": {
+        "totalChats": 6000,
+        "satisfaction": 95.0,
+        "firstResponse": 35,
+        "avgResponse": 105,
+        "chatDuration": 7.5,
+        "missedChats": 50,
+        "weeklyKPI": [
+          { "label": "Week 1", "dates": "01.02 - 07.02", "totalChats": 1500, "satisfaction": 94.5 },
+          { "label": "Week 2", "dates": "08.02 - 14.02", "totalChats": 1600, "satisfaction": 95.2 }
+        ]
+      }
+    }
+  },
+  "tags": {
+    "totalCount": 12000,
+    "categories": [
+      {
+        "name": "Issues",
+        "tags": [
+          { "name": "Payment Failed", "allGeo": 3000, "byGeo": { "RU": 2000, "EN": 1000 } },
+          { "name": "Login Error", "allGeo": 1500, "byGeo": { "RU": 900, "EN": 600 } }
+        ]
+      },
+      {
+        "name": "Questions",
+        "tags": [
+          { "name": "Bonus Rules", "allGeo": 4000, "byGeo": { "RU": 2500, "EN": 1500 } },
+          { "name": "Verification", "allGeo": 3500, "byGeo": { "RU": 2000, "EN": 1500 } }
+        ]
+      }
+    ]
+  }
+}

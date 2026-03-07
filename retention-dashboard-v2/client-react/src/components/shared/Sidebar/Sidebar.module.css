@@ -5,7 +5,7 @@
  */
 
 .sidebar {
-  width: 300px;
+  width: 260px; /* Было 300px, сделали уже */
   background: linear-gradient(180deg, #f8f9fc 0%, #f0f2f8 100%);
   color: var(--text-main);
   display: flex;
@@ -119,15 +119,21 @@
 }
 
 .navItem {
-  padding: 14px 18px;
-  border-radius: 14px;
-  font-size: var(--font-size-md);
+  padding: 12px 14px; /* Чуть уменьшили отступы */
+  border-radius: 12px;
+  font-size: 14px; /* Чуть уменьшили шрифт */
   font-weight: 700;
   color: var(--text-secondary);
   transition: var(--transition-normal);
   cursor: pointer;
   background: transparent;
   border: 2px solid transparent;
+  text-align: left; /* ВЫРАВНИВАНИЕ СЛЕВА */
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-family: inherit;
+  width: 100%; /* Чтобы кнопка занимала всю ширину */
 }
 
 .navItem:hover:not(.disabled) {

@@ -119,3 +119,29 @@
     font-size: 0.7rem;
   }
 }
+
+/* ═══ ГЛОБАЛЬНЫЙ КОНТЕЙНЕР ═══ */
+.main-content {
+  flex: 1;
+  overflow-y: auto;
+  background: linear-gradient(135deg, #f5f7fa 0%, #e9ecef 100%);
+  /* Задаем единственный базовый отступ от краев экрана */
+  padding: 24px 32px; 
+}
+
+.page-container {
+  /* Растягиваем на 100% доступной ширины */
+  width: 100%;
+  max-width: 100%; 
+  margin: 0; 
+  padding: 0; /* Убираем внутренние отступы, так как они есть у main-content */
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+@media (max-width: 768px) {
+  .main-content {
+    padding: 16px;
+  }
+}

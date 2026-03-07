@@ -35,7 +35,7 @@ export function FinanceDashboard() {
     .sort((a, b) => a.order - b.order);
 
   return (
-    <div className={styles.dashboard}>
+    <div className="page-container">
       {/* Заголовок */}
       <div className={styles.header}>
         <h1>

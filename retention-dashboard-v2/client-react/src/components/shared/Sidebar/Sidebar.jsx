@@ -1,15 +1,24 @@
-/**
- * ═══════════════════════════════════════════════════════════════════════════
- *  Sidebar.jsx - Боковая панель для Retention Dashboard
- * ═══════════════════════════════════════════════════════════════════════════
- */
-import { usePeriodFilter } from '../../../hooks/usePeriodFilter';
-import { useRetentionStore } from '../../../store/retentionStore';
+import { useRetentionStore, selectPeriods, selectSupportPeriods } from '../../../store/retentionStore';
 import styles from './Sidebar.module.css';
 
 export function Sidebar({ activeScreen, onScreenChange }) {
-  const { periods, selectedPeriod, setPeriod } = usePeriodFilter();
   const projectSettings = useRetentionStore(state => state.projectSettings);
+  
+  // Читаем из стора ВСЕ данные
+  const retentionPeriods = useRetentionStore(selectPeriods);
+  const supportPeriods = useRetentionStore(selectSupportPeriods);
+  const selectedRetentionPeriod = useRetentionStore(state => state.selectedPeriod);
+  const selectedSupportPeriod = useRetentionStore(state => state.selectedSupportPeriod);
+  const setRetentionPeriod = useRetentionStore(state => state.setPeriod);
+  const setSupportPeriod = useRetentionStore(state => state.setSupportPeriod);
+
+  // Определяем, мы в Retention или в Support
+  const isSupport = activeScreen.startsWith('support');
+  
+  // Выбираем нужные данные для отображения
+  const activePeriods = isSupport ? supportPeriods : retentionPeriods;
+  const activeSelectedPeriod = isSupport ? selectedSupportPeriod : selectedRetentionPeriod;
+  const activeSetPeriod = isSupport ? setSupportPeriod : setRetentionPeriod;
 
   return (
     <aside className={styles.sidebar}>
@@ -24,21 +33,7 @@ export function Sidebar({ activeScreen, onScreenChange }) {
       {/* Project Card */}
       <div className={styles.projectCard}>
         <div className={styles.projectIcon}>
-          {projectSettings.logoUrl ? (
-            <img 
-              src={projectSettings.logoUrl} 
-              alt="Project Logo"
-              className={styles.projectLogo}
-              onError={(e) => {
-                e.target.style.display = 'none';
-                e.target.nextSibling.style.display = 'flex';
-              }}
-            />
-          ) : null}
-          <div 
-            className={styles.projectIconFallback}
-            style={{ display: projectSettings.logoUrl ? 'none' : 'flex' }}
-          >
+          <div className={styles.projectIconFallback}>
             {projectSettings.icon}
           </div>
         </div>
@@ -48,7 +43,7 @@ export function Sidebar({ activeScreen, onScreenChange }) {
         </div>
       </div>
 
-      {/* Navigation */}
+      {/* Navigation - Retention */}
       <nav className={styles.nav}>
         <div className={styles.navTitle}>Retention</div>
         <button 
@@ -61,24 +56,41 @@ export function Sidebar({ activeScreen, onScreenChange }) {
           className={`${styles.navItem} ${activeScreen === 'channels' ? styles.active : ''}`}
           onClick={() => onScreenChange('channels')}
         >
-          📈 Communication channels
+          📈 Channels
+        </button>
+      </nav>
+
+      {/* Navigation - Support */}
+      <nav className={styles.nav}>
+        <div className={styles.navTitle}>Support</div>
+        <button 
+          className={`${styles.navItem} ${activeScreen === 'support_stats' ? styles.active : ''}`}
+          onClick={() => onScreenChange('support_stats')}
+        >
+          📋 LiveChat KPI
+        </button>
+        <button 
+          className={`${styles.navItem} ${activeScreen === 'support_tags' ? styles.active : ''}`}
+          onClick={() => onScreenChange('support_tags')}
+        >
+          🏷️ Issue Tags
         </button>
       </nav>
 
       {/* Period Selector */}
       <div className={styles.periodSelector}>
-        <div className={styles.selectorTitle}>Select Period</div>
+        <div className={styles.selectorTitle}>📅 Select Period</div>
         <div className={styles.periodList}>
-          {periods.map(period => (
+          {activePeriods.map(period => (
             <button
               key={period.key}
               className={`${styles.periodItem} ${
-                selectedPeriod === period.key ? styles.selected : ''
+                activeSelectedPeriod === period.key ? styles.selected : ''
               }`}
-              onClick={() => setPeriod(period.key)}
+              onClick={() => activeSetPeriod(period.key)}
             >
               <span className={styles.periodLabel}>{period.label}</span>
-              {selectedPeriod === period.key && (
+              {activeSelectedPeriod === period.key && (
                 <span className={styles.checkmark}>✓</span>
               )}
             </button>

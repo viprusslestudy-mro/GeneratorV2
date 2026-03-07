@@ -1,0 +1,159 @@
+/**
+ * ═══════════════════════════════════════════════════════════════════════════
+ *  SatisfactionCard - Стили
+ * ═══════════════════════════════════════════════════════════════════════════
+ */
+
+.card {
+  background: white;
+  border-radius: 24px;
+  padding: 24px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  height: 100%;
+  border: 1px solid rgba(0, 0, 0, 0.05);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 30px rgba(255, 179, 0, 0.15);
+  border-color: rgba(255, 179, 0, 0.4);
+}
+
+/* ═══ HEADER ═══ */
+.header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.iconWrapper {
+  width: 48px;
+  height: 48px;
+  background: rgba(255, 179, 0, 0.15);
+  border-radius: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.5rem;
+}
+
+.titleBlock {
+  display: flex;
+  flex-direction: column;
+}
+
+.label {
+  font-size: 1.1rem;
+  font-weight: 800;
+  color: var(--text-main);
+}
+
+.sublabel {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+
+/* ═══ CENTER ═══ */
+.center {
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
+  margin-bottom: 20px;
+  padding: 10px 20px;
+}
+
+.percentBlock {
+  display: flex;
+  align-items:baseline;
+}
+
+.bigValue {
+  font-size: 4.5rem;
+  font-weight: 900;
+  color: var(--text-main);
+  line-height: 1;
+  letter-spacing: -2px;
+}
+
+.percentSign {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #9ca3af;
+  margin-left: 4px;
+}
+
+/* RING SVG */
+.ringWrapper {
+  position: relative;
+  width: 130px; /* УВЕЛИЧИЛИ КОЛЬЦО */
+  height: 130px;
+  cursor: help; /* Курсор с вопросиком при наведении */
+}
+
+.svgRing {
+  width: 100%;
+  height: 100%;
+  transform: rotate(-90deg); /* Начинаем заливку сверху */
+}
+
+.progressCircle {
+  transition: stroke-dashoffset 1s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.starIcon {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 2.2rem; /* Увеличили звезду */
+}
+
+/* ═══ FOOTER ═══ */
+.footer {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  border-top: 2px dashed rgba(0, 0, 0, 0.05);
+  padding-top: 16px;
+}
+
+.thumbBlock {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  border-radius: 12px;
+}
+
+.thumbBlock.good {
+  background: rgba(16, 185, 129, 0.1); /* Зеленый фон */
+}
+
+.thumbBlock.bad {
+  background: rgba(239, 68, 68, 0.1); /* Красный фон */
+}
+
+.thumbIcon {
+  font-size: 1.1rem;
+}
+
+.thumbCount {
+  font-size: 1.1rem;
+  font-weight: 800;
+  color: var(--text-main);
+}
+
+.thumbLabel {
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  margin-left: auto; /* Прижимаем к правому краю */
+}

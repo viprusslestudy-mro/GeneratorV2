@@ -9,6 +9,7 @@ import { Loader } from './components/shared/Loader/Loader';
 import { Sidebar } from './components/shared/Sidebar/Sidebar';
 import { FinanceDashboard } from './components/finance/FinanceDashboard';
 import { ChannelsDashboard } from './components/channels/ChannelsDashboard';
+import { SupportDashboard } from './components/support/SupportDashboard';
 import './App.css';
 
 export default function App() {
@@ -68,7 +69,10 @@ export default function App() {
       <Sidebar activeScreen={activeScreen} onScreenChange={setActiveScreen} />
       
       <main className="main-content">
-        {activeScreen === 'finance' ? <FinanceDashboard /> : <ChannelsDashboard />}
+        {activeScreen === 'finance' && <FinanceDashboard />}
+        {activeScreen === 'channels' && <ChannelsDashboard />}
+        {activeScreen === 'support_stats' && <SupportDashboard type="stats" />}
+        {activeScreen === 'support_tags' && <SupportDashboard type="tags" />}
       </main>
     </div>
   );

@@ -1,0 +1,110 @@
+.header {
+  margin-bottom: var(--spacing-lg);
+  padding-bottom: var(--spacing-md);
+  border-bottom: 2px solid rgba(0, 0, 0, 0.05);
+}
+
+.title {
+  font-size: 1.5rem;
+  font-weight: 800;
+  color: var(--text-main);
+  margin: 0 0 4px 0;
+}
+
+.subtitle {
+  font-size: 1rem;
+  color: var(--text-secondary);
+  font-weight: 600;
+  margin: 0;
+}
+
+.tableWrapper {
+  overflow-x: auto;
+  border-radius: 12px;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  min-width: 800px;
+}
+
+/* Headers */
+.thLeft {
+  text-align: left;
+  padding: 16px 20px;
+  font-size: 14px;
+  font-weight: 800;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  border-bottom: 2px solid var(--primary-accent);
+  background: #fdfdfd;
+}
+
+.thCenter {
+  text-align: center;
+  padding: 16px 20px;
+  font-size: 15px;
+  font-weight: 800;
+  color: var(--text-main);
+  border-bottom: 2px solid var(--primary-accent);
+  background: #fdfdfd;
+}
+
+/* Rows */
+.row {
+  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+  transition: background 0.2s ease;
+}
+
+.row:hover td {
+  background: rgba(255, 179, 0, 0.05);
+}
+
+/* Cells */
+.tdLeft {
+  padding: 16px 20px;
+  background: #fff;
+}
+
+.tdCenter {
+  text-align: center;
+  padding: 16px 20px;
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--text-main);
+  background: #fff;
+  transition: background 0.3s;
+}
+
+.boldText {
+  font-size: 18px;
+  font-weight: 800;
+}
+
+/* Иконки метрик */
+.metricLabelWrap {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--text-main);
+}
+
+.metricIcon {
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.1rem;
+}
+
+/* Подсветка активной колонки */
+.highlightCol {
+  background: rgba(255, 179, 0, 0.1) !important;
+  font-weight: 800;
+}

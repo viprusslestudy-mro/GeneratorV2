@@ -13,10 +13,12 @@ export const useRetentionStore = create(
       // ═══════════════════════════════════════════════════════════════
       // STATE
       // ═══════════════════════════════════════════════════════════════
-      data: null,
+      data: null, // Retention Data
+      supportData: null, // Support Data
       loading: false,
       error: null,
       selectedPeriod: null,
+      selectedSupportPeriod: null, // Отдельно для Support
       
       // Настройки проекта
       projectSettings: {
@@ -32,25 +34,31 @@ export const useRetentionStore = create(
         set({ loading: true, error: null });
         
         try {
-          const data = await retentionApi.getReport();
-          console.log('[Store] Data loaded:', data);
+          // Загружаем Retention и Support параллельно!
+          const [retentionData, supportData] = await Promise.all([
+            retentionApi.getReport(),
+            retentionApi.getSupportReport()
+          ]);
           
-          // Выбираем последний период по умолчанию
-          const lastPeriod = data.periods?.[data.periods.length - 1]?.key || null;
+          console.log('[Store] Retention loaded:', retentionData);
+          console.log('[Store] Support loaded:', supportData);
+          
+          // Дефолтные периоды
+          const lastRetentionPeriod = retentionData.periods?.[retentionData.periods.length - 1]?.key || null;
+          const lastSupportPeriod = supportData.availablePeriods?.[supportData.availablePeriods.length - 1]?.key || null;
           
           set({ 
-            data, 
+            data: retentionData, 
+            supportData: supportData,
             loading: false,
-            selectedPeriod: lastPeriod
+            // Если периоды еще не были выбраны (из persist), ставим дефолтные
+            selectedPeriod: get().selectedPeriod || lastRetentionPeriod,
+            selectedSupportPeriod: get().selectedSupportPeriod || lastSupportPeriod
           });
           
-          console.log('[Store] Selected period:', lastPeriod);
         } catch (error) {
           console.error('[Store] Error:', error);
-          set({ 
-            error: error.message, 
-            loading: false 
-          });
+          set({ error: error.message, loading: false });
         }
       },
 
@@ -58,20 +66,24 @@ export const useRetentionStore = create(
         console.log('[Store] Setting period:', periodKey);
         set({ selectedPeriod: periodKey });
       },
+      setSupportPeriod: (periodKey) => set({ selectedSupportPeriod: periodKey }),
 
       reset: () => {
         set({
           data: null,
+          supportData: null,
           loading: false,
           error: null,
-          selectedPeriod: null
+          selectedPeriod: null,
+          selectedSupportPeriod: null
         });
       }
     }),
     {
       name: 'retention-store',
       partialize: (state) => ({
-        selectedPeriod: state.selectedPeriod
+        selectedPeriod: state.selectedPeriod,
+        selectedSupportPeriod: state.selectedSupportPeriod
       })
     }
   )
@@ -92,94 +104,10 @@ export const selectUI = (state) => state.data?.ui || { financeTabs: {}, channelT
 
 export const selectFinanceTabs = (state) => state.data?.ui?.financeTabs || {};
 
-// ═══════════════════════════════════════════════════════════════
-// HELPER FUNCTIONS (для использования внутри компонентов)
-// ═══════════════════════════════════════════════════════════════
+// Селекторы для Support
+export const selectSupportPeriods = (state) => state.supportData?.availablePeriods || [];
 
-/**
- * Получить значение карточки для периода
- */
-export const getCardValue = (state, periodIndex, cardId) => {
-  if (!state.data || periodIndex < 0 || periodIndex >= state.data.periods.length) {
-    return null;
-  }
-  
-  const period = state.data.periods[periodIndex];
-  if (!period || period.enabled === false) return null;
-  
-  const card = (period.cards || []).find(c => c && c.id === cardId);
-  return card ? card.value : null;
-};
-
-/**
- * Получить diff карточки для периода
- */
-export const getCardDiff = (state, periodIndex, cardId) => {
-  if (!state.data || periodIndex < 0 || periodIndex >= state.data.periods.length) {
-    return '';
-  }
-  
-  const period = state.data.periods[periodIndex];
-  if (!period || period.enabled === false) return '';
-  
-  const card = (period.cards || []).find(c => c && c.id === cardId);
-  return card ? (card.diff || '') : '';
-};
-
-/**
- * Получить данные метрики по всем периодам
- */
-export const getDataByMetric = (state, metricId) => {
-  if (!state.data || !state.data.periods) return [];
-  
-  return state.data.periods.map((period, i) => {
-    if (!period || period.enabled === false) return null;
-    const card = (period.cards || []).find(c => c && c.id === metricId);
-    return card ? card.value : null;
-  });
-};
-
-/**
- * Получить diff метрики по всем периодам
- */
-export const getDiffsByMetric = (state, metricId) => {
-  if (!state.data || !state.data.periods) return [];
-  
-  return state.data.periods.map((period, i) => {
-    if (!period || period.enabled === false) return '';
-    const card = (period.cards || []).find(c => c && c.id === metricId);
-    return card ? (card.diff || '') : '';
-  });
-};
-
-/**
- * Проверить наличие метрики в данных
- */
-export const hasFinanceMetric = (state, metricId) => {
-  if (!state.data || !metricId) return false;
-  
-  return state.data.periods.some(p => {
-    if (!p || !p.hasFinance) return false;
-    return (p.cards || []).some(c => 
-      c && c.id === metricId && c.value !== null && c.value !== undefined
-    );
-  });
-};
-
-/**
- * Получить метки месяцев (сокращённые)
- */
-export const getMonthLabels = (state) => {
-  if (!state.data || !state.data.periods) return [];
-  
-  return state.data.periods.map(p => {
-    const label = p.label || '';
-    const parts = label.split(' ');
-    
-    if (parts.length >= 2) {
-      return `${parts[0].substring(0, 3)} ${parts[1].substring(2)}`;
-    }
-    
-    return label.substring(0, 3);
-  });
+export const selectCurrentSupportPeriod = (state) => {
+  if (!state.supportData || !state.selectedSupportPeriod) return null;
+  return state.supportData.availablePeriods.find(p => p.key === state.selectedSupportPeriod) || null;
 };
