@@ -1,3 +1,8 @@
+/**
+ * ═══════════════════════════════════════════════════════════════════════════
+ *  usePeriodFilter.js - Hook для работы с выбором периода
+ * ═══════════════════════════════════════════════════════════════════════════
+ */
 import { useRetentionStore, selectPeriods, selectCurrentPeriod } from '../store/retentionStore';
 
 /**

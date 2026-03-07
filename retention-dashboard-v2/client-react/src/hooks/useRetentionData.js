@@ -1,3 +1,8 @@
+/**
+ * ═══════════════════════════════════════════════════════════════════════════
+ *  useRetentionData.js - Главный hook для работы с Retention данными
+ * ═══════════════════════════════════════════════════════════════════════════
+ */
 import { useEffect } from 'react';
 import { useRetentionStore } from '../store/retentionStore';
 

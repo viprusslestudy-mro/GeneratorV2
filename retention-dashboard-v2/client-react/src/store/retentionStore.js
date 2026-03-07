@@ -1,3 +1,8 @@
+/**
+ * ═══════════════════════════════════════════════════════════════════════════
+ *  retentionStore.js - Store для управления данными Retention
+ * ═══════════════════════════════════════════════════════════════════════════
+ */
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import { retentionApi } from '../api/retentionApi';
