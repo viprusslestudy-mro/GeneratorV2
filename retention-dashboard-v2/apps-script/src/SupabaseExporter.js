@@ -57,4 +57,4 @@ function exportRetentionToSupabase() {
   } catch (e) {
     Logger.log('[Supabase] ❌ Ошибка: ' + e.message);
   }
-}.
+}
