@@ -1,0 +1,105 @@
+/**
+ * ═══════════════════════════════════════════════════════════════════════════
+ *  METRIC CARD - KPI карточка в стиле оригинального дизайна
+ * ═══════════════════════════════════════════════════════════════════════════
+ */
+
+.metric {
+  background: var(--card-bg);
+  backdrop-filter: blur(10px);
+  border-radius: var(--card-radius);
+  padding: var(--card-padding);
+  text-align: center;
+  box-shadow: var(--card-shadow);
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  transition: var(--transition-normal);
+  cursor: pointer;
+}
+
+.metric:hover {
+  transform: translateY(-8px);
+  box-shadow: 0 12px 48px rgba(103, 58, 183, 0.15);
+  border-color: var(--primary-accent);
+}
+
+.metric.disabled {
+  opacity: 0.5;
+  pointer-events: none;
+}
+
+/* ═══ HEADER ═══ */
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--spacing-sm);
+  margin-bottom: var(--spacing-sm);
+}
+
+.icon {
+  font-size: 1.8rem;
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.1));
+}
+
+/* ═══ CONTENT ═══ */
+.content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.title {
+  font-size: var(--font-size-sm);
+  color: var(--text-secondary);
+  font-weight: 600;
+  margin-bottom: var(--spacing-sm);
+}
+
+.value {
+  font-size: var(--font-size-2xl);
+  font-weight: 800;
+  margin-bottom: var(--spacing-md);
+  letter-spacing: -1px;
+  color: var(--text-main);
+}
+
+/* ═══ DIFF (ИЗМЕНЕНИЕ) ═══ */
+.diff {
+  font-size: var(--font-size-sm);
+  padding: 6px 14px;
+  border-radius: 12px;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-weight: 700;
+}
+
+.diff.positive {
+  background: var(--green-bg);
+  color: var(--green);
+}
+
+.diff.positive::before {
+  content: '▲';
+  font-size: 10px;
+}
+
+.diff.negative {
+  background: var(--red-bg);
+  color: var(--red);
+}
+
+.diff.negative::before {
+  content: '▼';
+  font-size: 10px;
+}
+
+.diff.neutral {
+  background: var(--primary-accent);
+  color: #000;
+}
+
+.diff.base {
+  background: var(--gray-bg);
+  color: var(--gray);
+}

@@ -1,4 +1,4 @@
-import { useRetentionStore } from '../store/retentionStore';
+import { useRetentionStore, selectPeriods, selectCurrentPeriod } from '../store/retentionStore';
 
 /**
  * Hook для работы с выбором периода
@@ -6,13 +6,13 @@ import { useRetentionStore } from '../store/retentionStore';
 export function usePeriodFilter() {
   const selectedPeriod = useRetentionStore((state) => state.selectedPeriod);
   const setPeriod = useRetentionStore((state) => state.setPeriod);
-  const periods = useRetentionStore((state) => state.periods);
-  const currentPeriod = useRetentionStore((state) => state.currentPeriod);
+  const periods = useRetentionStore(selectPeriods);
+  const currentPeriodData = useRetentionStore(selectCurrentPeriod);
 
   return {
     selectedPeriod,
     setPeriod,
     periods,
-    currentPeriodData: currentPeriod
+    currentPeriodData
   };
 }

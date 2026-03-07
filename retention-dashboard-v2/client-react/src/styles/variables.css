@@ -1,0 +1,75 @@
+/**
+ * ═══════════════════════════════════════════════════════════════════════════
+ *  variables.css CSS ПЕРЕМЕННЫЕ - Из оригинального дизайна Retention Dashboard
+ * ═══════════════════════════════════════════════════════════════════════════
+ */
+
+:root {
+  /* ═══ ОСНОВНЫЕ ЦВЕТА ═══ */
+  --bg-start: #f4f0ff;
+  --bg-end: #e8e2ff;
+  --primary-accent: #ffb300;
+  --text-main: #1a1a1a;
+  --text-secondary: #666666;
+  
+  /* ═══ КАРТОЧКИ ═══ */
+  --card-bg: rgba(255, 255, 255, 0.85);
+  --card-shadow: 0 8px 32px rgba(103, 58, 183, 0.08);
+  --card-radius: 24px;
+  --card-padding: 24px;
+  
+  /* ═══ ЦВЕТА ИЗМЕНЕНИЙ ═══ */
+  --green: #2e7d32;
+  --green-bg: rgba(46, 125, 50, 0.15);
+  --red: #c62828;
+  --red-bg: rgba(198, 40, 40, 0.15);
+  --gray: #757575;
+  --gray-bg: #f5f5f5;
+  
+  /* ═══ ДОПОЛНИТЕЛЬНЫЕ ЦВЕТА ═══ */
+  --purple: #9c27b0;
+  --cyan: #00bcd4;
+  --orange: #ff9800;
+  --blue: #2196f3;
+  
+  /* ═══ ГРАДИЕНТЫ ═══ */
+  --gradient-primary: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  --gradient-accent: linear-gradient(135deg, var(--primary-accent) 0%, #ffc107 100%);
+  --gradient-bg: linear-gradient(135deg, var(--bg-start) 0%, var(--bg-end) 100%);
+  
+  /* ═══ ТИПОГРАФИКА ═══ */
+  --font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --font-size-xs: 0.75rem;
+  --font-size-sm: 0.875rem;
+  --font-size-md: 1rem;
+  --font-size-lg: 1.25rem;
+  --font-size-xl: 1.5rem;
+  --font-size-2xl: 2rem;
+  --font-size-3xl: 2.5rem;
+  
+  /* ═══ SPACING ═══ */
+  --spacing-xs: 4px;
+  --spacing-sm: 8px;
+  --spacing-md: 16px;
+  --spacing-lg: 24px;
+  --spacing-xl: 32px;
+  --spacing-2xl: 48px;
+  
+  /* ═══ TRANSITIONS ═══ */
+  --transition-fast: 0.2s ease;
+  --transition-normal: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-slow: 0.5s ease;
+  
+  /* ═══ Z-INDEX ═══ */
+  --z-sidebar: 100;
+  --z-header: 50;
+  --z-modal: 1000;
+  --z-tooltip: 1100;
+
+  /* ═══ SIDEBAR СВЕТЛЫЙ ═══ */
+  --sidebar-bg: linear-gradient(180deg, #f8f9fc 0%, #f0f2f8 100%);
+  --sidebar-border: rgba(0, 0, 0, 0.06);
+  --sidebar-item-hover: rgba(103, 58, 183, 0.05);
+  --sidebar-item-active-bg: white;
+  --sidebar-item-active-border: rgba(103, 58, 183, 0.15);
+}

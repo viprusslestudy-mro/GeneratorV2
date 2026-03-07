@@ -5,8 +5,8 @@
 
 class GASApi {
   constructor() {
-    this.isDevelopment = import.meta.env.VITE_DEV_MODE === 'true';
-    this.useMocks = import.meta.env.VITE_MOCK_API === 'true';
+    // Упрощённая логика: если DEV режим — используем моки
+    this.isDevelopment = import.meta.env.DEV; // Vite встроенная переменная
   }
 
   /**
@@ -16,12 +16,14 @@ class GASApi {
    * @returns {Promise}
    */
   async call(functionName, ...args) {
-    if (this.isDevelopment && this.useMocks) {
+    // В DEV режиме ВСЕГДА используем моки
+    if (this.isDevelopment) {
+      console.log(`[DEV MODE] Using mock for ${functionName}`);
       return this.mockCall(functionName, ...args);
     }
 
+    // В production используем реальный API
     return new Promise((resolve, reject) => {
-      // Проверяем наличие google.script.run
       if (typeof google === 'undefined' || !google.script) {
         reject(new Error('google.script.run недоступен. Запустите в Google Apps Script.'));
         return;
@@ -47,20 +49,15 @@ class GASApi {
     try {
       const response = await fetch(`/mocks/${functionName}.json`);
       if (!response.ok) {
-        throw new Error(`Mock not found: ${functionName}`);
+        throw new Error(`Mock not found: ${functionName}.json`);
       }
-      return response.json();
+      const data = await response.json();
+      console.log(`[MOCK] Loaded ${functionName}:`, data);
+      return data;
     } catch (error) {
       console.error(`[MOCK ERROR] ${functionName}:`, error);
       throw error;
     }
-  }
-
-  /**
-   * Инвалидация кэша (для force refresh)
-   */
-  clearCache() {
-    // Можно добавить кэширование позже
   }
 }
 

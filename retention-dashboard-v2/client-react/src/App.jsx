@@ -1,35 +1,52 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
+/*
+ * ═══════════════════════════════════════════════════════════════════════════
+ *  App.jsx - Главный компонент React приложения Retention Dashboard
+ * ═══════════════════════════════════════════════════════════════════════════
+ */
+import { useRetentionData } from './hooks/useRetentionData';
+import { Loader } from './components/shared/Loader/Loader';
+import { Sidebar } from './components/shared/Sidebar/Sidebar';
+import { FinanceDashboard } from './components/finance/FinanceDashboard';
+import './App.css';
 
-function App() {
-  const [count, setCount] = useState(0)
+export default function App() {
+  const { data, loading, error } = useRetentionData();
 
-  return (
-    <>
-      <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
+  // Состояние загрузки
+  if (loading) {
+    return <Loader message="Загрузка данных из Google Sheets..." />;
+  }
+
+  // Состояние ошибки
+  if (error) {
+    return (
+      <div className="error-container">
+        <h2>❌ Ошибка загрузки</h2>
+        <p>{error}</p>
+        <button onClick={() => window.location.reload()}>
+          🔄 Попробовать снова
         </button>
-        <p>
-          Edit <code>src/App.jsx</code> and save to test HMR
-        </p>
       </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
-  )
-}
+    );
+  }
 
-export default App
+  // Нет данных
+  if (!data) {
+    return (
+      <div className="error-container">
+        <h2>📭 Нет данных</h2>
+        <p>Проверьте настройки Google Sheets</p>
+      </div>
+    );
+  }
+
+  // Успешная загрузка — показываем Dashboard с Sidebar
+  return (
+    <div className="app">
+      <Sidebar />
+      <main className="main-content">
+        <FinanceDashboard />
+      </main>
+    </div>
+  );
+}

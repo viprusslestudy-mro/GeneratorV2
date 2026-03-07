@@ -7,72 +7,75 @@ export const useRetentionStore = create(
     (set, get) => ({
       // ═══════════════════════════════════════════════════════════════
       // STATE
-      // ═════════════════════════════════════════════════════════════
+      // ═══════════════════════════════════════════════════════════════
       data: null,
       loading: false,
       error: null,
       selectedPeriod: null,
 
-      // ═════════════════════════════════════════════════════════════
+      // ═══════════════════════════════════════════════════════════════
       // ACTIONS
-      // ═════════════════════════════════════════════════════════════
-      async fetchData() {
+      // ═══════════════════════════════════════════════════════════════
+      fetchData: async () => {
         set({ loading: true, error: null });
         
         try {
           const data = await retentionApi.getReport();
+          console.log('[Store] Data loaded:', data);
+          
+          // Выбираем последний период по умолчанию
+          const lastPeriod = data.periods?.[data.periods.length - 1]?.key || null;
           
           set({ 
             data, 
             loading: false,
-            // Выбираем последний период по умолчанию
-            selectedPeriod: data.periods[data.periods.length - 1]?.key || null
+            selectedPeriod: lastPeriod
           });
+          
+          console.log('[Store] Selected period:', lastPeriod);
         } catch (error) {
+          console.error('[Store] Error:', error);
           set({ 
             error: error.message, 
             loading: false 
           });
-          console.error('[retentionStore] fetchData error:', error);
         }
       },
 
-      setPeriod(periodKey) {
+      setPeriod: (periodKey) => {
+        console.log('[Store] Setting period:', periodKey);
         set({ selectedPeriod: periodKey });
       },
 
-      reset() {
+      reset: () => {
         set({
           data: null,
           loading: false,
           error: null,
           selectedPeriod: null
         });
-      },
-
-      // ═══════════════════════════════════════════════════════════════
-      // COMPUTED VALUES (getters)
-      // ═════════════════════════════════════════════════════════════
-      get periods() {
-        return get().data?.periods || [];
-      },
-
-      get currentPeriod() {
-        const { data, selectedPeriod } = get();
-        if (!data || !selectedPeriod) return null;
-        return data.periods.find(p => p.key === selectedPeriod) || null;
-      },
-
-      get ui() {
-        return get().data?.ui || { financeTabs: {}, channelTabs: {} };
       }
     }),
     {
       name: 'retention-store',
-      // Сохраняем только выбранный период
       partialize: (state) => ({
         selectedPeriod: state.selectedPeriod
       })
     }
   )
 );
+
+// ═══════════════════════════════════════════════════════════════
+// СЕЛЕКТОРЫ (отдельные функции для получения данных)
+// ═══════════════════════════════════════════════════════════════
+
+export const selectPeriods = (state) => state.data?.periods || [];
+
+export const selectCurrentPeriod = (state) => {
+  if (!state.data || !state.selectedPeriod) return null;
+  return state.data.periods.find(p => p.key === state.selectedPeriod) || null;
+};
+
+export const selectUI = (state) => state.data?.ui || { financeTabs: {}, channelTabs: {} };
+
+export const selectFinanceTabs = (state) => state.data?.ui?.financeTabs || {};

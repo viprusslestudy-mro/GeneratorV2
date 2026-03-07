@@ -1,0 +1,39 @@
+/**
+ * ═══════════════════════════════════════════════════════════════════════════
+ *  LOADER - Спиннер в стиле оригинала
+ * ═══════════════════════════════════════════════════════════════════════════
+ */
+
+.loaderContainer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  padding: var(--spacing-xl);
+  text-align: center;
+  background: var(--gradient-bg);
+}
+
+.spinner {
+  width: 60px;
+  height: 60px;
+  border: 4px solid rgba(103, 58, 183, 0.1);
+  border-top: 4px solid var(--primary-accent);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin-bottom: var(--spacing-lg);
+  box-shadow: 0 4px 16px rgba(255, 179, 0, 0.2);
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.message {
+  font-size: var(--font-size-lg);
+  color: var(--text-secondary);
+  font-weight: 600;
+  margin: 0;
+}

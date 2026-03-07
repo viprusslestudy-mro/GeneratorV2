@@ -1,0 +1,35 @@
+/**
+ * ═══════════════════════════════════════════════════════════════════════════
+ *  CARD - Базовая карточка в стиле оригинального дизайна
+ * ═══════════════════════════════════════════════════════════════════════════
+ */
+
+.card {
+  background: var(--card-bg);
+  backdrop-filter: blur(10px);
+  border-radius: var(--card-radius);
+  padding: var(--card-padding);
+  box-shadow: var(--card-shadow);
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  transition: var(--transition-normal);
+}
+
+.card:hover {
+  box-shadow: 0 12px 48px rgba(103, 58, 183, 0.12);
+}
+
+.title {
+  font-size: var(--font-size-lg);
+  font-weight: 800;
+  margin-bottom: var(--spacing-lg);
+  color: var(--text-main);
+  border-bottom: 2px solid var(--primary-accent);
+  padding-bottom: var(--spacing-md);
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+}
+
+.content {
+  color: inherit;
+}
