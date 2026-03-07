@@ -1,6 +1,6 @@
 /**
  * ═══════════════════════════════════════════════════════════════════════════
- *  FinanceDashboard - Стили главного дашборда
+ *  ChannelsDashboard - Стили дашборда каналов
  * ═══════════════════════════════════════════════════════════════════════════
  */
 
@@ -29,6 +29,18 @@
   flex-wrap: wrap;
 }
 
+.headerIcon {
+  font-size: var(--font-size-3xl);
+  margin-right: var(--spacing-sm);
+  display: inline-block;
+  vertical-align: middle;
+}
+
+.headerTitle {
+  display: inline-block;
+  vertical-align: middle;
+}
+
 .periodBadge {
   font-size: var(--font-size-md);
   font-weight: 700;
@@ -46,65 +58,11 @@
   gap: var(--spacing-lg);
 }
 
-@media (max-width: 1400px) {
-  .kpiGrid {
-    grid-template-columns: repeat(3, 1fr);
-  }
-}
-
-@media (max-width: 1024px) {
-  .kpiGrid {
-    grid-template-columns: repeat(2, 1fr);
-  }
-}
-
-@media (max-width: 640px) {
-  .kpiGrid {
-    grid-template-columns: 1fr;
-  }
-}
-
 /* ═══ CHARTS ROW ═══ */
 .chartsRow {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
   gap: var(--spacing-lg);
-}
-
-@media (max-width: 1200px) {
-  .chartsRow {
-    grid-template-columns: 1fr;
-  }
-}
-
-/* ═══ INFO SECTION ═══ */
-.info {
-  font-size: var(--font-size-md);
-  line-height: 1.8;
-}
-
-.infoRow {
-  display: flex;
-  justify-content: space-between;
-  padding: var(--spacing-md) 0;
-  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
-}
-
-.infoRow:last-child {
-  border-bottom: none;
-}
-
-.infoLabel {
-  color: var(--text-secondary);
-  font-weight: 600;
-  display: flex;
-  align-items: center;
-  gap: var(--spacing-sm);
-}
-
-.infoValue {
-  color: var(--text-main);
-  font-weight: 700;
 }
 
 /* ═══ EMPTY STATE ═══ */
@@ -119,6 +77,24 @@
 }
 
 /* ═══ RESPONSIVE ═══ */
+@media (max-width: 1400px) {
+  .kpiGrid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 1200px) {
+  .chartsRow {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 640px) {
+  .kpiGrid {
+    grid-template-columns: 1fr;
+  }
+}
+
 @media (max-width: 768px) {
   .dashboard {
     padding: 15px;
@@ -131,17 +107,4 @@
   .periodBadge {
     font-size: var(--font-size-sm);
   }
-}
-
-/* ═══ HEADER ICON ═══ */
-.headerIcon {
-  font-size: var(--font-size-3xl);
-  margin-right: var(--spacing-sm);
-  display: inline-block;
-  vertical-align: middle;
-}
-
-.headerTitle {
-  display: inline-block;
-  vertical-align: middle;
 }

@@ -1,0 +1,110 @@
+/**
+ * ═══════════════════════════════════════════════════════════════════════════
+ *  DoughnutChart - Стили круговой диаграммы
+ * ═══════════════════════════════════════════════════════════════════════════
+ */
+
+.container {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md);
+}
+
+.header {
+  margin-bottom: var(--spacing-sm);
+}
+
+.title {
+  font-size: var(--font-size-lg);
+  font-weight: 800;
+  color: var(--text-main);
+  margin-bottom: 4px;
+}
+
+.subtitle {
+  font-size: var(--font-size-sm);
+  color: var(--text-secondary);
+  font-weight: 600;
+}
+
+.chartWrapper {
+  min-height: 380px;
+}
+
+/* ═══ CENTER LABEL ═══ */
+.centerLabel {
+  font-size: 1.8rem;
+  font-weight: 800;
+  fill: var(--text-main);
+}
+
+.centerSubLabel {
+  font-size: 0.9rem;
+  font-weight: 600;
+  fill: var(--text-secondary);
+}
+
+/* ═══ TOOLTIP ═══ */
+.tooltip {
+  background: rgba(0, 0, 0, 0.9);
+  padding: 14px 18px;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+.tooltipLabel {
+  font-size: 1.125rem;
+  font-weight: 800;
+  color: white;
+  margin-bottom: 6px;
+}
+
+.tooltipValue {
+  font-size: 1rem;
+  font-weight: 700;
+  color: white;
+}
+
+/* ═══ LEGEND ═══ */
+.legend {
+  display: flex;
+  justify-content: center;
+  gap: var(--spacing-lg);
+  padding: var(--spacing-md);
+  background: rgba(0, 0, 0, 0.02);
+  border-radius: 20px;
+  margin-top: var(--spacing-md);
+}
+
+.legendItem {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 13px;
+  font-weight: 700;
+  padding: 10px 18px;
+  background: white;
+  border: 1px solid rgba(0, 0, 0, 0.05);
+  border-radius: 40px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+  cursor: pointer;
+  transition: var(--transition-normal);
+}
+
+.legendItem:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.1);
+}
+
+.legendDot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+}
+
+.legendValue {
+  font-weight: 800;
+  opacity: 0.8;
+  padding-left: 8px;
+  border-left: 1px solid rgba(0, 0, 0, 0.1);
+}

@@ -1,0 +1,169 @@
+/**
+ * ═══════════════════════════════════════════════════════════════════════════
+ *  FinanceChart - Стили Line Chart (Deposits & Profit)
+ * ═══════════════════════════════════════════════════════════════════════════
+ */
+
+.chartContainer {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md);
+}
+
+/* ═══ ЗАГОЛОВОК И СЕЛЕКТОР ═══ */
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: var(--spacing-md);
+  padding-bottom: var(--spacing-md);
+  border-bottom: 2px solid rgba(0, 0, 0, 0.05);
+}
+
+.titleBlock {
+  flex: 1;
+}
+
+.title {
+  font-size: var(--font-size-xl);
+  font-weight: 800;
+  color: var(--text-main);
+  margin: 0 0 6px 0;
+}
+
+.subtitle {
+  font-size: var(--font-size-sm);
+  color: var(--text-secondary);
+  margin: 0;
+  font-weight: 600;
+}
+
+.metricSelector {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+}
+
+.selectorLabel {
+  font-size: var(--font-size-sm);
+  font-weight: 700;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.select {
+  padding: 10px 18px;
+  border: 2px solid rgba(0, 0, 0, 0.1);
+  border-radius: 12px;
+  background: rgba(255, 179, 0, 0.08);
+  font-size: var(--font-size-md);
+  font-weight: 700;
+  color: var(--text-main);
+  cursor: pointer;
+  transition: var(--transition-normal);
+  font-family: inherit;
+  outline: none;
+}
+
+.select:hover {
+  border-color: var(--primary-accent);
+  background: rgba(255, 179, 0, 0.15);
+}
+
+.select:focus {
+  border-color: var(--primary-accent);
+  box-shadow: 0 0 0 3px rgba(255, 179, 0, 0.1);
+}
+
+/* ═══ ОБЛАСТЬ ГРАФИКА ═══ */
+.chartWrapper {
+  min-height: 380px;
+}
+
+/* ═══ КАСТОМНАЯ ЛЕГЕНДА ═══ */
+.customLegend {
+  display: flex;
+  justify-content: center;
+  gap: var(--spacing-lg);
+  padding: var(--spacing-md);
+  background: rgba(0, 0, 0, 0.02);
+  border-radius: 20px;
+  margin-top: var(--spacing-md);
+}
+
+.legendItem {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 13px;
+  font-weight: 700;
+  padding: 10px 18px;
+  background: white;
+  border: 1px solid rgba(0, 0, 0, 0.05);
+  border-radius: 40px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+  cursor: pointer;
+  transition: var(--transition-normal);
+}
+
+.legendItem:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.1);
+}
+
+.legendDot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+}
+
+.legendValue {
+  font-weight: 800;
+  opacity: 0.8;
+  padding-left: 8px;
+  border-left: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+/* ═══ КАСТОМНЫЙ TOOLTIP ═══ */
+.tooltip {
+  background: white;
+  padding: 14px 18px;
+  border-radius: 12px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+  border: 2px solid var(--primary-accent);
+}
+
+.tooltipLabel {
+  font-size: var(--font-size-sm);
+  font-weight: 700;
+  color: var(--text-secondary);
+  margin-bottom: 6px;
+}
+
+.tooltipValue {
+  font-size: var(--font-size-md);
+  font-weight: 700;
+  margin-bottom: 2px;
+}
+
+/* ═══ АДАПТИВ ═══ */
+@media (max-width: 768px) {
+  .header {
+    flex-direction: column;
+    gap: var(--spacing-md);
+  }
+
+  .metricSelector {
+    width: 100%;
+  }
+
+  .select {
+    flex: 1;
+  }
+
+  .customLegend {
+    flex-direction: column;
+    gap: var(--spacing-sm);
+  }
+}

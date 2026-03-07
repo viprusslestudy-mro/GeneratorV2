@@ -1,0 +1,251 @@
+/**
+ * ═══════════════════════════════════════════════════════════════════════════
+ *  GrowthAnalysis - Стили анализа роста
+ * ═══════════════════════════════════════════════════════════════════════════
+ */
+
+.container {
+  display: grid;
+  grid-template-columns: 320px 1fr;
+  gap: var(--spacing-lg);
+  min-height: 500px;
+}
+
+/* ═══ SIDEBAR ═══ */
+.sidebar {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md);
+  background: rgba(0, 0, 0, 0.02);
+  border-radius: 20px;
+  padding: var(--spacing-lg);
+}
+
+.showAllBtn {
+  width: 100%;
+  padding: 14px 20px;
+  background: linear-gradient(135deg, var(--primary-accent) 0%, #ffc107 100%);
+  border: none;
+  border-radius: 14px;
+  font-weight: 800;
+  font-size: var(--font-size-md);
+  color: #000;
+  cursor: pointer;
+  transition: var(--transition-normal);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  box-shadow: 0 4px 16px rgba(255, 179, 0, 0.3);
+  font-family: inherit;
+}
+
+.showAllBtn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 24px rgba(255, 179, 0, 0.4);
+}
+
+.showAllBtn.active {
+  background: linear-gradient(135deg, #ff9800 0%, #f57c00 100%);
+}
+
+.metricsList {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm);
+  overflow-y: auto;
+  padding-right: var(--spacing-sm);
+}
+
+.metricItem {
+  background: white;
+  border-radius: 14px;
+  padding: 14px 16px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  cursor: pointer;
+  transition: var(--transition-normal);
+  border: 2px solid transparent;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+}
+
+.metricItem:hover {
+  transform: translateX(4px);
+  border-color: rgba(255, 179, 0, 0.3);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+.metricItem.active {
+  border-color: var(--primary-accent);
+  background: linear-gradient(135deg, #fffef5 0%, #fff8e1 100%);
+  box-shadow: 0 6px 20px rgba(255, 179, 0, 0.2);
+}
+
+.metricInfo {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.metricLabel {
+  font-size: var(--font-size-sm);
+  font-weight: 700;
+  color: var(--text-secondary);
+}
+
+.metricValue {
+  font-size: var(--font-size-lg);
+  font-weight: 800;
+  color: var(--text-main);
+}
+
+.sparklineWrapper {
+  width: 80px;
+  height: 40px;
+}
+
+/* ═══ DETAIL CHART ═══ */
+.detailChart {
+  display: flex;
+  flex-direction: column;
+}
+
+.detailHeader {
+  margin-bottom: var(--spacing-lg);
+}
+
+.detailTitle {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  font-size: var(--font-size-xl);
+  font-weight: 800;
+  color: var(--text-main);
+  margin-bottom: var(--spacing-sm);
+}
+
+.detailEmoji {
+  font-size: 1.5rem;
+}
+
+.detailName {
+  color: var(--text-main);
+}
+
+.detailSuffix {
+  color: var(--text-secondary);
+  font-weight: 600;
+}
+
+.submetricSelector {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  margin-bottom: var(--spacing-sm);
+}
+
+.submetricLabel {
+  font-size: var(--font-size-sm);
+  font-weight: 700;
+  color: var(--text-secondary);
+}
+
+.submetricSelect {
+  padding: 8px 16px;
+  border: 2px solid rgba(0, 0, 0, 0.1);
+  border-radius: 10px;
+  background: rgba(255, 179, 0, 0.08);
+  font-size: var(--font-size-sm);
+  font-weight: 700;
+  color: var(--text-main);
+  cursor: pointer;
+  transition: var(--transition-normal);
+  font-family: inherit;
+  outline: none;
+}
+
+.submetricSelect:hover {
+  border-color: var(--primary-accent);
+}
+
+.submetricSelect:focus {
+  border-color: var(--primary-accent);
+  box-shadow: 0 0 0 3px rgba(255, 179, 0, 0.1);
+}
+
+.submetricSelect:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.detailSubtitle {
+  font-size: var(--font-size-sm);
+  color: var(--text-secondary);
+  font-weight: 600;
+  margin: 0;
+}
+
+.chartWrapper {
+  flex: 1;
+  min-height: 400px;
+}
+
+/* ═══ TOOLTIP ═══ */
+.tooltip {
+  background: white;
+  padding: 14px 18px;
+  border-radius: 12px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+  border: 2px solid rgba(0, 0, 0, 0.1);
+}
+
+.tooltipLabel {
+  font-size: var(--font-size-md);
+  font-weight: 800;
+  color: var(--text-main);
+  margin-bottom: 6px;
+}
+
+.tooltipValue {
+  font-size: var(--font-size-lg);
+  font-weight: 700;
+  color: var(--text-main);
+}
+
+/* ═══ EMPTY STATE ═══ */
+.empty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 300px;
+  font-size: var(--font-size-xl);
+  color: var(--text-secondary);
+  font-weight: 600;
+}
+
+/* ═══ RESPONSIVE ═══ */
+@media (max-width: 1200px) {
+  .container {
+    grid-template-columns: 1fr;
+  }
+
+  .sidebar {
+    flex-direction: row;
+    flex-wrap: wrap;
+  }
+
+  .showAllBtn {
+    flex: 0 0 auto;
+  }
+
+  .metricsList {
+    flex-direction: row;
+    overflow-x: auto;
+    gap: var(--spacing-md);
+  }
+
+  .metricItem {
+    min-width: 200px;
+    flex-shrink: 0;
+  }
+}

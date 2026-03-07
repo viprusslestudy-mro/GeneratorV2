@@ -1,6 +1,6 @@
 /**
  * ═══════════════════════════════════════════════════════════════════════════
- *  FINANCE TABLE - Таблица метрик в стиле оригинала
+ *  FinanceTable - Стили таблицы с Heatmap
  * ═══════════════════════════════════════════════════════════════════════════
  */
 
@@ -11,6 +11,7 @@
   margin-bottom: var(--spacing-lg);
   border-bottom: 2px solid rgba(0, 0, 0, 0.05);
   overflow-x: auto;
+  padding-bottom: 2px;
 }
 
 .tab {
@@ -51,19 +52,23 @@
   width: 100%;
 }
 
-/* ═══ TABLE ═══ */
+/* ═══ TABLE WRAPPER ═══ */
 .tableWrapper {
   overflow-x: auto;
+  border-radius: 16px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
 }
 
+/* ═══ TABLE ═══ */
 .table {
   width: 100%;
   border-collapse: separate;
   border-spacing: 0;
-  min-width: 600px;
+  min-width: 800px;
 }
 
-.table thead th {
+/* ═══ HEADERS ═══ */
+.metricHeader {
   text-align: left;
   padding: var(--spacing-md) var(--spacing-lg);
   font-size: var(--font-size-sm);
@@ -72,73 +77,176 @@
   text-transform: uppercase;
   letter-spacing: 0.5px;
   border-bottom: 2px solid var(--primary-accent);
-  background: rgba(0, 0, 0, 0.02);
+  background: #fafafa;
+  position: sticky;
+  left: 0;
+  z-index: 15;
+  min-width: 260px;
 }
 
-.table tbody td {
+.periodHeader {
+  text-align: center;
   padding: var(--spacing-md) var(--spacing-lg);
-  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
-  font-size: var(--font-size-md);
+  font-size: var(--font-size-sm);
+  font-weight: 700;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  border-bottom: 2px solid var(--primary-accent);
+  background: #fafafa;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  white-space: nowrap;
 }
 
-.table tbody tr {
+.periodHeader.selectedHeader {
+  background: rgba(255, 179, 0, 0.25);
+  border-left: 3px solid #ff9800;
+  border-right: 3px solid #ff9800;
+  font-weight: 800;
+  color: var(--text-main);
+}
+
+/* ═══ ROWS ═══ */
+.row {
   transition: background var(--transition-fast);
 }
 
-.table tbody tr:hover {
-  background: rgba(255, 179, 0, 0.05);
-}
-
-.table tbody tr.disabled {
-  opacity: 0.5;
-  background: rgba(0, 0, 0, 0.02);
+.row:hover td {
+  background: #fffbeb !important;
 }
 
 /* ═══ CELLS ═══ */
-.icon {
-  margin-right: var(--spacing-sm);
-  font-size: var(--font-size-lg);
-  vertical-align: middle;
-}
-
-.metricTitle {
+.metricCell {
+  text-align: left;
+  padding: var(--spacing-md) var(--spacing-lg);
+  font-size: var(--font-size-md);
   font-weight: 600;
   color: var(--text-main);
+  border-bottom: 1px solid #f0f0f0;
+  position: sticky;
+  left: 0;
+  background: #fff;
+  z-index: 5;
+  min-width: 260px;
+  border-right: 1px solid #eee;
 }
 
-.value {
+.cell {
+  text-align: center;
+  padding: var(--spacing-md) var(--spacing-lg);
+  border-bottom: 1px solid #f0f0f0;
+  transition: background var(--transition-fast);
+}
+
+.cell.selectedCell {
+  border-left: 3px solid #ff9800;
+  border-right: 3px solid #ff9800;
+}
+
+.cellContent {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+}
+
+.cellValue {
+  font-size: var(--font-size-lg);
   font-weight: 700;
   color: var(--text-main);
-  font-variant-numeric: tabular-nums;
 }
 
-.diff {
-  font-weight: 700;
+/* ═══ DIFF BADGES ═══ */
+.cellDiff {
   font-size: var(--font-size-sm);
   padding: 4px 10px;
   border-radius: 8px;
+  font-weight: 700;
   display: inline-block;
 }
 
-.diff.positive {
+.cellDiff.positive {
   color: var(--green);
   background: var(--green-bg);
 }
 
-.diff.negative {
+.cellDiff.negative {
   color: var(--red);
   background: var(--red-bg);
 }
 
-.alignRight {
-  text-align: right;
+.cellDiff.base {
+  color: var(--gray);
+  background: var(--gray-bg);
+}
+
+/* ═══ DISABLED STATE ═══ */
+.disabledLabel {
+  font-size: var(--font-size-xs);
+  font-weight: 700;
+  color: #999;
+  text-transform: uppercase;
+  padding: 4px 12px;
+  background: rgba(0, 0, 0, 0.05);
+  border-radius: 6px;
+  letter-spacing: 0.5px;
 }
 
 /* ═══ EMPTY STATE ═══ */
 .empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
   padding: var(--spacing-2xl) var(--spacing-lg);
   text-align: center;
+  background: linear-gradient(135deg, rgba(158, 158, 158, 0.05) 0%, rgba(117, 117, 117, 0.05) 100%);
+  border: 2px dashed rgba(158, 158, 158, 0.3);
+  border-radius: 12px;
+  min-height: 200px;
+}
+
+.emptyIcon {
+  font-size: 36px;
+  margin-bottom: 12px;
+  opacity: 0.5;
+}
+
+.emptyMessage {
+  font-size: var(--font-size-lg);
+  font-weight: 700;
   color: var(--text-secondary);
-  font-size: var(--font-size-md);
-  font-weight: 600;
+  margin-bottom: 8px;
+}
+
+.emptyHint {
+  font-size: var(--font-size-sm);
+  color: #999;
+  padding: 8px 16px;
+  background: rgba(0, 0, 0, 0.02);
+  border-radius: 6px;
+  max-width: 400px;
+}
+
+/* ═══ RESPONSIVE ═══ */
+@media (max-width: 768px) {
+  .tabs {
+    gap: var(--spacing-md);
+  }
+
+  .tab {
+    padding: var(--spacing-sm) var(--spacing-md);
+    font-size: var(--font-size-sm);
+  }
+
+  .metricHeader,
+  .metricCell {
+    min-width: 180px;
+  }
+
+  .cellValue {
+    font-size: var(--font-size-md);
+  }
 }

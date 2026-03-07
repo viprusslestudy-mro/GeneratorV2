@@ -2756,3 +2756,54 @@ google.script.run is not defined	Используй dev mode с моками (VI
 Стили не применяются	Проверь импорт CSS modules
 Build файл слишком большой	Убедись что viteSingleFile работает
 clasp push ошибка	Проверь .clasp.json, выполни clasp login
+
+10.4 Продолжение без AI
+Если диалог прервётся:
+
+Этап 0-2 — Критичны, выполни полностью
+Этап 3-4 — Скопируй код из примеров выше
+Этап 5 — Finance Dashboard самый важный
+Этап 6 — Channels Dashboard — копия Finance (поменяй только данные)
+Этап 7-8 — Финальная сборка
+Важные файлы для сохранения:
+
+text
+
+📁 retention-dashboard-v2/
+  📁 client-react/
+    📁 src/
+      📁 api/
+        📄 gasApi.js          ← ключевой файл
+        📄 retentionApi.js
+      📁 store/
+        📄 retentionStore.js  ← ключевой файл
+      📁 components/
+        📁 finance/
+          📄 FinanceDashboard.jsx ← начни отсюда
+  📁 apps-script/
+    📁 src/
+      📁 api/
+        📄 RetentionAPI.js    ← ключевой файл
+10.5 Полезные ссылки
+Zustand Docs
+Recharts Examples
+React Router Tutorial
+Vite Plugin Singlefile
+Google Apps Script Docs
+🎯 РЕЗЮМЕ
+Что получим после миграции:
+✅ Быстрый — загрузка в 3-4 секунды вместо 15
+✅ Масштабируемый — легко добавлять новые дашборды
+✅ Поддерживаемый — React компоненты + TypeScript (опционально)
+✅ Современный — актуальный стек технологий
+✅ Тестируемый — можно покрыть тестами
+
+Риски и митигация:
+Риск	Вероятность	Митигация
+Проблемы с clasp	Средняя	Fallback на ручной copy-paste
+Большой размер build	Низкая	viteSingleFile + terser
+Несовместимость браузеров	Низкая	Vite автоматически делает polyfills
+Потеря функционала	Низкая	Поэтапная миграция, старая версия остаётся
+Удачи с миграцией! 🚀
+
+Если возникнут вопросы — этот план содержит 90% ответов. Остальные 10% — гуглить по ссылкам выше.ёёёёёёёёёёёёёёёёёёёёёё

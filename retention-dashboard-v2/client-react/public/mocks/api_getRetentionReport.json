@@ -11,70 +11,18 @@
       "hasFinance": true,
       "hasChannels": true,
       "cards": [
-        {
-          "id": "total_deposits_count",
-          "title": "Тотал кол-во депозитов",
-          "value": 1234,
-          "diff": "+15.5%",
-          "valueFormat": "integer",
-          "icon": "💰",
-          "category": "deposits",
-          "order": 1
-        },
-        {
-          "id": "total_deposits_amount",
-          "title": "Тотал сумма депозитов",
-          "value": 567890,
-          "diff": "+12.3%",
-          "valueFormat": "currency",
-          "icon": "💳",
-          "category": "deposits",
-          "order": 2
-        },
-        {
-          "id": "total_profit",
-          "title": "Тотал профит",
-          "value": 123456,
-          "diff": "+8.9%",
-          "valueFormat": "currency",
-          "icon": "📈",
-          "category": "profit",
-          "order": 3
-        },
-        {
-          "id": "ftd_amount",
-          "title": "Сумма ФТД",
-          "value": 234567,
-          "diff": "+20.1%",
-          "valueFormat": "currency",
-          "icon": "🆕",
-          "category": "deposits",
-          "order": 4
-        }
+        {"id": "total_deposits_count", "title": "Total Deposits Count", "value": 1234, "diff": "+15.5%", "valueFormat": "integer", "icon": "💰", "category": "deposits", "order": 1},
+        {"id": "total_deposits_amount", "title": "Total Deposits Sum", "value": 567890, "diff": "+12.3%", "valueFormat": "currency", "icon": "�", "category": "deposits", "order": 2},
+        {"id": "total_profit", "title": "Total Profit", "value": 123456, "diff": "+8.9%", "valueFormat": "currency", "icon": "📈", "category": "profit", "order": 3},
+        {"id": "ftd_amount", "title": "FTD Amount", "value": 234567, "diff": "+20.1%", "valueFormat": "currency", "icon": "🆕", "category": "deposits", "order": 4},
+        {"id": "avg_deposits_per_day", "title": "Avg Deposits / Day", "value": 41.1, "diff": "+15.5%", "valueFormat": "decimal", "icon": "📊", "category": "deposits", "order": 5},
+        {"id": "casino_stake_amount", "title": "Casino Stakes", "value": 1500000, "diff": "+25.5%", "valueFormat": "currency", "icon": "🎰", "category": "casino", "order": 6},
+        {"id": "sport_stake_amount", "title": "Sport Stakes", "value": 800000, "diff": "+18.2%", "valueFormat": "currency", "icon": "⚽", "category": "sport", "order": 7}
       ],
       "channelCards": {
-        "push": {
-          "name": "App Push",
-          "icon": "📱",
-          "cards": [
-            {
-              "id": "push_sent",
-              "title": "Sent",
-              "value": 50000,
-              "diff": "+10%",
-              "valueFormat": "integer",
-              "disabled": false,
-              "order": 1
-            }
-          ],
-          "fullyDisabled": false
-        }
+        "push": {"name": "App Push", "icon": "📱", "cards": [{"id": "push_sent", "title": "Sent", "value": 50000, "diff": "+10%", "valueFormat": "integer", "disabled": false, "order": 1}], "fullyDisabled": false}
       },
-      "totalChannels": {
-        "sent": 50000,
-        "conversions": 2500,
-        "click": 7500
-      }
+      "totalChannels": {"sent": 50000, "conversions": 2500, "click": 7500}
     },
     {
       "key": "2024-12",
@@ -83,50 +31,18 @@
       "hasFinance": true,
       "hasChannels": true,
       "cards": [
-        {
-          "id": "total_deposits_count",
-          "title": "Тотал кол-во депозитов",
-          "value": 1456,
-          "diff": "+18%",
-          "valueFormat": "integer",
-          "icon": "💰",
-          "category": "deposits",
-          "order": 1
-        },
-        {
-          "id": "total_deposits_amount",
-          "title": "Тотал сумма депозитов",
-          "value": 645000,
-          "diff": "+13.6%",
-          "valueFormat": "currency",
-          "icon": "💳",
-          "category": "deposits",
-          "order": 2
-        }
+        {"id": "total_deposits_count", "title": "Total Deposits Count", "value": 1456, "diff": "+18%", "valueFormat": "integer", "icon": "💰", "category": "deposits", "order": 1},
+        {"id": "total_deposits_amount", "title": "Total Deposits Sum", "value": 645000, "diff": "+13.6%", "valueFormat": "currency", "icon": "💵", "category": "deposits", "order": 2},
+        {"id": "total_profit", "title": "Total Profit", "value": 145000, "diff": "+17.4%", "valueFormat": "currency", "icon": "📈", "category": "profit", "order": 3},
+        {"id": "ftd_amount", "title": "FTD Amount", "value": null, "diff": "", "valueFormat": "currency", "icon": "🆕", "category": "deposits", "order": 4, "disabled": true},
+        {"id": "avg_deposits_per_day", "title": "Avg Deposits / Day", "value": 47.0, "diff": "+14.4%", "valueFormat": "decimal", "icon": "📊", "category": "deposits", "order": 5},
+        {"id": "casino_stake_amount", "title": "Casino Stakes", "value": 1880000, "diff": "+25.3%", "valueFormat": "currency", "icon": "🎰", "category": "casino", "order": 6},
+        {"id": "sport_stake_amount", "title": "Sport Stakes", "value": 945000, "diff": "+18.1%", "valueFormat": "currency", "icon": "⚽", "category": "sport", "order": 7}
       ],
       "channelCards": {
-        "push": {
-          "name": "App Push",
-          "icon": "📱",
-          "cards": [
-            {
-              "id": "push_sent",
-              "title": "Sent",
-              "value": 55000,
-              "diff": "+10%",
-              "valueFormat": "integer",
-              "disabled": false,
-              "order": 1
-            }
-          ],
-          "fullyDisabled": false
-        }
+        "push": {"name": "App Push", "icon": "📱", "cards": [{"id": "push_sent", "title": "Sent", "value": 55000, "diff": "+10%", "valueFormat": "integer", "disabled": false, "order": 1}], "fullyDisabled": false}
       },
-      "totalChannels": {
-        "sent": 55000,
-        "conversions": 2800,
-        "click": 8200
-      }
+      "totalChannels": {"sent": 55000, "conversions": 2800, "click": 8200}
     },
     {
       "key": "2025-01",
@@ -135,40 +51,18 @@
       "hasFinance": true,
       "hasChannels": true,
       "cards": [
-        {
-          "id": "total_deposits_count",
-          "title": "Тотал кол-во депозитов",
-          "value": 1678,
-          "diff": "+15.2%",
-          "valueFormat": "integer",
-          "icon": "💰",
-          "category": "deposits",
-          "order": 1
-        }
+        {"id": "total_deposits_count", "title": "Total Deposits Count", "value": 1678, "diff": "+15.2%", "valueFormat": "integer", "icon": "💰", "category": "deposits", "order": 1},
+        {"id": "total_deposits_amount", "title": "Total Deposits Sum", "value": null, "diff": "", "valueFormat": "currency", "icon": "💵", "category": "deposits", "order": 2, "disabled": true},
+        {"id": "total_profit", "title": "Total Profit", "value": 165000, "diff": "+13.8%", "valueFormat": "currency", "icon": "�", "category": "profit", "order": 3},
+        {"id": "ftd_amount", "title": "FTD Amount", "value": null, "diff": "", "valueFormat": "currency", "icon": "🆕", "category": "deposits", "order": 4, "disabled": true},
+        {"id": "avg_deposits_per_day", "title": "Avg Deposits / Day", "value": 54.1, "diff": "+15.1%", "valueFormat": "decimal", "icon": "📊", "category": "deposits", "order": 5},
+        {"id": "casino_stake_amount", "title": "Casino Stakes", "value": 2200000, "diff": "+17.0%", "valueFormat": "currency", "icon": "🎰", "category": "casino", "order": 6},
+        {"id": "sport_stake_amount", "title": "Sport Stakes", "value": 1100000, "diff": "+16.4%", "valueFormat": "currency", "icon": "⚽", "category": "sport", "order": 7}
       ],
       "channelCards": {
-        "push": {
-          "name": "App Push",
-          "icon": "📱",
-          "cards": [
-            {
-              "id": "push_sent",
-              "title": "Sent",
-              "value": 60000,
-              "diff": "+9.1%",
-              "valueFormat": "integer",
-              "disabled": false,
-              "order": 1
-            }
-          ],
-          "fullyDisabled": false
-        }
+        "push": {"name": "App Push", "icon": "📱", "cards": [{"id": "push_sent", "title": "Sent", "value": 60000, "diff": "+9.1%", "valueFormat": "integer", "disabled": false, "order": 1}], "fullyDisabled": false}
       },
-      "totalChannels": {
-        "sent": 60000,
-        "conversions": 3200,
-        "click": 9000
-      }
+      "totalChannels": {"sent": 60000, "conversions": 3200, "click": 9000}
     }
   ],
   "ui": {
@@ -195,9 +89,9 @@
   "summary": {
     "totalDepositsCount": 4368,
     "totalDepositsAmount": 1437890,
-    "totalProfit": 350000
+    "totalProfit": 433456
   },
   "meta": {
-    "version": "1.0.93.7"
+    "version": "2.0.0"
   }
 }
