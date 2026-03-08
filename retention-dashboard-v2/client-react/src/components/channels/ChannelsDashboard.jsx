@@ -3,7 +3,7 @@
  *  ChannelsDashboard.jsx - Главный дашборд каналов коммуникации
  * ═══════════════════════════════════════════════════════════════════════════
  */
-import { usePeriodFilter } from '../../hooks/usePeriodFilter';
+import { useRetentionStore, selectPeriods, selectCurrentPeriod } from '../../store/retentionStore';
 import { Card } from '../shared/Card/Card';
 import { MetricCard } from '../shared/MetricCard/MetricCard';
 import { ChannelsGrowth } from './ChannelsGrowth';
@@ -11,7 +11,6 @@ import { ChannelsLineChart } from './ChannelsLineChart';
 import { ChannelsBarChart } from './ChannelsBarChart';
 import { ChannelsDoughnutChart } from './ChannelsDoughnutChart';
 import { ChannelsTable } from './ChannelsTable';
-import { useRetentionStore, selectPeriods } from '../../store/retentionStore';
 import styles from './ChannelsDashboard.module.css';
 import { useTranslation } from '../../hooks/useTranslation';
 
@@ -37,7 +36,7 @@ const CLICKS_KEYS = [
 ];
 
 export function ChannelsDashboard() {
-  const { currentPeriodData } = usePeriodFilter();
+  const currentPeriodData = useRetentionStore(selectCurrentPeriod);
   const periods = useRetentionStore(selectPeriods);
   const { t, translateMonth } = useTranslation();
 

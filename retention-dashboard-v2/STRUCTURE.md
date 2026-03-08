@@ -16,7 +16,8 @@ GeneratorV2/
 │   │   │   │   │   ├── DataModel.js
 │   │   │   │   │   ├── DataReader_Channels.js
 │   │   │   │   │   ├── DataReader_Finance.js
-│   │   │   │   │   └── DataReader.js
+│   │   │   │   │   ├── DataReader.js
+│   │   │   │   │   └── DataReader_Support.js
 │   │   │   │   ├── shared/
 │   │   │   │   │   └── SourceUtils.js
 │   │   │   │   └── support/
@@ -52,24 +53,45 @@ GeneratorV2/
 │   │   │   ├── assets/
 │   │   │   │   └── react.svg
 │   │   │   ├── components/
+│   │   │   │   ├── channels/
+│   │   │   │   │   ├── ChannelsBarChart.jsx
+│   │   │   │   │   ├── ChannelsBarChart.module.css
+│   │   │   │   │   ├── ChannelsDashboard.jsx
+│   │   │   │   │   ├── ChannelsDashboard.module.css
+│   │   │   │   │   ├── ChannelsDoughnutChart.jsx
+│   │   │   │   │   ├── ChannelsDoughnutChart.module.css
+│   │   │   │   │   ├── ChannelsLineChart.jsx
+│   │   │   │   │   └── ChannelsLineChart.module.css
 │   │   │   │   ├── finance/
+│   │   │   │   │   ├── BarChart.jsx
+│   │   │   │   │   ├── BarChart.module.css
+│   │   │   │   │   ├── DoughnutChart.jsx
+│   │   │   │   │   ├── DoughnutChart.module.css
+│   │   │   │   │   ├── FinanceChart.jsx
+│   │   │   │   │   ├── FinanceChart.module.css
 │   │   │   │   │   ├── FinanceDashboard.jsx
 │   │   │   │   │   ├── FinanceDashboard.module.css
-│   │   │   │   │   ├── FinanceTable.jsx
-│   │   │   │   │   └── FinanceTable.module.css
-│   │   │   │   └── shared/
-│   │   │   │       ├── Card/
-│   │   │   │       │   ├── Card.jsx
-│   │   │   │       │   └── Card.module.css
-│   │   │   │       ├── Loader/
-│   │   │   │       │   ├── Loader.jsx
-│   │   │   │       │   └── Loader.module.css
-│   │   │   │       ├── MetricCard/
-│   │   │   │       │   ├── MetricCard.jsx
-│   │   │   │       │   └── MetricCard.module.css
-│   │   │   │       └── Sidebar/
-│   │   │   │           ├── Sidebar.jsx
-│   │   │   │           └── Sidebar.module.css
+│   │   │   │   │   ├── GrowthAnalysis.jsx
+│   │   │   │   │   └── GrowthAnalysis.module.css
+│   │   │   │   ├── shared/
+│   │   │   │   │   └── Card/
+│   │   │   │   │       ├── Card.jsx
+│   │   │   │   │       └── Card.module.css
+│   │   │   │   └── support/
+│   │   │   │       ├── SatisfactionCard.jsx
+│   │   │   │       ├── SatisfactionCard.module.css
+│   │   │   │       ├── SupportDashboard.jsx
+│   │   │   │       ├── SupportDashboard.module.css
+│   │   │   │       ├── SupportLocaleDonut.jsx
+│   │   │   │       ├── SupportLocaleDonut.module.css
+│   │   │   │       ├── SupportLocaleTable.jsx
+│   │   │   │       ├── SupportLocaleTable.module.css
+│   │   │   │       ├── SupportMetricCard.jsx
+│   │   │   │       ├── SupportMetricCard.module.css
+│   │   │   │       ├── SupportTrendChart.jsx
+│   │   │   │       ├── SupportTrendChart.module.css
+│   │   │   │       ├── TagsAnalytics.jsx
+│   │   │   │       └── TagsAnalytics.module.css
 │   │   │   ├── hooks/
 │   │   │   │   ├── usePeriodFilter.js
 │   │   │   │   └── useRetentionData.js
@@ -137,20 +159,52 @@ GeneratorV2/
 
 ###### Shared Components (shared/)
 - **`Card/`** - Reusable container with glass-morphism effects and hover animations
-- **`Loader/`** - Full-screen loading spinner with gradient background
-- **`MetricCard/`** - KPI display with icons, values, and color-coded changes
-- **`Sidebar/`** - Navigation panel with period selector and menu items
 
 ###### Domain Components (finance/)
-- **`FinanceDashboard/`** - Main finance view combining KPI cards and tables
-- **`FinanceTable/`** - Detailed metrics table with tabs and formatting
+- **`FinanceDashboard.jsx`** - Main finance view combining KPI cards and tables
+- **`FinanceDashboard.module.css`** - Finance dashboard styles
+- **`BarChart.jsx`** - Finance bar chart component
+- **`BarChart.module.css`** - Bar chart styles
+- **`FinanceChart.jsx`** - Finance line chart component
+- **`FinanceChart.module.css`** - Finance chart styles
+- **`GrowthAnalysis.jsx`** - Growth analysis component
+- **`GrowthAnalysis.module.css`** - Growth analysis styles
+- **`DoughnutChart.jsx`** - Finance doughnut chart component
+- **`DoughnutChart.module.css`** - Doughnut chart styles
+
+###### Channels Components (channels/)
+- **`ChannelsDashboard.jsx`** - Main channels view with analytics
+- **`ChannelsDashboard.module.css`** - Channels dashboard styles
+- **`ChannelsBarChart.jsx`** - Channels bar chart component
+- **`ChannelsBarChart.module.css`** - Channels bar chart styles
+- **`ChannelsDoughnutChart.jsx`** - Channels doughnut chart component
+- **`ChannelsDoughnutChart.module.css`** - Channels doughnut chart styles
+- **`ChannelsLineChart.jsx`** - Channels line chart component
+- **`ChannelsLineChart.module.css`** - Channels line chart styles
+
+###### Support Components (support/)
+- **`SupportDashboard.jsx`** - Main support dashboard with KPI and tags analytics
+- **`SupportDashboard.module.css`** - Support dashboard styles
+- **`TagsAnalytics.jsx`** - Tags analytics component with filtering and export
+- **`TagsAnalytics.module.css`** - Tags analytics styles
+- **`SupportMetricCard.jsx`** - Support KPI metric card component
+- **`SupportMetricCard.module.css`** - Support metric card styles
+- **`SupportTrendChart.jsx`** - Support trend chart component
+- **`SupportTrendChart.module.css`** - Support trend chart styles
+- **`SupportLocaleDonut.jsx`** - Support locale donut chart component
+- **`SupportLocaleDonut.module.css`** - Support locale donut styles
+- **`SupportLocaleTable.jsx`** - Support locale table component
+- **`SupportLocaleTable.module.css`** - Support locale table styles
+- **`SatisfactionCard.jsx`** - Satisfaction rating card component
+- **`SatisfactionCard.module.css`** - Satisfaction card styles
 
 ##### Business Logic (hooks/)
 - **`useRetentionData.js`** - Automatic data fetching on component mount
-- **`usePeriodFilter.js`** - Period selection state and data filtering
+- **`usePeriodFilter.js`** - Period selection state and data filtering (deprecated, now using store directly)
+- **`useTranslation.js`** - Custom translation hook for i18n support
 
 ##### State Management (store/)
-- **`retentionStore.js`** - Zustand store with actions, selectors, and persistence
+- **`retentionStore.js`** - Zustand store with actions, selectors, persistence, and smart period switching
 
 ##### Styling (styles/)
 - **`variables.css`** - CSS custom properties for colors, spacing, typography

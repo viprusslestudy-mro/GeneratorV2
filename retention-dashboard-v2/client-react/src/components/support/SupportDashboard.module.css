@@ -18,33 +18,32 @@
   display: flex;
   flex-direction: column;
   gap: 16px;
-  margin-bottom: 24px;
-  align-items: center; /* Центрирует всё по горизонтали */
+  margin-bottom: 8px;
+  align-items: center; /* Центрирует весь блок по горизонтали */
   text-align: center;
 }
 
-@media (min-width: 768px) {
-  .headerRow {
-    flex-direction: row;
-    align-items: center;
-    justify-content: space-between;
-  }
+.titleBlock {
+  display: flex;
+  flex-direction: column;
+  align-items: center; /* Важно: центрирует заголовок и подзаголовок внутри блока */
+  width: 100%;
 }
 
 .titleBlock h1 {
-  font-size: 2.5rem; /* Сделали заголовок крупнее */
+  font-size: 2.5rem;
   font-weight: 900;
   color: var(--text-main);
   margin: 0 0 8px 0;
   display: flex;
   align-items: center;
-  justify-content: center;
+  justify-content: center; /* Иконка и текст будут строго по центру */
   gap: 12px;
 }
 
 .periodSubtitle {
-  font-size: 1rem;
-  font-weight: 600;
+  font-size: 1.2rem;
+  font-weight: 700;
   color: var(--text-secondary);
   margin: 0;
 }

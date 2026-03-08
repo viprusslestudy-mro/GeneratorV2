@@ -3,7 +3,7 @@
  *  FinanceDashboard.jsx - Полный Finance Dashboard
  * ═══════════════════════════════════════════════════════════════════════════
  */
-import { usePeriodFilter } from '../../hooks/usePeriodFilter';
+import { useRetentionStore, selectCurrentPeriod } from '../../store/retentionStore';
 import { Card } from '../shared/Card/Card';
 import { MetricCard } from '../shared/MetricCard/MetricCard';
 import { FinanceChart } from './FinanceChart';
@@ -16,7 +16,7 @@ import styles from './FinanceDashboard.module.css';
 import { useTranslation } from '../../hooks/useTranslation';
 
 export function FinanceDashboard() {
-  const { currentPeriodData } = usePeriodFilter();
+  const currentPeriodData = useRetentionStore(selectCurrentPeriod);
   const { t } = useTranslation(); // ДОБАВЛЕН ХУК ПЕРЕВОДА
 
   if (!currentPeriodData) {

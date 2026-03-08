@@ -23,7 +23,7 @@ const CHANNEL_ICONS = {
 
 export function ChannelsLineChart() {
   const { t, translateMonth } = useTranslation();
-  const periods = useRetentionStore(selectPeriods);
+  const periods = [...useRetentionStore(selectPeriods)].reverse();
   const selectedPeriod = useRetentionStore(state => state.selectedPeriod);
 
   const channelIndices = useMemo(() => {

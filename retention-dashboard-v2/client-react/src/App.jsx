@@ -1,11 +1,6 @@
-/**
- * ═══════════════════════════════════════════════════════════════════════════
- *  App.jsx - Главный компонент React приложения Retention Dashboard
- * ═══════════════════════════════════════════════════════════════════════════
- */
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRetentionData } from './hooks/useRetentionData';
-import { useRetentionStore } from './store/retentionStore'; // <-- ДОБАВЛЕНО
+import { useRetentionStore } from './store/retentionStore';
 import { Loader } from './components/shared/Loader/Loader';
 import { Sidebar } from './components/shared/Sidebar/Sidebar';
 import { FinanceDashboard } from './components/finance/FinanceDashboard';
@@ -15,59 +10,78 @@ import './App.css';
 
 export default function App() {
   const { data, loading, error } = useRetentionData();
-  
-  // ДОБАВЛЕНО: Берем язык из глобального стора, а не из локального useState
   const language = useRetentionStore(state => state.language);
   const setLanguage = useRetentionStore(state => state.setLanguage);
   
-  // Добавляем state для активного экрана (временно, потом перенесём в store/router)
-  const [activeScreen, setActiveScreen] = useState('finance'); // 'finance' | 'channels'
+  const [activeScreen, setActiveScreen] = useState('finance');
 
-  // Состояние загрузки
-  if (loading) {
-    return <Loader message="Загрузка данных из Google Sheets..." />;
-  }
+  // Читаем только необходимые функции
+  const setSupportPeriod = useRetentionStore(state => state.setSupportPeriod);
+  const setRetentionPeriod = useRetentionStore(state => state.setPeriod);
 
-  // Состояние ошибки
+  useEffect(() => {
+    // Получаем текущее состояние из store только в момент смены экрана
+    const state = useRetentionStore.getState();
+    const supportPeriods = state.supportPeriodsCache || [];
+    const retentionPeriods = state.data?.periods || [];
+
+    if (activeScreen === 'support_tags') {
+      const currentPeriod = supportPeriods.find(p => p.key === state.selectedSupportPeriod);
+      if (currentPeriod && !currentPeriod.hasTags) {
+        const firstValid = supportPeriods.find(p => p.hasTags);
+        if (firstValid) setSupportPeriod(firstValid.key);
+      }
+    }
+    
+    if (activeScreen === 'support_stats') {
+      const currentPeriod = supportPeriods.find(p => p.key === state.selectedSupportPeriod);
+      if (currentPeriod && !currentPeriod.hasKPI) {
+        const firstValid = supportPeriods.find(p => p.hasKPI);
+        if (firstValid) setSupportPeriod(firstValid.key);
+      }
+    }
+    
+    if (activeScreen === 'channels') {
+      const currentPeriod = retentionPeriods.find(p => p.key === state.selectedPeriod);
+      if (currentPeriod && !currentPeriod.hasChannels) {
+        const firstValid = retentionPeriods.find(p => p.hasChannels);
+        if (firstValid) setRetentionPeriod(firstValid.key);
+      }
+    }
+  }, [activeScreen, setSupportPeriod, setRetentionPeriod]);
+
+  if (loading) return <Loader message="Загрузка данных..." />;
+
   if (error) {
     return (
       <div className="error-container">
         <h2>❌ Ошибка загрузки</h2>
         <p>{error}</p>
-        <button onClick={() => window.location.reload()}>
-          🔄 Попробовать снова
-        </button>
+        <button onClick={() => window.location.reload()}>🔄 Попробовать снова</button>
       </div>
     );
   }
 
-  // Нет данных
   if (!data) {
     return (
       <div className="error-container">
         <h2>📭 Нет данных</h2>
-        <p>Проверьте настройки Google Sheets</p>
+        <p>Запустите сбор данных из таблицы</p>
       </div>
     );
   }
 
-  // Успешная загрузка — показываем Dashboard с Sidebar
   return (
     <div className="app">
-      {/* Language Switcher - Top Right */}
       <div className="language-switcher-top">
-        <button
+        <button 
           className={`lang-btn-top ${language === 'RU' ? 'active' : ''}`}
           onClick={() => setLanguage('RU')}
-        >
-          RU
-        </button>
-        <button
+        >RU</button>
+        <button 
           className={`lang-btn-top ${language === 'EN' ? 'active' : ''}`}
           onClick={() => setLanguage('EN')}
-        >
-          EN
-        </button>
+        >EN</button>
       </div>
 
       <Sidebar activeScreen={activeScreen} onScreenChange={setActiveScreen} />

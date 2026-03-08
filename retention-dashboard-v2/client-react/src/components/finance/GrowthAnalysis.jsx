@@ -41,8 +41,14 @@ export function GrowthAnalysis() {
   const [showAllMetrics, setShowAllMetrics] = useState(false);
   const [selectedSubmetric, setSelectedSubmetric] = useState(GROWTH_METRICS[0].dataKey);
 
-  const periods = useRetentionStore(selectPeriods);
+  // ИСПРАВЛЕНИЕ: Берем обычный селектор
+  const rawPeriods = useRetentionStore(selectPeriods);
   const selectedPeriod = useRetentionStore(state => state.selectedPeriod);
+
+  // ИСПРАВЛЕНИЕ: Разворачиваем периоды для графиков (Хронологически) ВНУТРИ useMemo
+  const periods = useMemo(() => {
+    return [...rawPeriods].reverse();
+  }, [rawPeriods]);
 
   const financeIndices = useMemo(() => {
     return periods.map((p, i) => (p.hasFinance ? i : -1)).filter(i => i !== -1);
@@ -128,7 +134,7 @@ export function GrowthAnalysis() {
     
     return (
       <div className={styles.tooltip}>
-        <div className={styles.tooltipLabel}>📅 {data.name}</div>
+        <div className={styles.tooltipLabel}>📅 {translateMonth(data.name)}</div>
         <div className={styles.tooltipValue}>{arrow} {val > 0 ? '+' : ''}{val.toFixed(1)}%</div>
       </div>
     );
@@ -146,7 +152,7 @@ export function GrowthAnalysis() {
             className={`${styles.showAllBtn} ${showAllMetrics ? styles.active : ''}`}
             onClick={() => setShowAllMetrics(!showAllMetrics)}
           >
-            ✨ {t('label.show_all', 'SHOW ALL')}
+            ✨ {t('✨ ОТОБРАЗИТЬ ВСЕ', 'SHOW ALL')}
           </button>
           
           <div className={styles.metricsList}>
@@ -157,7 +163,7 @@ export function GrowthAnalysis() {
                 onClick={() => handleMetricClick(index)}
               >
                 <div className={styles.metricInfo}>
-                  <span className={styles.metricLabel}>{metric.emoji} {metric.label}</span>
+                  <span className={styles.metricLabel}>{metric.emoji} {t(metric.label)}</span>
                   <span className={styles.metricValue}>{metric.displayValue}</span>
                 </div>
                 <div className={styles.sparklineWrapper}>
@@ -176,10 +182,8 @@ export function GrowthAnalysis() {
               <span className={styles.detailSuffix}>{t('— детальный график', '— dynamic report')}</span>
             </div>
 
-            {/* ИСПРАВЛЕНИЕ: Выровняли Submetric слева */}
             <div className={styles.controlsRow}>
               
-              {/* Блок с подметрикой (теперь он слева!) */}
               <div className={styles.submetricSelector}>
                 <label className={styles.submetricLabel}>
                   <span className={styles.submetricIcon}>⚙️</span>
@@ -199,7 +203,6 @@ export function GrowthAnalysis() {
                 </select>
               </div>
 
-              {/* Текст (теперь он справа!) */}
               <div className={styles.modeToggle}>
                 <div className={styles.modeLabel}>📈 {t('Процент изменений по месяцам', 'Percentage change by month')}</div>
               </div>
@@ -213,7 +216,7 @@ export function GrowthAnalysis() {
                 {showAllMetrics ? (
                   <LineChart data={detailChartData} margin={{ top: 20, right: 30, left: 20, bottom: 20 }}>
                     <CartesianGrid strokeDasharray="3 3" stroke="rgba(0,0,0,0.06)" />
-                    <XAxis dataKey="name" stroke="#666" style={{ fontSize: '15px', fontFamily: 'Montserrat, sans-serif', fontWeight: 700 }} tickFormatter={(val) => translateMonth(val)} /> {/* ИСПРАВЛЕНО: ПЕРЕВОД МЕСЯЦЕВ НА ОСИ Х */}
+                    <XAxis dataKey="name" stroke="#666" style={{ fontSize: '15px', fontFamily: 'Montserrat, sans-serif', fontWeight: 700 }} tickFormatter={(val) => translateMonth(val)} /> 
                     <YAxis stroke="#666" style={{ fontSize: '15px', fontFamily: 'Montserrat, sans-serif', fontWeight: 700 }} tickFormatter={(v) => `${v > 0 ? '+' : ''}${v}%`} />
                     <Tooltip content={<CustomTooltip />} />
                     {GROWTH_METRICS.map((metric) => (
@@ -229,7 +232,7 @@ export function GrowthAnalysis() {
                       </linearGradient>
                     </defs>
                     <CartesianGrid strokeDasharray="3 3" stroke="rgba(0,0,0,0.06)" />
-                    <XAxis dataKey="name" stroke="#666" style={{ fontSize: '15px', fontFamily: 'Montserrat, sans-serif', fontWeight: 700 }} tickFormatter={(val) => translateMonth(val)} /> {/* ИСПРАВЛЕНО: ПЕРЕВОД МЕСЯЦЕВ НА ОСИ Х */}
+                    <XAxis dataKey="name" stroke="#666" style={{ fontSize: '15px', fontFamily: 'Montserrat, sans-serif', fontWeight: 700 }} tickFormatter={(val) => translateMonth(val)} />
                     <YAxis stroke="#666" style={{ fontSize: '15px', fontFamily: 'Montserrat, sans-serif', fontWeight: 700 }} tickFormatter={(v) => `${v > 0 ? '+' : ''}${v}%`} />
                     <Tooltip content={<CustomTooltip />} />
                     <Area type="monotone" dataKey="value" stroke={currentMetric?.color || '#9c27b0'} strokeWidth={4} fill="url(#colorGrowth)" dot={{ r: 6, fill: '#fff', strokeWidth: 3, stroke: currentMetric?.color || '#9c27b0' }} activeDot={{ r: 10 }} />

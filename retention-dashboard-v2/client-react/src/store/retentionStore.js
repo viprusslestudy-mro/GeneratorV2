@@ -15,6 +15,7 @@ export const useRetentionStore = create(
       // ═══════════════════════════════════════════════════════════════
       data: null, // Retention Data
       supportData: null, // Support Data
+      supportPeriodsCache: [], // <-- ДОБАВЛЕНО
       loading: false,
       error: null,
       selectedPeriod: null,
@@ -37,29 +38,54 @@ export const useRetentionStore = create(
         set({ loading: true, error: null });
         
         try {
-          // Загружаем Retention и Support параллельно!
           const [retentionData, supportData] = await Promise.all([
             retentionApi.getReport(),
             retentionApi.getSupportReport()
           ]);
           
-          console.log('[Store] Retention loaded:', retentionData);
-          console.log('[Store] Support loaded:', supportData);
-          
-          // Дефолтные периоды
-          // Дефолтные периоды (самые свежие!)
-          const lastRetentionPeriod = retentionData.periods?.[0]?.key || null;
-          const lastSupportPeriod = supportData.byPeriod 
-            ? Object.keys(supportData.byPeriod).sort().reverse()[0] 
-            : null;
+          // 1. ПЕРЕВОРАЧИВАЕМ ПЕРИОДЫ RETENTION (Новые сверху)
+          if (retentionData && retentionData.periods) {
+            retentionData.periods.reverse();
+          }
+
+          // 2. ПЕРЕВОРАЧИВАЕМ ПЕРИОДЫ SUPPORT
+          let supportPeriodsCache = [];
+          if (supportData) {
+            if (Array.isArray(supportData.availablePeriods)) {
+              supportPeriodsCache = [...supportData.availablePeriods].reverse();
+            } else if (supportData.byPeriod) {
+              const keys = Object.keys(supportData.byPeriod).sort().reverse();
+              supportPeriodsCache = keys.map(key => {
+                const periodObj = supportData.byPeriod[key]?.period || {};
+                return {
+                  key: key,
+                  label: periodObj.label || key,
+                  hasKPI: true,
+                  hasTags: true
+                };
+              });
+            }
+          }
+
+          // 3. Сохраняем в стейт
+          const latestRetentionPeriod = retentionData.periods?.[0]?.key || null;
+          const latestSupportPeriod = supportPeriodsCache[0]?.key || null;
+
+          // Проверяем, существует ли сохраненный период в новых данных
+          const savedRetention = get().selectedPeriod;
+          const savedSupport = get().selectedSupportPeriod;
+
+          const isSavedRetentionValid = retentionData.periods?.some(p => p.key === savedRetention);
+          const isSavedSupportValid = supportPeriodsCache.some(p => p.key === savedSupport);
           
           set({ 
             data: retentionData, 
             supportData: supportData,
+            supportPeriodsCache: supportPeriodsCache,
             loading: false,
-            // Если периоды еще не были выбраны (из persist), ставим дефолтные
-            selectedPeriod: get().selectedPeriod || lastRetentionPeriod,
-            selectedSupportPeriod: get().selectedSupportPeriod || lastSupportPeriod
+            // Если сохраненный период не найден или это первый запуск — берем САМЫЙ СВЕЖИЙ
+            selectedPeriod: isSavedRetentionValid ? savedRetention : latestRetentionPeriod,
+            selectedSupportPeriod: isSavedSupportValid ? savedSupport : latestSupportPeriod
           });
           
         } catch (error) {
@@ -100,7 +126,7 @@ export const useRetentionStore = create(
 );
 
 // ═══════════════════════════════════════════════════════════════
-// СЕЛЕКТОРЫ (отдельные функции для получения данных)
+// СЕЛЕКТОРЫ (максимально простые, без вычислений)
 // ═══════════════════════════════════════════════════════════════
 
 export const selectPeriods = (state) => state.data?.periods || [];
@@ -114,34 +140,5 @@ export const selectUI = (state) => state.data?.ui || { financeTabs: {}, channelT
 
 export const selectFinanceTabs = (state) => state.data?.ui?.financeTabs || {};
 
-// Селекторы для Support
-export const selectSupportPeriods = (state) => {
-  if (!state.supportData) return [];
-  
-  // 1. Пытаемся найти массив availablePeriods (как было в моке)
-  if (Array.isArray(state.supportData.availablePeriods)) {
-    return state.supportData.availablePeriods;
-  }
-  
-  // 2. Если его нет, собираем периоды из ключей byPeriod
-  if (state.supportData.byPeriod) {
-    const keys = Object.keys(state.supportData.byPeriod).sort().reverse();
-    return keys.map(key => {
-      const periodObj = state.supportData.byPeriod[key]?.period || {};
-      return {
-        key: key,
-        label: periodObj.label || key, // Например "Январь 2026"
-        hasKPI: true,
-        hasTags: true
-      };
-    });
-  }
-  
-  return [];
-};
-
-export const selectCurrentSupportPeriod = (state) => {
-  if (!state.selectedSupportPeriod) return null;
-  const periods = selectSupportPeriods(state);
-  return periods.find(p => p.key === state.selectedSupportPeriod) || null;
-};
+// Возвращаем просто кеш, который мы собрали 1 раз при загрузке!
+export const selectSupportPeriods = (state) => state.supportPeriodsCache || [];

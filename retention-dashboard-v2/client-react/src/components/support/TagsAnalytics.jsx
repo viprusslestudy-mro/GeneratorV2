@@ -4,14 +4,11 @@
  * ═══════════════════════════════════════════════════════════════════════════
  */
 import { useState, useMemo } from 'react';
-import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip as RechartsTooltip, Legend } from 'recharts';
+import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip as RechartsTooltip } from 'recharts';
 import { Card } from '../shared/Card/Card';
 import { useRetentionStore } from '../../store/retentionStore';
+import { useTranslation } from '../../hooks/useTranslation';
 import { formatCompact } from '../../utils/formatters';
-
-// ИСПРАВЛЕНИЕ ПУТИ ИМПОРТА ХУКА:
-import { useTranslation } from '../../hooks/useTranslation'; 
-
 import styles from './TagsAnalytics.module.css';
 
 const PIE_COLORS = ['#3b82f6', '#ef4444', '#10b981', '#a855f7', '#F5B800'];
@@ -49,7 +46,8 @@ const getTagCount = (tag, locale, period) => {
 };
 
 export function TagsAnalytics({ tagsData, activeLocale, activePeriod, setActivePeriod }) {
-  const { t } = useTranslation(); // ДОБАВЛЕНО
+  const { t } = useTranslation();
+  
   const [searchQuery, setSearchQuery] = useState('');
   const [categoryFilter, setCategoryFilter] = useState('all');
   const [sortField, setSortField] = useState('count');
@@ -57,6 +55,21 @@ export function TagsAnalytics({ tagsData, activeLocale, activePeriod, setActiveP
 
   const categories = tagsData?.categories || [];
   
+  const availableLocales = useMemo(() => {
+    const locSet = new Set();
+    categories.forEach(cat => {
+      (cat.tags || []).forEach(tag => {
+        if (tag.byGeo) Object.entries(tag.byGeo).forEach(([loc, val]) => { if (val > 0) locSet.add(loc); });
+        if (tag.byWeekByGeo) Object.entries(tag.byWeekByGeo).forEach(([loc, weeks]) => { if (weeks.some(w => w > 0)) locSet.add(loc); });
+      });
+    });
+    return Array.from(locSet).sort();
+  }, [categories]);
+
+  // Используем пропс activeLocale от родителя.
+  // Если родитель передал ALL, но у нас его нет - берем первую доступную
+  const actualLocale = (activeLocale === 'ALL' || availableLocales.includes(activeLocale)) ? activeLocale : (availableLocales[0] || 'ALL');
+
   const { totalMonthChats, totalUniqueTags, weeksData } = useMemo(() => {
     let tChats = 0;
     let uTags = 0;
@@ -64,27 +77,29 @@ export function TagsAnalytics({ tagsData, activeLocale, activePeriod, setActiveP
 
     categories.forEach(cat => {
       (cat.tags || []).forEach(tag => {
-        const valTotal = getTagCount(tag, activeLocale, 'total');
+        const valTotal = getTagCount(tag, actualLocale, 'total');
         if (valTotal > 0) {
           tChats += valTotal;
           uTags++;
         }
         for (let i = 0; i < 5; i++) {
-          wData[i] += getTagCount(tag, activeLocale, `week-${i}`);
+          wData[i] += getTagCount(tag, actualLocale, `week-${i}`);
         }
       });
     });
 
     return { totalMonthChats: tChats, totalUniqueTags: uTags, weeksData: wData };
-  }, [categories, activeLocale]);
+  }, [categories, actualLocale]);
 
   const pieData = useMemo(() => {
     const data = categories.map(cat => {
-      const sum = (cat.tags || []).reduce((acc, tag) => acc + getTagCount(tag, activeLocale, activePeriod), 0);
+      const sum = (cat.tags || []).reduce((acc, tag) => acc + getTagCount(tag, actualLocale, activePeriod), 0);
       return { name: cat.name, value: sum };
     }).filter(d => d.value > 0).sort((a, b) => b.value - a.value).slice(0, 5);
     return data.length ? data : [{ name: 'No data', value: 1, isEmpty: true }];
-  }, [categories, activeLocale, activePeriod]);
+  }, [categories, actualLocale, activePeriod]);
+
+  const pieTotal = pieData[0]?.isEmpty ? 0 : pieData.reduce((sum, d) => sum + d.value, 0);
 
   const topIssues = useMemo(() => {
     let issues = [];
@@ -93,11 +108,11 @@ export function TagsAnalytics({ tagsData, activeLocale, activePeriod, setActiveP
     
     issues = sourceTags.map(t => ({
       name: t.name,
-      count: getTagCount(t, activeLocale, activePeriod)
+      count: getTagCount(t, actualLocale, activePeriod)
     })).filter(t => t.count > 0).sort((a, b) => b.count - a.count).slice(0, 5);
     
     return issues;
-  }, [categories, activeLocale, activePeriod]);
+  }, [categories, actualLocale, activePeriod]);
 
   const tableData = useMemo(() => {
     let rows = [];
@@ -105,7 +120,7 @@ export function TagsAnalytics({ tagsData, activeLocale, activePeriod, setActiveP
 
     categories.forEach(cat => {
       (cat.tags || []).forEach(tag => {
-        grandTotal += getTagCount(tag, activeLocale, activePeriod);
+        grandTotal += getTagCount(tag, actualLocale, activePeriod);
       });
     });
 
@@ -115,7 +130,7 @@ export function TagsAnalytics({ tagsData, activeLocale, activePeriod, setActiveP
       (cat.tags || []).forEach(tag => {
         if (searchQuery && !tag.name.toLowerCase().includes(searchQuery.toLowerCase())) return;
         
-        const count = getTagCount(tag, activeLocale, activePeriod);
+        const count = getTagCount(tag, actualLocale, activePeriod);
         if (count === 0) return;
 
         const percent = grandTotal > 0 ? ((count / grandTotal) * 100).toFixed(1) : 0;
@@ -141,7 +156,7 @@ export function TagsAnalytics({ tagsData, activeLocale, activePeriod, setActiveP
     });
 
     return rows;
-  }, [categories, activeLocale, activePeriod, categoryFilter, searchQuery, sortField, sortDir]);
+  }, [categories, actualLocale, activePeriod, categoryFilter, searchQuery, sortField, sortDir]);
 
   const handleSort = (field) => {
     if (sortField === field) setSortDir(sortDir === 'desc' ? 'asc' : 'desc');
@@ -152,23 +167,24 @@ export function TagsAnalytics({ tagsData, activeLocale, activePeriod, setActiveP
     if (hasData) setActivePeriod(periodId);
   };
 
+  const CustomPieTooltip = ({ active, payload }) => {
+    if (!active || !payload || !payload.length || payload[0].payload.isEmpty) return null;
+    const data = payload[0].payload;
+    const percent = pieTotal > 0 ? ((data.value / pieTotal) * 100).toFixed(1) : 0;
+    return (
+      <div className={styles.tooltip}>
+        <div className={styles.tooltipTitle}>{t(data.name)}</div>
+        <div className={styles.tooltipRow}>Volume: {data.value.toLocaleString()}</div>
+        <div className={styles.tooltipRow}>Share: {percent}%</div>
+      </div>
+    );
+  };
+
   return (
     <div className={styles.tagsContainer}>
       
-      {/* ═══ HEADER (ЦЕНТРИРОВАННЫЙ КАК В SUPPORT) ═══ */}
-      <div className={styles.headerRow}>
-        <div className={styles.titleBlock}>
-          <h1>
-            <span className={styles.headerIcon}>🏷️</span>
-            &nbsp;Tags Analytics&nbsp;
-          </h1>
-        </div>
-      </div>
-
-      {/* ═══ PERIODS ═══ */}
       <Card>
         <div className={styles.periodsGrid}>
-          {/* Total Month */}
           <div 
             className={`${styles.periodCard} ${activePeriod === 'total' ? styles.active : ''} ${totalMonthChats === 0 ? styles.disabled : ''}`}
             onClick={() => handlePeriodSelect('total', totalMonthChats > 0)}
@@ -176,7 +192,7 @@ export function TagsAnalytics({ tagsData, activeLocale, activePeriod, setActiveP
             <div className={styles.totalMonthHeader}>
               <div className={styles.tagIcon}>🏷️</div>
               <div>
-                <h3 className={styles.totalTitle}>{t('Total Month')}</h3>
+                <h3 className={styles.totalTitle}>{t('Total Month', 'Total Month')}</h3>
                 <p className={styles.totalDates}>{t('All Tags Data', 'All Tags Data')}</p>
               </div>
             </div>
@@ -192,18 +208,16 @@ export function TagsAnalytics({ tagsData, activeLocale, activePeriod, setActiveP
             </div>
           </div>
 
-          {/* Weeks */}
           <div className={styles.weeksContainer}>
             {weeksData.map((val, idx) => {
               const weekId = `week-${idx}`;
               const isDisabled = val === 0;
               
-              // Достаем даты из liveChat (так как в tags дат нет)
               const globalData = useRetentionStore.getState().supportData;
               const periodData = globalData?.byPeriod?.[activePeriod] || globalData;
               const weekDates = periodData?.liveChat?.weeklyKPI?.[idx]?.dates || '';
 
-              if (isDisabled) return null; // Прячем полностью пустые
+              if (isDisabled) return null; 
 
               return (
                 <div 
@@ -214,7 +228,6 @@ export function TagsAnalytics({ tagsData, activeLocale, activePeriod, setActiveP
                   <div className={styles.weekHeader}>
                     <span className={styles.weekTitle}>{t('Week', 'Week')} {idx + 1}</span>
                   </div>
-                  {/* ИСПРАВЛЕНИЕ: Выводим реальные даты вместо "week dates" */}
                   <div className={styles.weekDates}>{weekDates}</div>
                   <div className={styles.weekBottom}>
                     <div className={styles.weekChats}>{val.toLocaleString()}</div>
@@ -227,34 +240,57 @@ export function TagsAnalytics({ tagsData, activeLocale, activePeriod, setActiveP
         </div>
       </Card>
 
-      {/* ═══ CHARTS (КАТЕГОРИИ СЛЕВА, ИШЬЮС СПРАВА) ═══ */}
       <div className={styles.chartsRow}>
-        
-        {/* ЛЕВАЯ КАРТОЧКА: Category Distribution */}
-        <Card title={t('Category Distribution', 'Category Distribution')} subtitle={t('Breakdown by volume', 'Breakdown by volume')}>
-          <div className={styles.chartWrapper}>
-            <ResponsiveContainer width="100%" height={350}>
+        <Card>
+          <div className={styles.chartHeader}>
+            <h3 className={styles.chartTitle}>{t('Category Distribution', 'Category Distribution')}</h3>
+            <p className={styles.chartSubtitle}>{t('Breakdown by volume', 'Breakdown by volume')}</p>
+          </div>
+          
+          <div className={styles.chartWrapper} style={{ position: 'relative' }}>
+            <div className={styles.centerOverlay}>
+              <div className={styles.centerLabel}>{formatCompact(pieTotal)}</div>
+              <div className={styles.centerSubLabel}>Total</div>
+            </div>
+
+            <ResponsiveContainer width="100%" height={320}>
               <PieChart>
                 <Pie
                   data={pieData} cx="50%" cy="50%" innerRadius={110} outerRadius={150}
-                  dataKey="value" stroke="#fff" strokeWidth={2}
-                  label={!pieData[0].isEmpty ? ({name, percent}) => `${name} (${(percent*100).toFixed(0)}%)` : false}
+                  paddingAngle={3} dataKey="value" stroke="none" isAnimationActive={false}
                 >
                   {pieData.map((entry, index) => (
                     <Cell key={index} fill={entry.isEmpty ? '#e5e7eb' : PIE_COLORS[index % PIE_COLORS.length]} />
                   ))}
                 </Pie>
-                {!pieData[0].isEmpty && <RechartsTooltip />}
+                {!pieData[0].isEmpty && <RechartsTooltip content={<CustomPieTooltip />} />}
               </PieChart>
             </ResponsiveContainer>
           </div>
+
+          <div className={styles.legend}>
+            {pieData.map((entry, index) => {
+              if (entry.isEmpty) return null;
+              const percent = pieTotal > 0 ? ((entry.value / pieTotal) * 100).toFixed(1) : 0;
+              return (
+                <div key={index} className={styles.legendItem}>
+                  <div className={styles.legendDot} style={{ background: PIE_COLORS[index % PIE_COLORS.length] }} />
+                  <span>{t(entry.name)}</span>
+                  <span className={styles.legendValue}>{percent}%</span>
+                </div>
+              );
+            })}
+          </div>
         </Card>
 
-        {/* ПРАВАЯ КАРТОЧКА: Top Issues */}
-        <Card title={t('Top Issues', 'Top Issues')} subtitle={t('Most frequent issue tags', 'Most frequent issue tags')}>
+        <Card>
+          <div className={styles.chartHeader}>
+            <h3 className={styles.chartTitle}>{t('Top Issues', 'Top Issues')}</h3>
+            <p className={styles.chartSubtitle}>{t('Most frequent issue tags', 'Most frequent issue tags')}</p>
+          </div>
           <div className={styles.issuesWrapper}>
             {topIssues.length === 0 ? (
-              <div className={styles.emptyChart}>No issues found</div>
+              <div className={styles.emptyChart}>{t('No issues found', 'No issues found')}</div>
             ) : (
               topIssues.map((tag, idx) => {
                 const style = BAR_STYLES[idx % BAR_STYLES.length];
@@ -266,11 +302,11 @@ export function TagsAnalytics({ tagsData, activeLocale, activePeriod, setActiveP
                     </div>
                     <div className={styles.issueContent}>
                       <div className={styles.issueText}>
-                        <span className={styles.issueName}>{tag.name}</span>
+                        <span className={styles.issueName}>{t(tag.name)}</span>
                         <span className={styles.issueCount}>{tag.count.toLocaleString()}</span>
                       </div>
                       <div className={styles.issueBarBg}>
-                        <div className={styles.issueBarFill} style={{ width: `${percent}%`, background: style.bg }} />
+                        <div className={styles.issueBarFill} style={{ width: `${percent}%`, background: style.bg, boxShadow: `0 2px 8px ${style.shadow}` }} />
                       </div>
                     </div>
                   </div>
@@ -281,8 +317,7 @@ export function TagsAnalytics({ tagsData, activeLocale, activePeriod, setActiveP
         </Card>
       </div>
 
-      {/* ═══ TABLE ═══ */}
-      <Card>
+      <div className={styles.tableCard}>
         <div className={styles.tableHeader}>
           <h3 className={styles.tableTitle}>{t('All Tags', 'All Tags')}</h3>
           <div className={styles.searchWrap}>
@@ -307,7 +342,7 @@ export function TagsAnalytics({ tagsData, activeLocale, activePeriod, setActiveP
               key={cat.name}
               className={`${styles.chip} ${categoryFilter === cat.name ? styles.active : ''}`}
               onClick={() => setCategoryFilter(cat.name)}
-            >{t(cat.name, cat.name)}</button>
+            >{t(cat.name)}</button>
           ))}
         </div>
 
@@ -325,9 +360,9 @@ export function TagsAnalytics({ tagsData, activeLocale, activePeriod, setActiveP
             <tbody>
               {tableData.map((row, idx) => (
                 <tr key={idx}>
-                  <td className={styles.boldText}>{row.name}</td>
+                  <td className={styles.boldText}>{t(row.name)}</td>
                   <td>
-                    <span className={styles.categoryBadge}>{t(row.category, row.category)}</span>
+                    <span className={styles.categoryBadge}>{t(row.category)}</span>
                   </td>
                   <td className={styles.boldText} style={{textAlign: 'center'}}>{row.count}</td>
                   <td style={{textAlign: 'center'}}>
@@ -344,7 +379,14 @@ export function TagsAnalytics({ tagsData, activeLocale, activePeriod, setActiveP
             </tbody>
           </table>
         </div>
-      </Card>
+        
+        <div className={styles.tableFooter}>
+          <p className={styles.showingText}>Showing <span className={styles.showingCount}>{tableData.length}</span> tags</p>
+          <button className={styles.exportBtn}>
+            <span style={{ marginRight: '8px' }}>📥</span> Export CSV
+          </button>
+        </div>
+      </div>
     </div>
   );
 }

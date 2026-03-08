@@ -31,7 +31,7 @@ function getCardValueFromPeriod(period, cardId) {
 export function BarChart() {
   const { t, translateMonth } = useTranslation();
   // Простые селекторы
-  const periods = useRetentionStore(selectPeriods);
+  const periods = [...useRetentionStore(selectPeriods)].reverse();
   const selectedPeriod = useRetentionStore(state => state.selectedPeriod);
 
   // Подготовка данных (кэшировано)

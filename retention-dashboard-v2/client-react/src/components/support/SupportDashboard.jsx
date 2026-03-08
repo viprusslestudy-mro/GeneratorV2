@@ -8,6 +8,7 @@ import { SupportLocaleTable } from './SupportLocaleTable';
 import { useRetentionStore } from '../../store/retentionStore';
 import { useTranslation } from '../../hooks/useTranslation';
 import styles from './SupportDashboard.module.css'; // <-- ВАЖНО: используем правильные стили
+import { TagsAnalytics } from './TagsAnalytics';
 
 const formatTime = (totalSeconds) => {
   if (totalSeconds === undefined || totalSeconds === null) return '-';
@@ -31,58 +32,57 @@ export function SupportDashboard({ type }) {
   const [activeLocale, setActiveLocale] = useState('ALL');
   const [activePeriod, setActivePeriod] = useState('total');
 
-  // При смене месяца сбрасываем фильтры, чтобы сработал автовыбор ниже
-  useEffect(() => {
-    setActiveLocale('ALL');
-    setActivePeriod('total');
-  }, [selectedSupportPeriod]);
-
   if (!globalSupportData) {
     return <div className={styles.empty}>No Support Data available</div>;
   }
 
-  const availableKeys = globalSupportData.byPeriod ? Object.keys(globalSupportData.byPeriod).sort() : [];
-  const actualPeriodKey = selectedSupportPeriod || availableKeys[availableKeys.length - 1]; 
+  const availableKeys = globalSupportData.byPeriod ? Object.keys(globalSupportData.byPeriod).sort().reverse() : [];
+  const actualPeriodKey = selectedSupportPeriod || availableKeys[0]; 
   
   const periodData = globalSupportData.byPeriod?.[actualPeriodKey] || globalSupportData;
   const kpiData = periodData.liveChat || {};
   const periodLabel = periodData.period?.label || 'Current Month';
 
-  // 1. Собираем локали с данными
+  // Собираем локали с данными
   const locales = Object.keys(kpiData.byLocale || {}).filter((loc) => {
     return kpiData.byLocale[loc].totalChats > 0 || (kpiData.byLocale[loc].weeklyKPI || []).some((w) => w.totalChats > 0);
   }).sort();
 
-  // 2. АВТОВЫБОР ЛОКАЛИ (Если ALL GEO пустой, а другие есть — переключаем)
   const allGeoHasData = (kpiData.totalChats || 0) > 0 || (kpiData.weeklyKPI || []).some(w => (w.totalChats || 0) > 0);
   
-  useEffect(() => {
-    if (activeLocale === 'ALL' && !allGeoHasData && locales.length > 0) {
-      // Ищем самую жирную локаль для автовыбора
-      const bestLocale = locales.reduce((best, loc) => {
-        const chats = kpiData.byLocale[loc]?.totalChats || 0;
-        return chats > best.chats ? { loc, chats } : best;
-      }, { loc: locales[0], chats: -1 }).loc;
-      
-      setActiveLocale(bestLocale);
-    }
-  }, [activeLocale, allGeoHasData, locales, kpiData.byLocale]);
+  // ИСПРАВЛЕНИЕ: Если выбранная локаль больше не доступна в новом месяце - сбрасываем на ALL
+  // И если ALL GEO пустой - выбираем первую доступную. 
+  // Мы убрали useEffect, который ломал всё при смене языка!
+  let actualLocale = activeLocale;
+  if (actualLocale !== 'ALL' && !locales.includes(actualLocale)) {
+    actualLocale = 'ALL';
+  }
+  if (actualLocale === 'ALL' && !allGeoHasData && locales.length > 0) {
+    actualLocale = locales[0];
+  }
 
-  // 3. Получаем данные для текущей локали
-  const currentLocaleData = activeLocale === 'ALL' 
+  const currentLocaleData = actualLocale === 'ALL' 
     ? kpiData 
-    : (kpiData.byLocale?.[activeLocale] || {});
+    : (kpiData.byLocale?.[actualLocale] || {});
 
-  // Если у локали нет weeklyKPI (например, пустой массив), создаем 4 "пустые" недели, чтобы они нарисовались
   const weeklyKPI = currentLocaleData.weeklyKPI?.length > 0 
     ? currentLocaleData.weeklyKPI 
     : [{}, {}, {}, {}];
   
+  // ИСПРАВЛЕНИЕ: То же самое с периодом (неделей). Если она пропала - сбрасываем на total
+  let actualActivePeriod = activePeriod;
+  if (actualActivePeriod.startsWith('week-')) {
+    const wIdx = parseInt(actualActivePeriod.split('-')[1], 10);
+    if (!weeklyKPI[wIdx] || !(weeklyKPI[wIdx].totalChats > 0)) {
+      actualActivePeriod = 'total';
+    }
+  }
+
   let statsToShow = {};
-  if (activePeriod === 'total') {
+  if (actualActivePeriod === 'total') {
     statsToShow = currentLocaleData;
-  } else if (activePeriod.startsWith('week-')) {
-    const weekIdx = parseInt(activePeriod.split('-')[1], 10);
+  } else if (actualActivePeriod.startsWith('week-')) {
+    const weekIdx = parseInt(actualActivePeriod.split('-')[1], 10);
     statsToShow = weeklyKPI[weekIdx] || {};
   }
 
@@ -92,6 +92,11 @@ export function SupportDashboard({ type }) {
     if (hasData(chats)) {
       setActivePeriod(periodId);
     }
+  };
+
+  const handleLocaleSelect = (loc) => {
+    setActiveLocale(loc);
+    setActivePeriod('total'); // При смене страны сбрасываем неделю
   };
 
   return (
@@ -109,8 +114,8 @@ export function SupportDashboard({ type }) {
 
         <div className={styles.localeSwitcher}>
           <button 
-            className={`${styles.localeBtn} ${activeLocale === 'ALL' ? styles.active : ''}`}
-            onClick={() => { setActiveLocale('ALL'); setActivePeriod('total'); }}
+            className={`${styles.localeBtn} ${actualLocale === 'ALL' ? styles.active : ''}`}
+            onClick={() => handleLocaleSelect('ALL')}
             disabled={!allGeoHasData}
           >
             {t('ALL GEO', 'ALL GEO')}
@@ -118,11 +123,8 @@ export function SupportDashboard({ type }) {
           {locales.map((loc) => (
             <button 
               key={loc}
-              className={`${styles.localeBtn} ${activeLocale === loc ? styles.active : ''}`}
-              onClick={() => {
-                setActiveLocale(loc);
-                setActivePeriod('total');
-              }}
+              className={`${styles.localeBtn} ${actualLocale === loc ? styles.active : ''}`}
+              onClick={() => handleLocaleSelect(loc)}
             >
               {loc}
             </button>
