@@ -3,7 +3,7 @@
  *  TagsAnalytics.jsx - Дашборд аналитики тегов
  * ═══════════════════════════════════════════════════════════════════════════
  */
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip as RechartsTooltip } from 'recharts';
 import { Card } from '../shared/Card/Card';
 import { useRetentionStore } from '../../store/retentionStore';
@@ -70,6 +70,7 @@ export function TagsAnalytics({ tagsData, activeLocale, activePeriod, setActiveP
   // Если родитель передал ALL, но у нас его нет - берем первую доступную
   const actualLocale = (activeLocale === 'ALL' || availableLocales.includes(activeLocale)) ? activeLocale : (availableLocales[0] || 'ALL');
 
+  // ═══ СНАЧАЛА useMemo для вычисления данных ═══
   const { totalMonthChats, totalUniqueTags, weeksData } = useMemo(() => {
     let tChats = 0;
     let uTags = 0;
@@ -90,6 +91,31 @@ export function TagsAnalytics({ tagsData, activeLocale, activePeriod, setActiveP
 
     return { totalMonthChats: tChats, totalUniqueTags: uTags, weeksData: wData };
   }, [categories, actualLocale]);
+
+  // ═══ ПОТОМ useEffect для автовыбора периода (после useMemo!) ═══
+  useEffect(() => {
+    // Проверяем, есть ли данные в текущем периоде для новой локали
+    if (activePeriod === 'total' && totalMonthChats === 0) {
+      // Total пустой - ищем первую неделю с данными
+      const firstValidWeek = weeksData.findIndex(val => val > 0);
+      if (firstValidWeek >= 0) {
+        setActivePeriod(`week-${firstValidWeek}`);
+      }
+    } else if (activePeriod.startsWith('week-')) {
+      const wIdx = parseInt(activePeriod.split('-')[1], 10);
+      if (weeksData[wIdx] === 0) {
+        // Текущая неделя пустая
+        if (totalMonthChats > 0) {
+          setActivePeriod('total');
+        } else {
+          const firstValidWeek = weeksData.findIndex(val => val > 0);
+          if (firstValidWeek >= 0) {
+            setActivePeriod(`week-${firstValidWeek}`);
+          }
+        }
+      }
+    }
+  }, [actualLocale, totalMonthChats, weeksData, activePeriod, setActivePeriod]);
 
   const pieData = useMemo(() => {
     const data = categories.map(cat => {
@@ -167,6 +193,15 @@ export function TagsAnalytics({ tagsData, activeLocale, activePeriod, setActiveP
     if (hasData) setActivePeriod(periodId);
   };
 
+  // ═══ Получаем даты недель из глобального стора ═══
+  const globalSupportData = useRetentionStore(state => state.supportData);
+  const selectedSupportPeriod = useRetentionStore(state => state.selectedSupportPeriod);
+  
+  const getWeekDates = (weekIdx) => {
+    const periodData = globalSupportData?.byPeriod?.[selectedSupportPeriod] || globalSupportData;
+    return periodData?.liveChat?.weeklyKPI?.[weekIdx]?.dates || '';
+  };
+
   const CustomPieTooltip = ({ active, payload }) => {
     if (!active || !payload || !payload.length || payload[0].payload.isEmpty) return null;
     const data = payload[0].payload;
@@ -212,10 +247,7 @@ export function TagsAnalytics({ tagsData, activeLocale, activePeriod, setActiveP
             {weeksData.map((val, idx) => {
               const weekId = `week-${idx}`;
               const isDisabled = val === 0;
-              
-              const globalData = useRetentionStore.getState().supportData;
-              const periodData = globalData?.byPeriod?.[activePeriod] || globalData;
-              const weekDates = periodData?.liveChat?.weeklyKPI?.[idx]?.dates || '';
+              const weekDates = getWeekDates(idx);
 
               if (isDisabled) return null; 
 
@@ -324,7 +356,7 @@ export function TagsAnalytics({ tagsData, activeLocale, activePeriod, setActiveP
             <span>🔍</span>
             <input 
               type="text" 
-              placeholder="Search tags..." 
+              placeholder={t('Search tags...', 'Search tags...')}
               value={searchQuery}
               onChange={e => setSearchQuery(e.target.value)}
               className={styles.searchInput}
@@ -381,9 +413,9 @@ export function TagsAnalytics({ tagsData, activeLocale, activePeriod, setActiveP
         </div>
         
         <div className={styles.tableFooter}>
-          <p className={styles.showingText}>Showing <span className={styles.showingCount}>{tableData.length}</span> tags</p>
+          <p className={styles.showingText}>{t('Showing', 'Showing')} <span className={styles.showingCount}>{tableData.length}</span> {t('tags', 'tags')}</p>
           <button className={styles.exportBtn}>
-            <span style={{ marginRight: '8px' }}>📥</span> Export CSV
+            <span style={{ marginRight: '8px' }}>📥</span> {t('Export CSV', 'Export CSV')}
           </button>
         </div>
       </div>

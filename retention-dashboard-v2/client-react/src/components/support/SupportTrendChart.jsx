@@ -78,14 +78,39 @@ export function SupportTrendChart({ weeklyKPI = [], activePeriod }) {
                 padding={{ left: 30, right: 30 }} 
               />
               
-              <YAxis yAxisId="left" axisLine={false} tickLine={false} tick={{ fontWeight: 700, fill: '#666', fontSize: 14 }} />
+              <YAxis 
+                yAxisId="left" 
+                axisLine={false} 
+                tickLine={false} 
+                tick={{ fontWeight: 700, fill: '#666', fontSize: 14 }}
+                domain={[0, 'auto']}
+                allowDataOverflow={false}
+              />
               <YAxis yAxisId="right" orientation="right" domain={[0, 100]} axisLine={false} tickLine={false} tick={{ fontWeight: 700, fill: '#666', fontSize: 14 }} tickFormatter={v => `${v}%`} />
               
               <Tooltip content={<CustomTooltip />} />
               
-              {/* ИСПРАВЛЕНИЕ: strokeWidth={6} (сделал жирнее) */}
-              <Area yAxisId="left" type="monotone" dataKey="chats" fill="url(#colorChats)" stroke="#F5B800" strokeWidth={6} activeDot={{ r: 8 }} dot={renderDot('#F5B800')} />
-              <Line yAxisId="right" type="monotone" dataKey="satisfaction" stroke="#a855f7" strokeWidth={6} activeDot={{ r: 8 }} dot={renderDot('#a855f7')} />
+              <Area 
+                yAxisId="left" 
+                type="monotone" 
+                dataKey="chats" 
+                fill="url(#colorChats)" 
+                stroke="#F5B800" 
+                strokeWidth={3} 
+                activeDot={{ r: 8 }} 
+                dot={renderDot('#F5B800')}
+                connectNulls
+              />
+              <Line 
+                yAxisId="right" 
+                type="monotone" 
+                dataKey="satisfaction" 
+                stroke="#a855f7" 
+                strokeWidth={3} 
+                activeDot={{ r: 8 }} 
+                dot={renderDot('#a855f7')}
+                connectNulls
+              />
             </ComposedChart>
           </ResponsiveContainer>
         </div>

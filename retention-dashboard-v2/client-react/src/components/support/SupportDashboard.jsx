@@ -88,6 +88,46 @@ export function SupportDashboard({ type }) {
 
   const hasData = (chats) => (chats || 0) > 0;
 
+  // ═══ АВТОВЫБОР ЛОКАЛИ И ПЕРИОДА ПРИ СМЕНЕ МЕСЯЦА ═══
+  useEffect(() => {
+    // При смене месяца (selectedSupportPeriod) - выбираем локаль и период с данными
+    
+    // 1. Проверяем текущую локаль - если нет данных, выбираем другую
+    let newLocale = activeLocale;
+    if (newLocale === 'ALL' && !allGeoHasData && locales.length > 0) {
+      newLocale = locales[0];
+      setActiveLocale(newLocale);
+    } else if (newLocale !== 'ALL' && !locales.includes(newLocale)) {
+      newLocale = allGeoHasData ? 'ALL' : (locales[0] || 'ALL');
+      setActiveLocale(newLocale);
+    }
+    
+    // 2. Проверяем текущий период - если нет данных, выбираем другой
+    const localeData = newLocale === 'ALL' ? kpiData : (kpiData.byLocale?.[newLocale] || {});
+    const localeWeeklyKPI = localeData.weeklyKPI || [];
+    
+    if (activePeriod === 'total' && !hasData(localeData.totalChats)) {
+      // Total пустой - ищем первую неделю с данными
+      const firstValidWeek = localeWeeklyKPI.findIndex(w => hasData(w.totalChats));
+      if (firstValidWeek >= 0) {
+        setActivePeriod(`week-${firstValidWeek}`);
+      }
+    } else if (activePeriod.startsWith('week-')) {
+      const wIdx = parseInt(activePeriod.split('-')[1], 10);
+      if (!hasData(localeWeeklyKPI[wIdx]?.totalChats)) {
+        // Текущая неделя пустая - пробуем total или другую неделю
+        if (hasData(localeData.totalChats)) {
+          setActivePeriod('total');
+        } else {
+          const firstValidWeek = localeWeeklyKPI.findIndex(w => hasData(w.totalChats));
+          if (firstValidWeek >= 0) {
+            setActivePeriod(`week-${firstValidWeek}`);
+          }
+        }
+      }
+    }
+  }, [selectedSupportPeriod]); // Срабатывает при смене месяца в сайдбаре
+
   const handlePeriodSelect = (periodId, chats) => {
     if (hasData(chats)) {
       setActivePeriod(periodId);
@@ -96,7 +136,23 @@ export function SupportDashboard({ type }) {
 
   const handleLocaleSelect = (loc) => {
     setActiveLocale(loc);
-    setActivePeriod('total'); // При смене страны сбрасываем неделю
+    
+    // Получаем данные новой локали
+    const newLocaleData = loc === 'ALL' ? kpiData : (kpiData.byLocale?.[loc] || {});
+    const newWeeklyKPI = newLocaleData.weeklyKPI || [];
+    
+    // Если total имеет данные - выбираем его
+    if (hasData(newLocaleData.totalChats)) {
+      setActivePeriod('total');
+    } else {
+      // Иначе ищем первую неделю с данными
+      const firstValidWeek = newWeeklyKPI.findIndex(w => hasData(w.totalChats));
+      if (firstValidWeek >= 0) {
+        setActivePeriod(`week-${firstValidWeek}`);
+      } else {
+        setActivePeriod('total'); // Fallback
+      }
+    }
   };
 
   return (

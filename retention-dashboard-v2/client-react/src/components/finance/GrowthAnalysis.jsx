@@ -71,9 +71,12 @@ export function GrowthAnalysis() {
       const currentValue = filteredIndex >= 0 ? filteredValues[filteredIndex] : 0;
       
       const diffNum = parseDiffToNumber(currentDiff);
-      
-      // Если это первый месяц, показываем просто цифру, а не %
-      const displayValue = (currentDiff && currentDiff !== '—' && !isFirstPeriod) 
+
+      // Если это первый месяц ИЛИ текущее значение = 0, показываем просто цифру, а не %
+      const hasValidData = currentValue > 0;
+      const hasValidDiff = currentDiff && currentDiff !== '—' && !isFirstPeriod;
+
+      const displayValue = (hasValidDiff && hasValidData) 
         ? `${diffNum >= 0 ? '+' : ''}${diffNum.toFixed(1)}%` 
         : formatCompact(currentValue);
       

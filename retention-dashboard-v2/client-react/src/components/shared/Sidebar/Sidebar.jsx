@@ -16,11 +16,24 @@ export function Sidebar({ activeScreen, onScreenChange }) {
   const setSupportPeriod = useRetentionStore(state => state.setSupportPeriod);
 
   const isSupport = activeScreen.startsWith('support');
+  const isChannels = activeScreen === 'channels';
+  const isFinance = activeScreen === 'finance';
 
-  // 2. МЕМОИЗИРУЕМ РАСЧЕТ ПЕРИОДОВ RETENTION
+  // 2. МЕМОИЗИРУЕМ РАСЧЕТ ПЕРИОДОВ RETENTION С ФИЛЬТРАЦИЕЙ
   const retentionPeriods = useMemo(() => {
-    return data?.periods || [];
-  }, [data]);
+    const allPeriods = data?.periods || [];
+    
+    // Фильтруем в зависимости от активного экрана
+    if (isChannels) {
+      return allPeriods.filter(p => p.hasChannels === true);
+    }
+    if (isFinance) {
+      return allPeriods.filter(p => p.hasFinance === true);
+    }
+    
+    // По умолчанию возвращаем все периоды
+    return allPeriods;
+  }, [data, isChannels, isFinance]);
 
   // 3. БЕРЕМ УЖЕ ГОТОВЫЕ ПЕРИОДЫ SUPPORT ИЗ КЕША (уже перевёрнуты!)
   const supportPeriods = useRetentionStore(state => state.supportPeriodsCache) || [];
@@ -29,6 +42,17 @@ export function Sidebar({ activeScreen, onScreenChange }) {
   const activePeriods = isSupport ? supportPeriods : retentionPeriods;
   const activeSelectedPeriod = isSupport ? selectedSupportPeriod : selectedPeriod;
   const activeSetPeriod = isSupport ? setSupportPeriod : setPeriod;
+
+  // 4. ПРОВЕРКА: Если выбранный период не в списке доступных — выбираем первый доступный
+  const isSelectedPeriodValid = activePeriods.some(p => p.key === activeSelectedPeriod);
+  
+  // Автовыбор первого доступного периода при смене вкладки
+  useMemo(() => {
+    if (!isSelectedPeriodValid && activePeriods.length > 0 && !isSupport) {
+      // Выбираем первый период (самый свежий, т.к. они уже отсортированы)
+      activeSetPeriod(activePeriods[0].key);
+    }
+  }, [isSelectedPeriodValid, activePeriods, activeSetPeriod, isSupport]);
 
   return (
     <aside className={styles.sidebar}>

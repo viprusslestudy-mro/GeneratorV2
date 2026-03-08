@@ -89,9 +89,12 @@ export function ChannelsDashboard() {
 
   // Helper для вычисления строки дельты (например, "+15.2% к пред.")
   const calcDiff = (curr, prev) => {
+    // Если текущее значение пустое или 0 — не показываем дельту
+    if (curr === null || curr === undefined || curr === 0) return '';
+    // Если предыдущее значение пустое или 0 — не показываем дельту
     if (prev === null || prev === undefined || prev === 0) return '';
+    
     const diff = ((curr - prev) / Math.abs(prev)) * 100;
-    // ИСПРАВЛЕНИЕ: Оборачиваем "vs prev." в t() -> найдет "к пред." в словаре
     return `${diff > 0 ? '+' : ''}${diff.toFixed(1)}% ${t('к пред.', 'vs prev.')}`;
   };
 
