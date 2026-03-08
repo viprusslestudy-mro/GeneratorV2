@@ -123,8 +123,13 @@ export const useRetentionStore = create(
         const state = get();
         if (!state.devMode) return;
         
+        const itemString = JSON.stringify({ key, screen });
+        
+        // Оптимизация: если уже есть, не вызываем set() (не триггерим рендер)
+        if (state.missingTranslations.has(itemString)) return;
+        
         const newSet = new Set(state.missingTranslations);
-        newSet.add(JSON.stringify({ key, screen }));
+        newSet.add(itemString);
         set({ missingTranslations: newSet });
       },
 

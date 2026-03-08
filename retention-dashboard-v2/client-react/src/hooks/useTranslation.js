@@ -4,18 +4,25 @@
  * ═══════════════════════════════════════════════════════════════════════════
  */
 import { useRetentionStore } from '../store/retentionStore';
+import { useCallback } from 'react';
+
+// Храним уже залогированные ключи вне React-цикла (чтобы не спамить)
+const loggedMissingKeys = new Set();
+// Статичный пустой объект, чтобы не создавать новые референсы в селекторе
+const EMPTY_TRANSLATIONS = {};
 
 export function useTranslation() {
   const language = useRetentionStore(state => state.language);
-  const translations = useRetentionStore(state =>
-    state.data?.localization?.translations?.[language] || {}
-  );
-
   const devMode = useRetentionStore(state => state.devMode);
   const currentScreen = useRetentionStore(state => state.currentScreen);
-  const addMissingTranslation = useRetentionStore(state => state.addMissingTranslation);
 
-  const t = (key, fallback) => {
+  // ИСПРАВЛЕНИЕ: Используем EMPTY_TRANSLATIONS вместо создания нового объекта {}
+  const translations = useRetentionStore(state =>
+    state.data?.localization?.translations?.[language] || EMPTY_TRANSLATIONS
+  );
+
+  // Используем useCallback, чтобы функция не пересоздавалась при каждом рендере
+  const t = useCallback((key, fallback) => {
     if (!key) return fallback || '';
 
     // 1. Прямое совпадение
@@ -40,7 +47,6 @@ export function useTranslation() {
       }
 
       // Если мы ищем с эмодзи, а в словаре без (или наоборот)
-      // Просто проверяем, содержит ли длинная строка короткую
       if (dictKeyLower.includes(lowerKey) || lowerKey.includes(dictKeyLower)) {
         // Защита от ложных срабатываний (строки должны быть длиннее 5 символов)
         if (lowerKey.length > 5 && Math.abs(dictKeyLower.length - lowerKey.length) <= 4) {
@@ -49,16 +55,22 @@ export function useTranslation() {
       }
     }
 
-    // ДОБАВЛЕНО: Логируем непереведённое в Dev Mode
-    if (devMode && language === 'RU') {
-      addMissingTranslation(key, currentScreen);
+    // Логируем непереведённое ТОЛЬКО если мы в DevMode, язык RU, и мы ещё не логировали этот ключ
+    // Запускаем асинхронно через setTimeout, чтобы не прерывать текущий рендер
+    if (devMode && language === 'RU' && !loggedMissingKeys.has(key)) {
+      loggedMissingKeys.add(key); // Отмечаем как залогированный сразу
+      
+      setTimeout(() => {
+        // Добавляем в Store (Zustand)
+        useRetentionStore.getState().addMissingTranslation(key, currentScreen);
+      }, 0);
     }
 
-    // Если ничего не нашли - возвращаем оригинал (на EN возвращаем fallback, если он есть)
+    // Если ничего не нашли - возвращаем оригинал
     return language === 'EN' && fallback !== undefined ? fallback : key;
-  };
+  }, [translations, language, devMode, currentScreen]);
 
-  const translateMonth = (monthStr) => {
+  const translateMonth = useCallback((monthStr) => {
     if (!monthStr) return '';
     if (language === 'RU') return monthStr;
 
@@ -73,7 +85,7 @@ export function useTranslation() {
     ruShort.forEach((ru, i) => { res = res.replace(new RegExp(ru, 'gi'), enShort[i]); });
 
     return res;
-  };
+  }, [language]);
 
   return { t, language, translateMonth };
 }
