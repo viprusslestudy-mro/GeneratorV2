@@ -49,8 +49,15 @@ export function ChannelsDashboard() {
   }
 
   // Находим предыдущий период (для подсчета дельт)
+  // ВАЖНО: periods отсортированы от новых к старым (Февраль=0, Январь=1...)
+  // Поэтому "предыдущий месяц" = periods[currentIndex + 1]
   const currentIndex = periods.findIndex(p => p.key === currentPeriodData.key);
-  const prevPeriodData = currentIndex > 0 ? periods[currentIndex - 1] : null;
+  const prevPeriodData = (currentIndex >= 0 && currentIndex < periods.length - 1) 
+    ? periods[currentIndex + 1] 
+    : null;
+
+  // Проверяем, что предыдущий период имеет данные по каналам
+  const validPrevPeriod = prevPeriodData?.hasChannels ? prevPeriodData : null;
 
   // Helper для получения значения
   const getCardValue = (periodData, chKey, metricKey) => {
@@ -82,9 +89,9 @@ export function ChannelsDashboard() {
   const conversionRate = contacts > 0 ? (conversions / contacts) : 0;
 
   // Вычисляем KPI для предыдущего месяца
-  const prevContacts = aggregateByMap(prevPeriodData, CONTACTS_KEYS);
-  const prevConversions = aggregateByMap(prevPeriodData, CONVERSIONS_KEYS);
-  const prevClicks = aggregateByMap(prevPeriodData, CLICKS_KEYS);
+  const prevContacts = aggregateByMap(validPrevPeriod, CONTACTS_KEYS);
+  const prevConversions = aggregateByMap(validPrevPeriod, CONVERSIONS_KEYS);
+  const prevClicks = aggregateByMap(validPrevPeriod, CLICKS_KEYS);
   const prevConversionRate = prevContacts > 0 ? (prevConversions / prevContacts) : null;
 
   // Helper для вычисления строки дельты (например, "+15.2% к пред.")
