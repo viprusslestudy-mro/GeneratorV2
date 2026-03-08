@@ -48,6 +48,10 @@ const getTagCount = (tag, locale, period) => {
 export function TagsAnalytics({ tagsData, activeLocale, activePeriod, setActivePeriod }) {
   const { t } = useTranslation();
   
+  // ═══ ВСЕ ХУКИ STORE В НАЧАЛЕ! ═══
+  const globalSupportData = useRetentionStore(state => state.supportData);
+  const selectedSupportPeriod = useRetentionStore(state => state.selectedSupportPeriod);
+  
   const [searchQuery, setSearchQuery] = useState('');
   const [categoryFilter, setCategoryFilter] = useState('all');
   const [sortField, setSortField] = useState('count');
@@ -66,15 +70,21 @@ export function TagsAnalytics({ tagsData, activeLocale, activePeriod, setActiveP
     return Array.from(locSet).sort();
   }, [categories]);
 
-  // Используем пропс activeLocale от родителя.
-  // Если родитель передал ALL, но у нас его нет - берем первую доступную
   const actualLocale = (activeLocale === 'ALL' || availableLocales.includes(activeLocale)) ? activeLocale : (availableLocales[0] || 'ALL');
 
-  // ═══ СНАЧАЛА useMemo для вычисления данных ═══
+  // ═══ Получаем данные о неделях из LiveChat KPI ═══
+  const weeklyKPIData = useMemo(() => {
+    const periodData = globalSupportData?.byPeriod?.[selectedSupportPeriod] || globalSupportData;
+    return periodData?.liveChat?.weeklyKPI || [];
+  }, [globalSupportData, selectedSupportPeriod]);
+
+  // ═══ Вычисляем данные тегов ═══
   const { totalMonthChats, totalUniqueTags, weeksData } = useMemo(() => {
     let tChats = 0;
     let uTags = 0;
-    const wData = [0, 0, 0, 0, 0];
+    
+    const numWeeks = weeklyKPIData.length || 5;
+    const wData = new Array(numWeeks).fill(0);
 
     categories.forEach(cat => {
       (cat.tags || []).forEach(tag => {
@@ -83,20 +93,18 @@ export function TagsAnalytics({ tagsData, activeLocale, activePeriod, setActiveP
           tChats += valTotal;
           uTags++;
         }
-        for (let i = 0; i < 5; i++) {
+        for (let i = 0; i < numWeeks; i++) {
           wData[i] += getTagCount(tag, actualLocale, `week-${i}`);
         }
       });
     });
 
     return { totalMonthChats: tChats, totalUniqueTags: uTags, weeksData: wData };
-  }, [categories, actualLocale]);
+  }, [categories, actualLocale, weeklyKPIData]);
 
-  // ═══ ПОТОМ useEffect для автовыбора периода (после useMemo!) ═══
+  // ═══ Автовыбор периода ═══
   useEffect(() => {
-    // Проверяем, есть ли данные в текущем периоде для новой локали
     if (activePeriod === 'total' && totalMonthChats === 0) {
-      // Total пустой - ищем первую неделю с данными
       const firstValidWeek = weeksData.findIndex(val => val > 0);
       if (firstValidWeek >= 0) {
         setActivePeriod(`week-${firstValidWeek}`);
@@ -104,7 +112,6 @@ export function TagsAnalytics({ tagsData, activeLocale, activePeriod, setActiveP
     } else if (activePeriod.startsWith('week-')) {
       const wIdx = parseInt(activePeriod.split('-')[1], 10);
       if (weeksData[wIdx] === 0) {
-        // Текущая неделя пустая
         if (totalMonthChats > 0) {
           setActivePeriod('total');
         } else {
@@ -117,6 +124,12 @@ export function TagsAnalytics({ tagsData, activeLocale, activePeriod, setActiveP
     }
   }, [actualLocale, totalMonthChats, weeksData, activePeriod, setActivePeriod]);
 
+  // ═══ Получаем даты недели ═══
+  const getWeekDates = (weekIdx) => {
+    if (weekIdx >= weeklyKPIData.length) return null;
+    return weeklyKPIData[weekIdx]?.dates || '';
+  };
+
   const pieData = useMemo(() => {
     const data = categories.map(cat => {
       const sum = (cat.tags || []).reduce((acc, tag) => acc + getTagCount(tag, actualLocale, activePeriod), 0);
@@ -128,16 +141,13 @@ export function TagsAnalytics({ tagsData, activeLocale, activePeriod, setActiveP
   const pieTotal = pieData[0]?.isEmpty ? 0 : pieData.reduce((sum, d) => sum + d.value, 0);
 
   const topIssues = useMemo(() => {
-    let issues = [];
     const issuesCat = categories.find(c => c.name.toLowerCase() === 'issues' || c.name === 'Проблемы');
     const sourceTags = issuesCat ? issuesCat.tags : categories.flatMap(c => c.tags || []);
     
-    issues = sourceTags.map(t => ({
+    return sourceTags.map(t => ({
       name: t.name,
       count: getTagCount(t, actualLocale, activePeriod)
     })).filter(t => t.count > 0).sort((a, b) => b.count - a.count).slice(0, 5);
-    
-    return issues;
   }, [categories, actualLocale, activePeriod]);
 
   const tableData = useMemo(() => {
@@ -193,15 +203,6 @@ export function TagsAnalytics({ tagsData, activeLocale, activePeriod, setActiveP
     if (hasData) setActivePeriod(periodId);
   };
 
-  // ═══ Получаем даты недель из глобального стора ═══
-  const globalSupportData = useRetentionStore(state => state.supportData);
-  const selectedSupportPeriod = useRetentionStore(state => state.selectedSupportPeriod);
-  
-  const getWeekDates = (weekIdx) => {
-    const periodData = globalSupportData?.byPeriod?.[selectedSupportPeriod] || globalSupportData;
-    return periodData?.liveChat?.weeklyKPI?.[weekIdx]?.dates || '';
-  };
-
   const CustomPieTooltip = ({ active, payload }) => {
     if (!active || !payload || !payload.length || payload[0].payload.isEmpty) return null;
     const data = payload[0].payload;
@@ -248,14 +249,15 @@ export function TagsAnalytics({ tagsData, activeLocale, activePeriod, setActiveP
               const weekId = `week-${idx}`;
               const isDisabled = val === 0;
               const weekDates = getWeekDates(idx);
-
-              if (isDisabled) return null; 
+              
+              // Показываем неделю только если есть даты
+              if (!weekDates) return null;
 
               return (
                 <div 
                   key={weekId}
-                  className={`${styles.periodCard} ${activePeriod === weekId ? styles.active : ''}`}
-                  onClick={() => handlePeriodSelect(weekId, true)}
+                  className={`${styles.periodCard} ${activePeriod === weekId ? styles.active : ''} ${isDisabled ? styles.disabled : ''}`}
+                  onClick={() => !isDisabled && handlePeriodSelect(weekId, true)}
                 >
                   <div className={styles.weekHeader}>
                     <span className={styles.weekTitle}>{t('Week', 'Week')} {idx + 1}</span>

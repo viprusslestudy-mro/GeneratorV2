@@ -26,7 +26,18 @@ export function MetricCard({ metric }) {
 
 function getDiffClass(diff) {
   if (!diff) return '';
+  
+  // Если уже есть знак — используем его
   if (diff.startsWith('+')) return 'positive';
   if (diff.startsWith('-')) return 'negative';
+  
+  // Парсим число из строки (заменяем запятую на точку)
+  const numStr = diff.replace(/[^0-9,.-]/g, '').replace(',', '.');
+  const num = parseFloat(numStr);
+  
+  if (isNaN(num) || num === 0) return 'neutral';
+  if (num > 0) return 'positive';
+  if (num < 0) return 'negative';
+  
   return 'neutral';
 }

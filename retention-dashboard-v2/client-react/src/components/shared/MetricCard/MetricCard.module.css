@@ -96,8 +96,8 @@
 }
 
 .diff.neutral {
-  background: var(--primary-accent);
-  color: #000;
+  background: rgba(107, 114, 128, 0.1);
+  color: #6b7280;
 }
 
 .diff.base {
