@@ -12,6 +12,12 @@
  */
 
 /**
+ * ═══════════════════════════════════════════════════════════════════════════
+ *  НОВЫЙ СБОРЩИК SUPPORT ДЛЯ REACT & SUPABASE
+ * ═══════════════════════════════════════════════════════════════════════════
+ */
+
+/**
  * Собрать данные Support для выбранного периода
  * @param {Object} sourceConfig - Конфигурация источника (опционально)
  * @param {string} requestedPeriodKey - Период "YYYY-MM" (опционально)
@@ -83,13 +89,13 @@ function collectSupportData(sourceConfig, requestedPeriodKey) {
       const tagsData = readTagsStatisticSmart(currentPeriod, ssId, tagsSheetName);
       data.tags = tagsData.tags;
       
-      // ✅ ИСПРАВЛЕНИЕ: Копируем weeklyTotals в tags
+      // ИСПРАВЛЕНИЕ: Копируем weeklyTotals в tags
       if (tagsData.weeklyTotals) {
         data.tags.weeklyTotals = tagsData.weeklyTotals;
         data.helpDesk.byWeek = tagsData.weeklyTotals;
       }
       
-      // ✅ ИСПРАВЛЕНИЕ: Копируем даты из периода Tags (если они точнее)
+      // ИСПРАВЛЕНИЕ: Копируем даты из периода Tags (если они точнее)
       if (tagsData.period) {
         if (tagsData.period.startDate && tagsData.period.endDate) {
           data.period.startDate = tagsData.period.startDate;
@@ -148,8 +154,122 @@ function collectSupportData(sourceConfig, requestedPeriodKey) {
     Logger.log(`[collectSupportData] Error: ${e.message}`);
     Logger.log(e.stack);
   }
-  
   return data;
+}
+
+/**
+ * ═══════════════════════════════════════════════════════════════════════════
+ *  НОВЫЙ СБОРЩИК SUPPORT ДЛЯ REACT & SUPABASE
+ * ═══════════════════════════════════════════════════════════════════════════
+ */
+
+/**
+ * Собирает данные по ВСЕМ активным месяцам Support в один большой JSON.
+ * @param {Object} sourceConfig - Конфигурация источника из Мастера
+ * @returns {Object} { availablePeriods: [...], byPeriod: { "2026-01": {...}, "2026-02": {...} } }
+ */
+function collectAllSupportPeriods(sourceConfig) {
+  Logger.log('[collectAllSupportPeriods] Starting. Spreadsheet ID: ' + (sourceConfig ? sourceConfig.spreadsheetId : 'default'));
+  
+  var periods = getActivePeriodsForSupport();
+  
+  if (!periods || periods.length === 0) {
+    Logger.log('[collectAllSupportPeriods] No active periods found in Master Table.');
+    return { availablePeriods: [], byPeriod: {} };
+  }
+
+  // Сортируем: старые периоды первыми (Январь -> Февраль)
+  periods.sort(function(a, b) {
+    if (a.year !== b.year) return a.year - b.year;
+    return a.monthNum - b.monthNum;
+  });
+
+  var result = {
+    availablePeriods: periods.map(function(p) {
+      return {
+        label: p.label,
+        key: p.key,
+        hasKPI: p.hasKPI,
+        hasTags: p.hasTags
+      };
+    }),
+    byPeriod: {}
+  };
+
+  // Открываем таблицу-источник Support один раз, чтобы не дергать API гугла постоянно
+  var ss;
+  try {
+    ss = SpreadsheetApp.openById(sourceConfig.spreadsheetId);
+  } catch (e) {
+    throw new Error('Не удалось открыть таблицу Support (ID: ' + sourceConfig.spreadsheetId + '): ' + e.message);
+  }
+
+  // Собираем данные для каждого включенного месяца
+  periods.forEach(function(period) {
+    Logger.log('[collectAllSupportPeriods] --------- Processing Period: ' + period.label + ' ---------');
+    
+    var periodData = {
+      period: {
+        label: period.label,
+        monthNum: period.monthNum,
+        year: period.year,
+        key: period.key
+      },
+      liveChat: null,
+      tags: null
+    };
+
+    // 1. Читаем LiveChat KPI
+    if (period.hasKPI) {
+      var kpiSheetName = period.roleSheets.livechat || findSupportSheetSmart(ss, 'LiveChat - KPI', period);
+      var kpiSheet = kpiSheetName ? ss.getSheetByName(kpiSheetName) : null;
+      
+      if (kpiSheet) {
+        Logger.log('[collectAllSupportPeriods] Reading KPI from sheet: "' + kpiSheetName + '"');
+        periodData.liveChat = readLiveChatKPI(kpiSheet); // Твоя старая функция из DataReader_Support_KPI.js
+      } else {
+        Logger.log('[collectAllSupportPeriods] KPI Sheet not found for ' + period.label);
+      }
+    }
+
+    // 2. Читаем Tags Analytics
+    if (period.hasTags) {
+      var tagsSheetName = period.roleSheets.tags || findSupportSheetSmart(ss, 'Tags Statistic', period);
+      var tagsSheet = tagsSheetName ? ss.getSheetByName(tagsSheetName) : null;
+      
+      if (tagsSheet) {
+        Logger.log('[collectAllSupportPeriods] Reading Tags from sheet: "' + tagsSheetName + '"');
+        periodData.tags = readTagsStatistic(tagsSheet); // Твоя старая функция из DataReader_Support_Tags.js
+      } else {
+        Logger.log('[collectAllSupportPeriods] Tags Sheet not found for ' + period.label);
+      }
+    }
+
+    result.byPeriod[period.key] = periodData;
+    Logger.log('[collectAllSupportPeriods] Finished processing ' + period.label);
+  });
+
+  return result;
+}
+
+/**
+ * Умный поиск листа (если имя не задано жестко в настройках)
+ */
+function findSupportSheetSmart(ss, prefix, period) {
+  var sheets = ss.getSheets();
+  
+  // Ищем точное совпадение: "LiveChat - KPI - Январь"
+  var exactName = prefix + ' - ' + period.monthName.charAt(0).toUpperCase() + period.monthName.slice(1);
+  var exactSheet = ss.getSheetByName(exactName);
+  if (exactSheet) return exactName;
+  
+  // Ищем английское совпадение: "LiveChat - KPI - Jan"
+  var engMonths = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+  var engName = prefix + ' - ' + engMonths[period.monthNum - 1];
+  var engSheet = ss.getSheetByName(engName);
+  if (engSheet) return engName;
+
+  return null;
 }
 
 /**

@@ -102,7 +102,7 @@ export function BarChart() {
         
         <div className={styles.chartWrapper} style={{ overflowX: 'auto', overflowY: 'hidden' }}>
           <div style={{ minWidth: '800px', height: '380px' }}> {/* <- Это заставит график появиться скроллом, если экран узкий, а месяцев много */}
-            <ResponsiveContainer width="100%" height="100%">
+            <ResponsiveContainer width="99%" minHeight={300} height="100%">
               <RechartsBarChart 
                 data={chartData}
                 margin={{ top: 20, right: 30, left: 20, bottom: 20 }}

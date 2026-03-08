@@ -433,14 +433,14 @@ function getReportData(sourceKey) {
 }
 
 /**
- * Получить JSON данные Support отчета
+ * Получить JSON данные Support отчета (Все месяцы)
  */
 function getSupportReportJSON(sourceConfig) {
-  const activeMonths = getActiveMonthsDetailed();
-  // Передаем sourceConfig
-  const supportData = collectSupportData(sourceConfig);
-  // Передаем только данные (createSupportReportJSON не зависит от конфига напрямую, только от данных)
-  return createSupportReportJSON(supportData);
+  // Вызываем новую функцию, которая собирает ВСЕ месяцы
+  const supportData = collectAllSupportPeriods(sourceConfig);
+  
+  // Возвращаем чистый JSON объект для отправки в Supabase
+  return supportData;
 }
 
 /**

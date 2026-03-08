@@ -1,27 +1,56 @@
-// ДОБАВЛЕНО: Импортируем наш хук перевода
+import { useMemo } from 'react';
 import { useTranslation } from '../../../hooks/useTranslation';
-import { useRetentionStore, selectPeriods, selectSupportPeriods } from '../../../store/retentionStore';
+import { useRetentionStore } from '../../../store/retentionStore';
 import styles from './Sidebar.module.css';
 
 export function Sidebar({ activeScreen, onScreenChange }) {
-  const { t, translateMonth } = useTranslation(); // Инициализируем переводчик с функцией месяцев
-  const projectSettings = useRetentionStore(state => state.projectSettings);
+  const { t, translateMonth } = useTranslation();
   
-  // Читаем из стора ВСЕ данные
-  const retentionPeriods = useRetentionStore(selectPeriods);
-  const supportPeriods = useRetentionStore(selectSupportPeriods);
-  const selectedRetentionPeriod = useRetentionStore(state => state.selectedPeriod);
+  // 1. Берем только сырые данные (никаких сложных селекторов здесь!)
+  const projectSettings = useRetentionStore(state => state.projectSettings);
+  const data = useRetentionStore(state => state.data);
+  const supportData = useRetentionStore(state => state.supportData);
+  
+  const selectedPeriod = useRetentionStore(state => state.selectedPeriod);
   const selectedSupportPeriod = useRetentionStore(state => state.selectedSupportPeriod);
-  const setRetentionPeriod = useRetentionStore(state => state.setPeriod);
+  
+  const setPeriod = useRetentionStore(state => state.setPeriod);
   const setSupportPeriod = useRetentionStore(state => state.setSupportPeriod);
 
-  // Определяем, мы в Retention или в Support
   const isSupport = activeScreen.startsWith('support');
-  
-  // Выбираем нужные данные для отображения
+
+  // 2. МЕМОИЗИРУЕМ РАСЧЕТ ПЕРИОДОВ (Чтобы не было бесконечного цикла!)
+  const retentionPeriods = useMemo(() => {
+    return data?.periods || [];
+  }, [data]);
+
+  const supportPeriods = useMemo(() => {
+    if (!supportData) return [];
+    
+    if (Array.isArray(supportData.availablePeriods)) {
+      return supportData.availablePeriods;
+    }
+    
+    if (supportData.byPeriod) {
+      const keys = Object.keys(supportData.byPeriod).sort();
+      return keys.map(key => {
+        const periodObj = supportData.byPeriod[key]?.period || {};
+        return {
+          key: key,
+          label: periodObj.label || key,
+          hasKPI: true,
+          hasTags: true
+        };
+      });
+    }
+    
+    return [];
+  }, [supportData]);
+
+  // 3. Выбираем нужные периоды в зависимости от активного экрана
   const activePeriods = isSupport ? supportPeriods : retentionPeriods;
-  const activeSelectedPeriod = isSupport ? selectedSupportPeriod : selectedRetentionPeriod;
-  const activeSetPeriod = isSupport ? setSupportPeriod : setRetentionPeriod;
+  const activeSelectedPeriod = isSupport ? selectedSupportPeriod : selectedPeriod;
+  const activeSetPeriod = isSupport ? setSupportPeriod : setPeriod;
 
   return (
     <aside className={styles.sidebar}>
@@ -36,7 +65,21 @@ export function Sidebar({ activeScreen, onScreenChange }) {
       {/* Project Card */}
       <div className={styles.projectCard}>
         <div className={styles.projectIcon}>
-          <div className={styles.projectIconFallback}>
+          {projectSettings.logoUrl ? (
+            <img 
+              src={projectSettings.logoUrl} 
+              alt="Project Logo"
+              className={styles.projectLogo}
+              onError={(e) => {
+                e.target.style.display = 'none';
+                e.target.nextSibling.style.display = 'flex';
+              }}
+            />
+          ) : null}
+          <div 
+            className={styles.projectIconFallback}
+            style={{ display: projectSettings.logoUrl ? 'none' : 'flex' }}
+          >
             {projectSettings.icon}
           </div>
         </div>
@@ -53,15 +96,13 @@ export function Sidebar({ activeScreen, onScreenChange }) {
           className={`${styles.navItem} ${activeScreen === 'finance' ? styles.active : ''}`}
           onClick={() => onScreenChange('finance')}
         >
-          {/* ИСПРАВЛЕНО: Ключом является русская фраза */}
-          <span>💰</span> {t('Главная панель', 'Main Dashboard')}
+          <span>💰</span> {t('tab.finance', 'Main Dashboard')}
         </button>
         <button 
           className={`${styles.navItem} ${activeScreen === 'channels' ? styles.active : ''}`}
           onClick={() => onScreenChange('channels')}
         >
-          {/* ИСПРАВЛЕНО: Ключом является русская фраза */}
-          <span>📈</span> {t('Каналы коммуникации', 'Communication channels')}
+          <span>📈</span> {t('tab.channels', 'Communication channels')}
         </button>
       </nav>
 
@@ -72,15 +113,13 @@ export function Sidebar({ activeScreen, onScreenChange }) {
           className={`${styles.navItem} ${activeScreen === 'support_stats' ? styles.active : ''}`}
           onClick={() => onScreenChange('support_stats')}
         >
-          {/* ИСПРАВЛЕНО: Ключом является русская фраза */}
-          <span>📋</span> {t('Показатели LiveChat', 'LiveChat KPI')}
+          <span>📋</span> {t('tab.support_stats', 'LiveChat KPI')}
         </button>
         <button 
           className={`${styles.navItem} ${activeScreen === 'support_tags' ? styles.active : ''}`}
           onClick={() => onScreenChange('support_tags')}
         >
-          {/* ИСПРАВЛЕНО: Ключом является русская фраза */}
-          <span>🏷️</span> {t('Тэги проблем', 'Issue Tags')}
+          <span>🏷️</span> {t('tab.support_tags', 'Issue Tags')}
         </button>
       </nav>
 
@@ -96,7 +135,6 @@ export function Sidebar({ activeScreen, onScreenChange }) {
               }`}
               onClick={() => activeSetPeriod(period.key)}
             >
-              {/* ИСПРАВЛЕНО: УМНЫЙ ПЕРЕВОД МЕСЯЦА */}
               <span className={styles.periodLabel}>{translateMonth(period.label)}</span>
               {activeSelectedPeriod === period.key && (
                 <span className={styles.checkmark}>✓</span>

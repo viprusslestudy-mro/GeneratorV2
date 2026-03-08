@@ -48,26 +48,40 @@ export const supabaseApi = {
   },
 
   /**
-   * Получить последний сохраненный отчет Support
-   * (Пока возвращаем мок, так как экспорт Support-данных в базу мы еще не написали)
+   * Получить последний сохраненный отчет Support (РЕАЛЬНАЯ БАЗА!)
    */
   async getSupportReport() {
-    console.log('[Supabase] Запрашиваю данные Support (пока используем мок)...');
+    console.log('[Supabase] Запрашиваю данные Support...');
     
     try {
-      // Эмулируем задержку сети
-      await new Promise(resolve => setTimeout(resolve, 500));
-      
-      const response = await fetch(`/mocks/api_getSupportReport.json`);
+      // Идем в Supabase за ID = support_latest
+      const response = await fetch(
+        `${SUPABASE_URL}/rest/v1/reports?id=eq.support_latest&select=data`,
+        {
+          method: 'GET',
+          headers: {
+            'apikey': SUPABASE_KEY,
+            'Authorization': `Bearer ${SUPABASE_KEY}`,
+            'Content-Type': 'application/json'
+          }
+        }
+      );
+
       if (!response.ok) {
-        throw new Error('Файл мока Support не найден!');
+        throw new Error(`Ошибка HTTP: ${response.status}`);
       }
+
+      const rows = await response.json();
       
-      const data = await response.json();
-      console.log('[Supabase] ✅ Моковые данные Support успешно загружены!');
-      return data;
+      if (!rows || rows.length === 0) {
+        throw new Error('Данные Support не найдены в базе. Запусти экспорт из Google Sheets.');
+      }
+
+      console.log('[Supabase] ✅ Данные Support успешно загружены!');
+      return rows[0].data;
+      
     } catch (error) {
-      console.error('[Supabase] ❌ Ошибка загрузки мока Support:', error);
+      console.error('[Supabase] ❌ Ошибка Support:', error);
       throw error;
     }
   }

@@ -7,6 +7,11 @@ import { useState, useMemo } from 'react';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip as RechartsTooltip, Legend } from 'recharts';
 import { Card } from '../shared/Card/Card';
 import { useRetentionStore } from '../../store/retentionStore';
+import { formatCompact } from '../../utils/formatters';
+
+// ИСПРАВЛЕНИЕ ПУТИ ИМПОРТА ХУКА:
+import { useTranslation } from '../../hooks/useTranslation'; 
+
 import styles from './TagsAnalytics.module.css';
 
 const PIE_COLORS = ['#3b82f6', '#ef4444', '#10b981', '#a855f7', '#F5B800'];
@@ -44,6 +49,7 @@ const getTagCount = (tag, locale, period) => {
 };
 
 export function TagsAnalytics({ tagsData, activeLocale, activePeriod, setActivePeriod }) {
+  const { t } = useTranslation(); // ДОБАВЛЕНО
   const [searchQuery, setSearchQuery] = useState('');
   const [categoryFilter, setCategoryFilter] = useState('all');
   const [sortField, setSortField] = useState('count');
@@ -170,17 +176,17 @@ export function TagsAnalytics({ tagsData, activeLocale, activePeriod, setActiveP
             <div className={styles.totalMonthHeader}>
               <div className={styles.tagIcon}>🏷️</div>
               <div>
-                <h3 className={styles.totalTitle}>Total Month</h3>
-                <p className={styles.totalDates}>All Tags Data</p>
+                <h3 className={styles.totalTitle}>{t('Total Month')}</h3>
+                <p className={styles.totalDates}>{t('All Tags Data', 'All Tags Data')}</p>
               </div>
             </div>
             <div className={styles.totalStats}>
               <div>
-                <div className={styles.statTileLabel}>Total Used</div>
+                <div className={styles.statTileLabel}>{t('Total Used', 'Total Used')}</div>
                 <div className={styles.statTileValue}>{totalMonthChats.toLocaleString()}</div>
               </div>
               <div>
-                <div className={styles.statTileLabel}>Unique Tags</div>
+                <div className={styles.statTileLabel}>{t('Unique Tags', 'Unique Tags')}</div>
                 <div className={styles.statTileValue}>{totalUniqueTags}</div>
               </div>
             </div>
@@ -206,7 +212,7 @@ export function TagsAnalytics({ tagsData, activeLocale, activePeriod, setActiveP
                   onClick={() => handlePeriodSelect(weekId, true)}
                 >
                   <div className={styles.weekHeader}>
-                    <span className={styles.weekTitle}>Week {idx + 1}</span>
+                    <span className={styles.weekTitle}>{t('Week', 'Week')} {idx + 1}</span>
                   </div>
                   {/* ИСПРАВЛЕНИЕ: Выводим реальные даты вместо "week dates" */}
                   <div className={styles.weekDates}>{weekDates}</div>
@@ -225,7 +231,7 @@ export function TagsAnalytics({ tagsData, activeLocale, activePeriod, setActiveP
       <div className={styles.chartsRow}>
         
         {/* ЛЕВАЯ КАРТОЧКА: Category Distribution */}
-        <Card title="Category Distribution" subtitle="Breakdown by volume">
+        <Card title={t('Category Distribution', 'Category Distribution')} subtitle={t('Breakdown by volume', 'Breakdown by volume')}>
           <div className={styles.chartWrapper}>
             <ResponsiveContainer width="100%" height={350}>
               <PieChart>
@@ -245,7 +251,7 @@ export function TagsAnalytics({ tagsData, activeLocale, activePeriod, setActiveP
         </Card>
 
         {/* ПРАВАЯ КАРТОЧКА: Top Issues */}
-        <Card title="Top Issues" subtitle="Most frequent issue tags">
+        <Card title={t('Top Issues', 'Top Issues')} subtitle={t('Most frequent issue tags', 'Most frequent issue tags')}>
           <div className={styles.issuesWrapper}>
             {topIssues.length === 0 ? (
               <div className={styles.emptyChart}>No issues found</div>
@@ -278,7 +284,7 @@ export function TagsAnalytics({ tagsData, activeLocale, activePeriod, setActiveP
       {/* ═══ TABLE ═══ */}
       <Card>
         <div className={styles.tableHeader}>
-          <h3 className={styles.tableTitle}>All Tags</h3>
+          <h3 className={styles.tableTitle}>{t('All Tags', 'All Tags')}</h3>
           <div className={styles.searchWrap}>
             <span>🔍</span>
             <input 
@@ -295,13 +301,13 @@ export function TagsAnalytics({ tagsData, activeLocale, activePeriod, setActiveP
           <button 
             className={`${styles.chip} ${categoryFilter === 'all' ? styles.active : ''}`}
             onClick={() => setCategoryFilter('all')}
-          >All Categories</button>
+          >{t('All Categories', 'All Categories')}</button>
           {categories.filter(c => !c.name.toLowerCase().startsWith('week')).map(cat => (
             <button 
               key={cat.name}
               className={`${styles.chip} ${categoryFilter === cat.name ? styles.active : ''}`}
               onClick={() => setCategoryFilter(cat.name)}
-            >{cat.name}</button>
+            >{t(cat.name, cat.name)}</button>
           ))}
         </div>
 
@@ -309,11 +315,11 @@ export function TagsAnalytics({ tagsData, activeLocale, activePeriod, setActiveP
           <table className={styles.table}>
             <thead>
               <tr>
-                <th onClick={() => handleSort('name')}>Tag Name ↕</th>
-                <th onClick={() => handleSort('category')}>Category ↕</th>
-                <th onClick={() => handleSort('count')} style={{textAlign: 'center'}}>Count ↕</th>
-                <th style={{textAlign: 'center'}}>% Share</th>
-                <th style={{textAlign: 'center'}}>Top Locale</th>
+                <th onClick={() => handleSort('name')}>{t('Tag Name', 'Tag Name')} ↕</th>
+                <th onClick={() => handleSort('category')}>{t('Category', 'Category')} ↕</th>
+                <th onClick={() => handleSort('count')} style={{textAlign: 'center'}}>{t('Count', 'Count')} ↕</th>
+                <th style={{textAlign: 'center'}}>{t('% Share', '% Share')}</th>
+                <th style={{textAlign: 'center'}}>{t('Top Locale', 'Top Locale')}</th>
               </tr>
             </thead>
             <tbody>
@@ -321,7 +327,7 @@ export function TagsAnalytics({ tagsData, activeLocale, activePeriod, setActiveP
                 <tr key={idx}>
                   <td className={styles.boldText}>{row.name}</td>
                   <td>
-                    <span className={styles.categoryBadge}>{row.category}</span>
+                    <span className={styles.categoryBadge}>{t(row.category, row.category)}</span>
                   </td>
                   <td className={styles.boldText} style={{textAlign: 'center'}}>{row.count}</td>
                   <td style={{textAlign: 'center'}}>

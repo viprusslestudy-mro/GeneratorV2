@@ -112,9 +112,33 @@ export const selectUI = (state) => state.data?.ui || { financeTabs: {}, channelT
 export const selectFinanceTabs = (state) => state.data?.ui?.financeTabs || {};
 
 // Селекторы для Support
-export const selectSupportPeriods = (state) => state.supportData?.availablePeriods || [];
+export const selectSupportPeriods = (state) => {
+  if (!state.supportData) return [];
+  
+  // 1. Пытаемся найти массив availablePeriods (как было в моке)
+  if (Array.isArray(state.supportData.availablePeriods)) {
+    return state.supportData.availablePeriods;
+  }
+  
+  // 2. Если его нет, собираем периоды из ключей byPeriod
+  if (state.supportData.byPeriod) {
+    const keys = Object.keys(state.supportData.byPeriod).sort();
+    return keys.map(key => {
+      const periodObj = state.supportData.byPeriod[key]?.period || {};
+      return {
+        key: key,
+        label: periodObj.label || key, // Например "Январь 2026"
+        hasKPI: true,
+        hasTags: true
+      };
+    });
+  }
+  
+  return [];
+};
 
 export const selectCurrentSupportPeriod = (state) => {
-  if (!state.supportData || !state.selectedSupportPeriod) return null;
-  return state.supportData.availablePeriods.find(p => p.key === state.selectedSupportPeriod) || null;
+  if (!state.selectedSupportPeriod) return null;
+  const periods = selectSupportPeriods(state);
+  return periods.find(p => p.key === state.selectedSupportPeriod) || null;
 };

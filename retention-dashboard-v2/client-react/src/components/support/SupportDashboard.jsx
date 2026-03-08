@@ -40,11 +40,14 @@ export function SupportDashboard({ type }) {
     return <div className={styles.empty}>No Support Data available</div>;
   }
 
-  const periodData = globalSupportData.byPeriod?.[selectedSupportPeriod] || globalSupportData;
+  // ДОБАВЛЕНО: Безопасное получение данных периода
+  const availableKeys = globalSupportData.byPeriod ? Object.keys(globalSupportData.byPeriod).sort() : [];
+  const actualPeriodKey = selectedSupportPeriod || availableKeys[availableKeys.length - 1]; // Берем выбранный или последний
+  
+  const periodData = globalSupportData.byPeriod?.[actualPeriodKey] || globalSupportData;
   const kpiData = periodData.liveChat || {};
   
-  const currentPeriodInfo = globalSupportData.availablePeriods?.find((p) => p.key === selectedSupportPeriod);
-  const periodLabel = currentPeriodInfo?.label || periodData.period?.label || 'Current Month';
+  const periodLabel = periodData.period?.label || 'Current Month';
 
   const locales = Object.keys(kpiData.byLocale || {}).filter((loc) => {
     return kpiData.byLocale[loc].totalChats > 0 || (kpiData.byLocale[loc].weeklyKPI || []).some((w) => w.totalChats > 0);
@@ -96,7 +99,7 @@ export function SupportDashboard({ type }) {
             onClick={() => setActiveLocale('ALL')}
             disabled={!hasData(kpiData.totalChats)}
           >
-            ALL GEO
+            {t('ALL GEO')}
           </button>
           {locales.map((loc) => (
             <button 
@@ -126,17 +129,17 @@ export function SupportDashboard({ type }) {
                 <div className={styles.totalMonthHeader}>
                   <div className={styles.crownIcon}>👑</div>
                   <div>
-                    <h3 className={styles.totalTitle}>Total Month</h3>
-                    <p className={styles.totalDates}>Full month data</p>
+                    <h3 className={styles.totalTitle}>{t('Total Month')}</h3>
+                    <p className={styles.totalDates}>{t('Full month data', 'Full month data')}</p>
                   </div>
                 </div>
                 <div className={styles.totalStats}>
                   <div>
-                    <div className={styles.statTileLabel}>Total Chats</div>
+                    <div className={styles.statTileLabel}>{t('Total Chats')}</div>
                     <div className={styles.statTileValue}>{currentLocaleData.totalChats?.toLocaleString() || 0}</div>
                   </div>
                   <div>
-                    <div className={styles.statTileLabel}>Satisfaction</div>
+                    <div className={styles.statTileLabel}>{t('Satisfaction', 'Satisfaction')}</div>
                     <div className={styles.statTileValue}>
                       {currentLocaleData.chatSatisfaction || currentLocaleData.satisfaction || 0}
                       <span style={{ fontSize: '1rem', color: '#9ca3af' }}>%</span>
@@ -158,7 +161,7 @@ export function SupportDashboard({ type }) {
                       onClick={() => handlePeriodSelect(weekId, week.totalChats)}
                     >
                       <div className={styles.weekHeader}>
-                        <span className={styles.weekTitle}>{week.label || `Week ${idx + 1}`}</span>
+                        <span className={styles.weekTitle}>{week.label || `${t('Week', 'Week')} ${idx + 1}`}</span>
                         <span className={styles.weekSat}>
                           😊 {week.satisfaction || 0}%
                         </span>
@@ -178,15 +181,15 @@ export function SupportDashboard({ type }) {
               {/* Левая колонка (3 метрики времени) */}
               <div className={styles.kpiColLeft}>
                 <SupportMetricCard 
-                  title="First Response" subtitle="Target: under 0:15" 
+                  title={t('First Response')} subtitle={t('Target: under 0:15', 'Target: under 0:15')} 
                   value={formatTime(statsToShow.firstResponseTime || statsToShow.firstResponse)} icon="⚡" colorClass="blue" 
                 />
                 <SupportMetricCard 
-                  title="Avg Response" subtitle="Target: under 1:00" 
+                  title={t('Avg Response')} subtitle={t('Target: under 1:00', 'Target: under 1:00')} 
                   value={formatTime(statsToShow.avgResponseTime || statsToShow.avgResponse)} icon="⏱️" colorClass="purple" 
                 />
                 <SupportMetricCard 
-                  title="Avg Duration" subtitle="Average minutes" 
+                  title={t('Avg Duration')} subtitle={t('Average minutes', 'Average minutes')} 
                   value={formatDuration(statsToShow.avgChatDuration || statsToShow.chatDuration)} icon="⏳" colorClass="rose" 
                 />
               </div>
@@ -196,11 +199,11 @@ export function SupportDashboard({ type }) {
                 {/* Верхний ряд (2 карточки) */}
                 <div className={styles.kpiRightTop}>
                   <SupportMetricCard 
-                    title="Total Chats" subtitle="Total chats" 
+                    title={t('Total Chats')} subtitle={t('Total chats', 'Total chats')} 
                     value={statsToShow.totalChats?.toLocaleString() || 0} icon="💬" colorClass="yellow" 
                   />
                   <SupportMetricCard 
-                    title="Missed Chats" subtitle="Missed chats count" 
+                    title={t('Missed Chats')} subtitle={t('Missed chats count', 'Missed chats count')} 
                     value={statsToShow.missedChats || 0} icon="⚠️" colorClass="green" 
                   />
                 </div>
@@ -227,7 +230,8 @@ export function SupportDashboard({ type }) {
 
       {type === 'tags' && (
         <TagsAnalytics 
-          tagsData={globalSupportData.tags || periodData.tags} 
+          // ИСПРАВЛЕНИЕ: Передаем данные тегов для выбранного периода
+          tagsData={periodData.tags} 
           activeLocale={activeLocale} 
           activePeriod={activePeriod} 
           setActivePeriod={setActivePeriod} 

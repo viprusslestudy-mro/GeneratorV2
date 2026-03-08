@@ -6,6 +6,7 @@
 import { useMemo } from 'react';
 import { Card } from '../shared/Card/Card';
 import styles from './SupportLocaleTable.module.css';
+import { useTranslation } from '../../hooks/useTranslation';
 
 // Конфигурация строк таблицы
 const METRICS = [
@@ -92,22 +93,24 @@ export function SupportLocaleTable({ kpiData, activePeriod, activeLocale }) {
   // 2. Данные для "All Geo"
   const allGeoData = useMemo(() => extractPeriodData(kpiData, activePeriod), [kpiData, activePeriod]);
 
+  const { t } = useTranslation();
+
   if (sortedLocales.length === 0) return null;
 
   return (
     <Card>
       <div className={styles.header}>
-        <h3 className={styles.title}>Detailed Metrics by Locale</h3>
-        <p className={styles.subtitle}>Complete breakdown for selected period</p>
+        <h3 className={styles.title}>{t('Detailed Metrics by Locale', 'Detailed Metrics by Locale')}</h3>
+        <p className={styles.subtitle}>{t('Complete breakdown for selected period', 'Complete breakdown for selected period')}</p>
       </div>
 
       <div className={styles.tableWrapper}>
         <table className={styles.table}>
           <thead>
             <tr>
-              <th className={styles.thLeft}>Metric</th>
+              <th className={styles.thLeft}>{t('Метрика', 'Metric')}</th>
               <th className={`${styles.thCenter} ${activeLocale === 'ALL' ? styles.highlightCol : ''}`}>
-                All Geo
+                {t('ALL GEO', 'All Geo')}
               </th>
               {sortedLocales.map(loc => (
                 <th 
@@ -132,7 +135,7 @@ export function SupportLocaleTable({ kpiData, activePeriod, activeLocale }) {
                       <div className={styles.metricIcon} style={{ background: `${m.color}20`, color: m.color }}>
                         {m.icon}
                       </div>
-                      <span>{m.label}</span>
+                      <span>{t(m.label)}</span>
                     </div>
                   </td>
                   

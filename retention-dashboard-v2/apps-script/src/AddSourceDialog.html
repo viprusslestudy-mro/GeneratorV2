@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <title>Добавить источник данных</title>
+  <style>
+    body { font-family: 'Segoe UI', sans-serif; padding: 20px; background: #fdfdfd; color: #333; }
+    .form-group { margin-bottom: 15px; }
+    label { display: block; font-weight: 600; margin-bottom: 5px; font-size: 14px; }
+    input, select { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 8px; font-size: 14px; box-sizing: border-box; }
+    input:focus, select:focus { border-color: #667eea; outline: none; box-shadow: 0 0 0 2px rgba(102,126,234,0.2); }
+    .btn { background: #667eea; color: white; border: none; padding: 12px 24px; border-radius: 8px; cursor: pointer; font-size: 14px; font-weight: bold; width: 100%; transition: background 0.2s; }
+    .btn:hover { background: #5a6fd6; }
+    .hint { font-size: 11px; color: #777; margin-top: 4px; }
+    .flex-row { display: flex; gap: 15px; }
+    .flex-col { flex: 1; }
+    .text-center { text-align: center; font-size: 16px; }
+    .color-picker-wrapper { display: flex; align-items: center; gap: 10px; }
+    input[type="color"] { width: 50px; height: 40px; padding: 2px; cursor: pointer; }
+  </style>
+</head>
+<body>
+  <div class="form-group">
+    <label for="name">Название источника:</label>
+    <input type="text" id="name" placeholder="Например: Marketing 2026">
+  </div>
+
+  <div class="form-group">
+    <label for="template">Тип шаблона:</label>
+    <select id="template">
+      <option value="Retention">Retention (Финансы, Каналы, Продукт)</option>
+      <option value="Support">Support (LiveChat, KPI, Теги)</option>
+    </select>
+    <div class="hint">Определяет, как скрипт будет парсить листы этой таблицы</div>
+  </div>
+
+  <div class="form-group">
+    <label for="spreadsheetId">ID или URL таблицы:</label>
+    <input type="text" id="spreadsheetId" placeholder="Вставьте ID или полную ссылку">
+    <div class="hint">Система сама достанет ID из длинной ссылки</div>
+  </div>
+
+  <div class="form-group">
+    <label for="sheets">Листы (через запятую):</label>
+    <input type="text" id="sheets" placeholder="Например: Product Stat, Комуникации">
+    <div class="hint">Если оставить пустым, система попытается найти их автоматически</div>
+  </div>
+
+  <div class="form-group flex-row">
+    <div class="flex-col">
+      <label for="icon">Иконка (Эмодзи):</label>
+      <input type="text" id="icon" class="text-center" value="📊" maxlength="2">
+    </div>
+    <div class="flex-col">
+      <label for="color">Цвет ярлыка:</label>
+      <div class="color-picker-wrapper">
+        <input type="color" id="color" value="#667eea">
+      </div>
+    </div>
+  </div>
+
+  <button type="button" class="btn" onclick="addSource()">➕ Сохранить и Добавить</button>
+
+  <script>
+    function extractId(input) {
+      const match = input.match(/\/spreadsheets\/d\/([a-zA-Z0-9-_]+)/);
+      return match ? match[1] : input.trim();
+    }
+
+    function addSource() {
+      const btn = document.querySelector('.btn');
+      btn.innerText = 'Добавление...';
+      btn.style.opacity = '0.7';
+      btn.disabled = true;
+
+      const name = document.getElementById('name').value.trim();
+      const template = document.getElementById('template').value;
+      const spreadsheetId = extractId(document.getElementById('spreadsheetId').value);
+      const sheets = document.getElementById('sheets').value.split(',').map(s => s.trim()).filter(s => s);
+      const icon = document.getElementById('icon').value || '📊';
+      const color = document.getElementById('color').value;
+
+      if (!name || !spreadsheetId) {
+        alert('Пожалуйста, заполните Название и ID таблицы!');
+        btn.innerText = '➕ Сохранить и Добавить';
+        btn.style.opacity = '1';
+        btn.disabled = false;
+        return;
+      }
+
+      google.script.run
+        .withSuccessHandler(function() {
+          alert('✅ Источник "' + name + '" успешно добавлен в реестр!');
+          google.script.host.close();
+        })
+        .withFailureHandler(function(error) {
+          alert('❌ Ошибка при добавлении: ' + error.message);
+          btn.innerText = '➕ Сохранить и Добавить';
+          btn.style.opacity = '1';
+          btn.disabled = false;
+        })
+        .addNewDataSource(name, spreadsheetId, sheets, icon, color, template);
+    }
+  </script>
+</body>
+</html>

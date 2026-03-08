@@ -1,6 +1,8 @@
 import styles from './SatisfactionCard.module.css';
+import { useTranslation } from '../../hooks/useTranslation';
 
 export function SatisfactionCard({ satisfaction = 0, goodCount = 0, badCount = 0 }) {
+  const { t } = useTranslation();
   const radius = 40; // УВЕЛИЧЕНО! Было 32
   const circumference = 2 * Math.PI * radius;
   const offset = circumference - (satisfaction / 100) * circumference;
@@ -12,8 +14,8 @@ export function SatisfactionCard({ satisfaction = 0, goodCount = 0, badCount = 0
           <span className={styles.icon}>🤩</span> {/* Заменил на более яркий смайл */}
         </div>
         <div className={styles.titleBlock}>
-          <span className={styles.label}>Satisfaction</span>
-          <span className={styles.sublabel}>Customer rating</span>
+          <span className={styles.label}>{t('Satisfaction', 'Satisfaction')}</span>
+          <span className={styles.sublabel}>{t('Customer rating', 'Customer rating')}</span>
         </div>
       </div>
 
@@ -41,12 +43,12 @@ export function SatisfactionCard({ satisfaction = 0, goodCount = 0, badCount = 0
         <div className={`${styles.thumbBlock} ${styles.good}`}>
           <span className={styles.thumbIcon}>👍</span>
           <span className={styles.thumbCount}>{goodCount}</span>
-          <span className={styles.thumbLabel}>Good</span>
+          <span className={styles.thumbLabel}>{t('Good', 'Good')}</span>
         </div>
         <div className={`${styles.thumbBlock} ${styles.bad}`}>
           <span className={styles.thumbIcon}>👎</span>
           <span className={styles.thumbCount}>{badCount}</span>
-          <span className={styles.thumbLabel}>Bad</span>
+          <span className={styles.thumbLabel}>{t('Bad', 'Bad')}</span>
         </div>
       </div>
     </div>

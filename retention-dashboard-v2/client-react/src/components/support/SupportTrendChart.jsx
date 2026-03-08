@@ -56,7 +56,7 @@ export function SupportTrendChart({ weeklyKPI = [], activePeriod }) {
         </div>
         
         <div className={styles.chartWrapper}>
-          <ResponsiveContainer width="100%" height={350}>
+          <ResponsiveContainer width="99%" height={350}>
             {/* ИСПРАВЛЕНИЕ: Добавлен padding, чтобы не прилипало */}
             <ComposedChart data={chartData} margin={{ top: 20, right: 30, left: 30, bottom: 20 }}>
               <defs>
