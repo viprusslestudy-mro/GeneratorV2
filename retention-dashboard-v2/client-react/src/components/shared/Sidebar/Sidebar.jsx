@@ -6,11 +6,9 @@ import styles from './Sidebar.module.css';
 export function Sidebar({ activeScreen, onScreenChange }) {
   const { t, translateMonth } = useTranslation();
   
-  // 1. Берем только сырые данные (никаких сложных селекторов здесь!)
+  // 1. Берем только сырые данные
   const projectSettings = useRetentionStore(state => state.projectSettings);
   const data = useRetentionStore(state => state.data);
-  const supportData = useRetentionStore(state => state.supportData);
-  
   const selectedPeriod = useRetentionStore(state => state.selectedPeriod);
   const selectedSupportPeriod = useRetentionStore(state => state.selectedSupportPeriod);
   
@@ -19,35 +17,15 @@ export function Sidebar({ activeScreen, onScreenChange }) {
 
   const isSupport = activeScreen.startsWith('support');
 
-  // 2. МЕМОИЗИРУЕМ РАСЧЕТ ПЕРИОДОВ (Чтобы не было бесконечного цикла!)
+  // 2. МЕМОИЗИРУЕМ РАСЧЕТ ПЕРИОДОВ RETENTION
   const retentionPeriods = useMemo(() => {
     return data?.periods || [];
   }, [data]);
 
-  const supportPeriods = useMemo(() => {
-    if (!supportData) return [];
-    
-    if (Array.isArray(supportData.availablePeriods)) {
-      return supportData.availablePeriods;
-    }
-    
-    if (supportData.byPeriod) {
-      const keys = Object.keys(supportData.byPeriod).sort();
-      return keys.map(key => {
-        const periodObj = supportData.byPeriod[key]?.period || {};
-        return {
-          key: key,
-          label: periodObj.label || key,
-          hasKPI: true,
-          hasTags: true
-        };
-      });
-    }
-    
-    return [];
-  }, [supportData]);
+  // 3. БЕРЕМ УЖЕ ГОТОВЫЕ ПЕРИОДЫ SUPPORT ИЗ КЕША (уже перевёрнуты!)
+  const supportPeriods = useRetentionStore(state => state.supportPeriodsCache) || [];
 
-  // 3. Выбираем нужные периоды в зависимости от активного экрана
+  // Выбираем нужные периоды в зависимости от активного экрана
   const activePeriods = isSupport ? supportPeriods : retentionPeriods;
   const activeSelectedPeriod = isSupport ? selectedSupportPeriod : selectedPeriod;
   const activeSetPeriod = isSupport ? setSupportPeriod : setPeriod;
