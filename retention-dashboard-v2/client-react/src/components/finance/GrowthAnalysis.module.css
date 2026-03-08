@@ -177,6 +177,11 @@
   color: var(--text-secondary);
 }
 
+.submetricIcon {
+  margin-right: 8px;
+  font-size: 1rem;
+}
+
 .submetricSelect {
   padding: 8px 16px;
   border: 2px solid rgba(0, 0, 0, 0.1);
@@ -206,10 +211,91 @@
 }
 
 .detailSubtitle {
-  font-size: var(--font-size-sm);
+  display: none;
+}
+
+.controlsRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  margin-top: 16px;
+  padding: 16px 20px;
+  background: rgba(0, 0, 0, 0.02);
+  border-radius: 16px;
+  border: 1px solid rgba(0, 0, 0, 0.04);
+}
+
+.modeToggle {
+  display: flex;
+  align-items: center;
+}
+
+.modeLabel {
+  font-size: 0.95rem;
+  font-weight: 800;
   color: var(--text-secondary);
-  font-weight: 600;
-  margin: 0;
+}
+
+/* Выпадающий список подметрик */
+.submetricSelector {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: white;
+  padding: 6px 16px;
+  border-radius: 12px;
+  border: 1px solid rgba(0, 0, 0, 0.05);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.02);
+}
+
+.submetricLabel {
+  font-size: 0.9rem;
+  font-weight: 800;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.submetricIcon {
+  font-size: 1rem;
+}
+
+.submetricSelect {
+  padding: 8px 16px;
+  border: 2px solid transparent;
+  border-radius: 8px;
+  background: rgba(255, 179, 0, 0.1);
+  font-size: 0.95rem;
+  font-weight: 800;
+  color: var(--text-main);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-family: inherit;
+  outline: none;
+  min-width: 140px;
+}
+
+.submetricSelect:hover:not(:disabled) {
+  background: rgba(255, 179, 0, 0.15);
+}
+
+.submetricSelect:focus {
+  border-color: var(--primary-accent);
+}
+
+.submetricSelect:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+  background: rgba(0, 0, 0, 0.03);
+}
+
+/* Скрываем старый подзаголовок, если он остался */
+.detailSubtitle {
+  display: none;
 }
 
 .chartWrapper {

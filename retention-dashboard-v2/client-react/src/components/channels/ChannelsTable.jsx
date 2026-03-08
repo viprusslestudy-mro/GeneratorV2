@@ -7,9 +7,11 @@ import { useState, useMemo, useEffect } from 'react';
 import { Card } from '../shared/Card/Card';
 import { useRetentionStore, selectPeriods, selectUI } from '../../store/retentionStore';
 import { formatValue, sanitizeDiffValue, getDiffClass, getCellBackground } from '../../utils/formatters';
+import { useTranslation } from '../../hooks/useTranslation';
 import styles from '../finance/FinanceTable.module.css'; 
 
 export function ChannelsTable() {
+  const { t, translateMonth } = useTranslation();
   const periods = useRetentionStore(selectPeriods);
   const selectedPeriod = useRetentionStore(state => state.selectedPeriod);
   const uiSettings = useRetentionStore(selectUI);
@@ -148,14 +150,15 @@ export function ChannelsTable() {
         <table className={styles.table}>
           <thead>
             <tr>
-              <th className={styles.metricHeader}>Metric</th>
+              <th className={styles.metricHeader}>{t('Метрика', 'Metric')}</th>
               {/* Рендерим только АКТИВНЫЕ периоды для этого канала */}
               {activePeriodsForChannel.map(periodData => (
                 <th 
                   key={periodData.key}
                   className={`${styles.periodHeader} ${periodData.key === selectedPeriod ? styles.selectedHeader : ''}`}
                 >
-                  {periodData.label}
+                  {/* ИСПРАВЛЕНО: Умный перевод месяцев */}
+                  {translateMonth(periodData.label)}
                 </th>
               ))}
             </tr>
@@ -163,7 +166,8 @@ export function ChannelsTable() {
           <tbody>
             {visibleMetrics.map(metric => (
               <tr key={metric.key} className={styles.row}>
-                <td className={styles.metricCell}>{metric.label}</td>
+                {/* ИСПРАВЛЕНО: Оборачиваем в t() */}
+                <td className={styles.metricCell}>{t(metric.label)}</td>
                 
                 {/* Данные только по активным периодам */}
                 {activePeriodsForChannel.map((periodData, index) => {

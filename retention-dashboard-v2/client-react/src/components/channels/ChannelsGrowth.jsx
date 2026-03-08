@@ -12,45 +12,38 @@ import { Card } from '../shared/Card/Card';
 import { useRetentionStore, selectPeriods } from '../../store/retentionStore';
 import { formatCompact, parseDiffToNumber, getMomGrowth } from '../../utils/formatters';
 import { SparklineChart } from '../finance/SparklineChart';
+import { useTranslation } from '../../hooks/useTranslation';
 import styles from './ChannelsGrowth.module.css';
 
-// Цвета каналов
 const CHANNEL_COLORS = {
-  mail: '#FFD700',
-  push: '#F06292',
-  sms: '#00C853',
-  tg: '#0097A7',
-  wa: '#25D366',
-  webpush: '#29B6F6',
-  popup: '#FF9100'
+  mail: '#FFD700', push: '#F06292', sms: '#00C853', tg: '#0097A7',
+  wa: '#25D366', webpush: '#29B6F6', popup: '#FF9100'
 };
 
-// Иконки каналов
 const CHANNEL_ICONS = {
   mail: '📧', push: '📱', sms: '💬', tg: '✈️',
   wa: '📞', webpush: '🌐', popup: '🔔'
 };
 
 export function ChannelsGrowth() {
+  const { t, translateMonth } = useTranslation(); 
+
   const [selectedChannelKey, setSelectedChannelKey] = useState(null);
   const [showAllChannels, setShowAllChannels] = useState(false);
   const [selectedSubmetric, setSelectedSubmetric] = useState('sent');
-  const [chartMode, setChartMode] = useState('auto'); // 'auto' | 'percent' | 'absolute'
+  const [chartMode, setChartMode] = useState('auto'); 
 
   const periods = useRetentionStore(selectPeriods);
   const selectedPeriod = useRetentionStore(state => state.selectedPeriod);
 
-  // Фильтруем индексы с channels данными
   const channelIndices = useMemo(() => {
     return periods.map((p, i) => (p.hasChannels ? i : -1)).filter(i => i !== -1);
   }, [periods]);
 
-  // ДИНАМИЧЕСКАЯ СБОРКА КАНАЛОВ И ИХ МЕТРИК ИЗ ДАННЫХ
   const { availableChannels, channelConfigs } = useMemo(() => {
     const channelsMap = new Map();
     const configs = {};
 
-    // 1. ЖЕСТКИЙ ПОРЯДОК ИЗ АДМИНКИ (Мастер-таблица)
     const REQUIRED_CHANNELS = [
       { key: 'mail', name: 'E-mail', icon: '📧', color: '#FFD700' },
       { key: 'push', name: 'App Push', icon: '📱', color: '#F06292' },
@@ -64,19 +57,16 @@ export function ChannelsGrowth() {
       { key: 'reactivation', name: 'Reactivation Team', icon: '🔁', color: '#00897B' }
     ];
 
-    // 2. Сначала добавляем все каналы из списка (даже если они пустые)
     REQUIRED_CHANNELS.forEach(ch => {
       channelsMap.set(ch.key, ch);
-      configs[ch.key] = []; // Пустой массив метрик по умолчанию
+      configs[ch.key] = []; 
     });
 
-    // 3. Сканируем данные и добавляем метрики
     periods.forEach(p => {
       if (p.hasChannels && p.channelCards) {
         Object.entries(p.channelCards).forEach(([chKey, chData]) => {
           if (chKey === 'total' || chData.fullyDisabled) return;
           
-          // Если канал пришел из базы, но его нет в жестком списке - добавляем его тоже
           if (!channelsMap.has(chKey)) {
             channelsMap.set(chKey, {
               key: chKey,
@@ -87,7 +77,6 @@ export function ChannelsGrowth() {
             configs[chKey] = [];
           }
 
-          // Добавляем метрики для канала
           (chData.cards || []).forEach(card => {
             const mKey = card.id.replace(`${chKey}_`, '');
             if (!configs[chKey].some(m => m.key === mKey)) {
@@ -104,7 +93,6 @@ export function ChannelsGrowth() {
     };
   }, [periods]);
 
-  // Базовые метрики на случай, если канал абсолютно пустой (нет данных в JSON)
   const FALLBACK_SUBMETRICS = [
     { key: 'sent', label: 'Sent' },
     { key: 'delivered', label: 'Delivered' },
@@ -113,19 +101,14 @@ export function ChannelsGrowth() {
     { key: 'conversions', label: 'Conversions' }
   ];
 
-  // Список метрик для выпадающего списка (динамический + fallback)
   const dynamicSubmetrics = useMemo(() => {
     if (showAllChannels || !selectedChannelKey) {
       return [{ key: 'sent', label: 'Sent' }, { key: 'conversions', label: 'Conversions' }];
     }
-    
-    // Если для канала есть реальные метрики из данных — берем их. 
-    // Если канал пустой (массив 0 длины) — берем fallback.
     const realMetrics = channelConfigs[selectedChannelKey] || [];
     return realMetrics.length > 0 ? realMetrics : FALLBACK_SUBMETRICS;
   }, [showAllChannels, selectedChannelKey, channelConfigs]);
 
-  // Устанавливаем первый канал по умолчанию
   if (!selectedChannelKey && availableChannels.length > 0) {
     setSelectedChannelKey(availableChannels[0].key);
   }
@@ -153,13 +136,12 @@ export function ChannelsGrowth() {
       const selectedIndex = periods.findIndex(p => p.key === selectedPeriod);
       const filteredIndex = channelIndices.indexOf(selectedIndex);
       
-      const isFirstPeriod = filteredIndex === 0; // БАЗОВЫЙ МЕСЯЦ
+      const isFirstPeriod = filteredIndex === 0;
       const currentDiff = filteredIndex > 0 ? filteredDiffs[filteredIndex] : '';
       const currentValue = filteredIndex >= 0 ? filteredValues[filteredIndex] : 0;
       
       const diffNum = parseDiffToNumber(currentDiff);
       
-      // Если это первый месяц, показываем значение
       const displayValue = (currentDiff && currentDiff !== '—' && !isFirstPeriod)
         ? `${diffNum >= 0 ? '+' : ''}${diffNum.toFixed(1)}%` 
         : formatCompact(currentValue);
@@ -176,7 +158,7 @@ export function ChannelsGrowth() {
     const metricKey = selectedSubmetric;
     
     return channelIndices.map((periodIndex, idx) => {
-      const isFirst = idx === 0; // БАЗОВЫЙ МЕСЯЦ
+      const isFirst = idx === 0; 
       const period = periods[periodIndex];
       const dataPoint = {
         name: period.label.split(' ').map((p,i) => i===0 ? p.substring(0,3) : p.substring(2)).join(' '),
@@ -206,7 +188,7 @@ export function ChannelsGrowth() {
     
     return (
       <div className={styles.tooltip}>
-        <div className={styles.tooltipLabel}>📅 {payload[0].payload.name}</div>
+        <div className={styles.tooltipLabel}>📅 {translateMonth(payload[0].payload.name)}</div>
         {payload.map((entry, idx) => {
           const val = entry.value;
           const isPercent = chartMode !== 'absolute';
@@ -216,7 +198,7 @@ export function ChannelsGrowth() {
             
           return (
             <div key={idx} className={styles.tooltipValue} style={{ color: entry.color }}>
-              {entry.name === 'value' ? currentChannel?.name : availableChannels.find(c=>c.key===entry.name)?.name}: {displayVal}
+              {entry.name === 'value' ? t(currentChannel?.name) : t(availableChannels.find(c=>c.key===entry.name)?.name)}: {displayVal}
             </div>
           );
         })}
@@ -232,7 +214,7 @@ export function ChannelsGrowth() {
             className={`${styles.showAllBtn} ${showAllChannels ? styles.active : ''}`}
             onClick={() => setShowAllChannels(!showAllChannels)}
           >
-            ✨ SHOW ALL
+            ✨ {t('✨ ОТОБРАЗИТЬ ВСЕ', 'SHOW ALL')}
           </button>
           
           <div className={styles.metricsList}>
@@ -246,7 +228,7 @@ export function ChannelsGrowth() {
                 }}
               >
                 <div className={styles.metricInfo}>
-                  <span className={styles.metricLabel}>{ch.icon} {ch.name}</span>
+                  <span className={styles.metricLabel}>{ch.icon} {t(ch.name)}</span>
                   <span className={styles.metricValue}>{ch.displayValue}</span>
                 </div>
                 <div className={styles.sparklineWrapper}>
@@ -261,22 +243,16 @@ export function ChannelsGrowth() {
           <div className={styles.detailHeader}>
             <div className={styles.detailTitle}>
               <span className={styles.detailEmoji}>{showAllChannels ? '✨' : currentChannel?.icon}</span>
-              <span className={styles.detailName}>{showAllChannels ? 'All Channels' : currentChannel?.name}</span>
+              <span className={styles.detailName}>{showAllChannels ? t('Все каналы', 'All Channels') : t(currentChannel?.name)}</span>
             </div>
 
             <div className={styles.controlsRow}>
-              <div className={styles.modeToggle}>
-                <button 
-                  className={`${styles.modeBtn} ${chartMode === 'percent' || chartMode === 'auto' ? styles.active : ''}`}
-                  onClick={() => setChartMode('percent')}
-                >📊 %</button>
-                <button 
-                  className={`${styles.modeBtn} ${chartMode === 'absolute' ? styles.active : ''}`}
-                  onClick={() => setChartMode('absolute')}
-                >📈 Values</button>
-              </div>
-
+              {/* Красивый блок с подметрикой СЛЕВА */}
               <div className={styles.submetricSelector}>
+                <label className={styles.submetricLabel}>
+                  <span className={styles.submetricIcon}>⚙️</span>
+                  {t('Подметрика', 'Submetric:')}
+                </label>
                 <select 
                   className={styles.submetricSelect}
                   value={selectedSubmetric}
@@ -284,9 +260,25 @@ export function ChannelsGrowth() {
                   disabled={showAllChannels}
                 >
                   {dynamicSubmetrics.map(sub => (
-                    <option key={sub.key} value={sub.key}>{sub.label}</option>
+                    <option key={sub.key} value={sub.key}>{t(sub.label)}</option>
                   ))}
                 </select>
+              </div>
+
+              {/* Стильный переключатель режимов СПРАВА */}
+              <div className={styles.segmentedControl}>
+                <button 
+                  className={`${styles.segmentBtn} ${chartMode === 'percent' || chartMode === 'auto' ? styles.active : ''}`}
+                  onClick={() => setChartMode('percent')}
+                >
+                  <span className={styles.segmentIcon}>📊</span> %
+                </button>
+                <button 
+                  className={`${styles.segmentBtn} ${chartMode === 'absolute' ? styles.active : ''}`}
+                  onClick={() => setChartMode('absolute')}
+                >
+                  <span className={styles.segmentIcon}>📈</span> Values
+                </button>
               </div>
             </div>
           </div>
@@ -297,7 +289,7 @@ export function ChannelsGrowth() {
                 {showAllChannels ? (
                   <LineChart data={chartData} margin={{ top: 20, right: 30, left: 20, bottom: 20 }}>
                     <CartesianGrid strokeDasharray="3 3" stroke="rgba(0,0,0,0.06)" />
-                    <XAxis dataKey="name" stroke="#666" style={{ fontSize: '15px', fontFamily: 'Montserrat, sans-serif', fontWeight: 700 }} />
+                    <XAxis dataKey="name" stroke="#666" style={{ fontSize: '15px', fontFamily: 'Montserrat, sans-serif', fontWeight: 700 }} tickFormatter={(val) => translateMonth(val)} />
                     <YAxis 
                       stroke="#666" 
                       style={{ fontSize: '15px', fontFamily: 'Montserrat, sans-serif', fontWeight: 700 }}
@@ -324,7 +316,7 @@ export function ChannelsGrowth() {
                       </linearGradient>
                     </defs>
                     <CartesianGrid strokeDasharray="3 3" stroke="rgba(0,0,0,0.06)" />
-                    <XAxis dataKey="name" stroke="#666" style={{ fontSize: '15px', fontFamily: 'Montserrat, sans-serif', fontWeight: 700 }} />
+                    <XAxis dataKey="name" stroke="#666" style={{ fontSize: '15px', fontFamily: 'Montserrat, sans-serif', fontWeight: 700 }} tickFormatter={(val) => translateMonth(val)} />
                     <YAxis 
                       stroke="#666" 
                       style={{ fontSize: '15px', fontFamily: 'Montserrat, sans-serif', fontWeight: 700 }}

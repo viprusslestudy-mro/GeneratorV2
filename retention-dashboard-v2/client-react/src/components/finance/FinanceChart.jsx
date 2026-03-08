@@ -108,7 +108,8 @@ export function FinanceChart() {
           className={styles.legendDot} 
           style={{ background: '#888888', border: '2px dashed #555' }} 
         />
-        <span>💰 Deposits</span>
+        {/* ИСПРАВЛЕНИЕ: Перевод легенды */}
+        <span>💰 {t('Депозиты (Сумма)', 'Deposits')}</span>
         <span className={styles.legendValue}>{formatCompact(legendData.deposits)}</span>
       </div>
       <div className={styles.legendItem}>
@@ -116,7 +117,8 @@ export function FinanceChart() {
           className={styles.legendDot} 
           style={{ background: '#ffb300' }} 
         />
-        <span>📈 Profit</span>
+        {/* ИСПРАВЛЕНИЕ: Перевод легенды */}
+        <span>📈 {t('Профит (Сумма)', 'Profit')}</span>
         <span className={styles.legendValue}>{formatCompact(legendData.profit)}</span>
       </div>
     </div>

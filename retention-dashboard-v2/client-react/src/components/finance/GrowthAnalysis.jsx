@@ -172,24 +172,38 @@ export function GrowthAnalysis() {
           <div className={styles.detailHeader}>
             <div className={styles.detailTitle}>
               <span className={styles.detailEmoji}>{showAllMetrics ? '✨' : currentMetric?.emoji}</span>
-              <span className={styles.detailName}>{showAllMetrics ? 'All Metrics' : currentMetric?.label}</span>
-              <span className={styles.detailSuffix}>— MoM Growth</span>
+              <span className={styles.detailName}>{showAllMetrics ? t('Все метрики', 'All Metrics') : t(currentMetric?.label)}</span>
+              <span className={styles.detailSuffix}>{t('— детальный график', '— dynamic report')}</span>
             </div>
-            
-            <div className={styles.submetricSelector}>
-              <label className={styles.submetricLabel}>Submetric:</label>
-              <select 
-                className={styles.submetricSelect}
-                value={selectedSubmetric}
-                onChange={e => setSelectedSubmetric(e.target.value)}
-                disabled={showAllMetrics}
-              >
-                {availableSubmetrics.map(sub => (
-                  <option key={sub.key} value={sub.key}>
-                    {t(sub.label)} {/* ИСПРАВЛЕНО: Просто передаем фразу! */}
-                  </option>
-                ))}
-              </select>
+
+            {/* ИСПРАВЛЕНИЕ: Выровняли Submetric слева */}
+            <div className={styles.controlsRow}>
+              
+              {/* Блок с подметрикой (теперь он слева!) */}
+              <div className={styles.submetricSelector}>
+                <label className={styles.submetricLabel}>
+                  <span className={styles.submetricIcon}>⚙️</span>
+                  {t('Подметрика', 'Submetric:')}
+                </label>
+                <select 
+                  className={styles.submetricSelect}
+                  value={selectedSubmetric}
+                  onChange={e => setSelectedSubmetric(e.target.value)}
+                  disabled={showAllMetrics}
+                >
+                  {availableSubmetrics.map(sub => (
+                    <option key={sub.key} value={sub.key}>
+                      {t(sub.label)}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              {/* Текст (теперь он справа!) */}
+              <div className={styles.modeToggle}>
+                <div className={styles.modeLabel}>📈 {t('Процент изменений по месяцам', 'Percentage change by month')}</div>
+              </div>
+
             </div>
           </div>
 

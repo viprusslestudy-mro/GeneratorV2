@@ -117,7 +117,8 @@ export function FinanceTable() {
       <div className={styles.tabs}>
         {availableSections.map(key => (
           <button key={key} className={`${styles.tab} ${activeSection === key ? styles.active : ''}`} onClick={() => setActiveSection(key)}>
-            {financeTabs[key] || key}
+            {/* ИСПРАВЛЕНИЕ: Оборачиваем текст таба в t() */}
+            {t(financeTabs[key] || key)}
           </button>
         ))}
       </div>

@@ -74,8 +74,9 @@ export function DoughnutChart() {
     <Card>
       <div className={styles.container}>
         <div className={styles.header}>
-          <div className={styles.title}>💡 {t('chart.bet_category', 'Bet Category')}</div>
-          <div className={styles.subtitle}>{t('label.bet_sum', 'Bet sum distribution')}</div>
+          {/* ИСПРАВЛЕНИЕ: Передаем русские строки, которые есть в словаре! */}
+          <div className={styles.title}>💡 {t('Категория ставок', 'Bet Category')}</div>
+          <div className={styles.subtitle}>{t('Сумма ставок', 'Bet sum distribution')}</div>
         </div>
         
         {/* ИСПРАВЛЕНИЕ ПОЗИЦИОНИРОВАНИЯ ТЕКСТА */}
@@ -86,8 +87,9 @@ export function DoughnutChart() {
             <div style={{ fontSize: '2rem', fontWeight: 900, color: '#1a1a1a', lineHeight: 1.1 }}>
               {isZeroState ? '0' : formatCompact(total)}
             </div>
+            {/* ИСПРАВЛЕНИЕ: Перевод слова "Total Bets" */}
             <div style={{ fontSize: '0.9rem', fontWeight: 700, color: '#666', textTransform: 'uppercase' }}>
-              Total Bets
+              {t('Сумма ставок', 'Total Bets')}
             </div>
           </div>
 

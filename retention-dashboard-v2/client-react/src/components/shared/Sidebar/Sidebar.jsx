@@ -48,18 +48,20 @@ export function Sidebar({ activeScreen, onScreenChange }) {
 
       {/* Navigation - Retention */}
       <nav className={styles.nav}>
-        <div className={styles.navTitle}>Retention</div> {/* ИСПРАВЛЕНО: просто Retention */}
+        <div className={styles.navTitle}>Retention</div>
         <button 
           className={`${styles.navItem} ${activeScreen === 'finance' ? styles.active : ''}`}
           onClick={() => onScreenChange('finance')}
         >
-          <span>💰</span> {t('tab.finance', 'Main Dashboard')}
+          {/* ИСПРАВЛЕНО: Ключом является русская фраза */}
+          <span>💰</span> {t('Главная панель', 'Main Dashboard')}
         </button>
         <button 
           className={`${styles.navItem} ${activeScreen === 'channels' ? styles.active : ''}`}
           onClick={() => onScreenChange('channels')}
         >
-          <span>📈</span> {t('tab.channels', 'Communication channels')}
+          {/* ИСПРАВЛЕНО: Ключом является русская фраза */}
+          <span>📈</span> {t('Каналы коммуникации', 'Communication channels')}
         </button>
       </nav>
 
@@ -70,13 +72,15 @@ export function Sidebar({ activeScreen, onScreenChange }) {
           className={`${styles.navItem} ${activeScreen === 'support_stats' ? styles.active : ''}`}
           onClick={() => onScreenChange('support_stats')}
         >
-          <span>📋</span> {t('tab.support_stats', 'LiveChat KPI')}
+          {/* ИСПРАВЛЕНО: Ключом является русская фраза */}
+          <span>📋</span> {t('Показатели LiveChat', 'LiveChat KPI')}
         </button>
         <button 
           className={`${styles.navItem} ${activeScreen === 'support_tags' ? styles.active : ''}`}
           onClick={() => onScreenChange('support_tags')}
         >
-          <span>🏷️</span> {t('tab.support_tags', 'Issue Tags')}
+          {/* ИСПРАВЛЕНО: Ключом является русская фраза */}
+          <span>🏷️</span> {t('Тэги проблем', 'Issue Tags')}
         </button>
       </nav>
 

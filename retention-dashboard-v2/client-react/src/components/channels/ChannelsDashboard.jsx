@@ -13,6 +13,7 @@ import { ChannelsDoughnutChart } from './ChannelsDoughnutChart';
 import { ChannelsTable } from './ChannelsTable';
 import { useRetentionStore, selectPeriods } from '../../store/retentionStore';
 import styles from './ChannelsDashboard.module.css';
+import { useTranslation } from '../../hooks/useTranslation';
 
 const CONTACTS_KEYS = [
   { ch: 'mail', metric: 'sent' }, { ch: 'push', metric: 'sent' },
@@ -38,6 +39,7 @@ const CLICKS_KEYS = [
 export function ChannelsDashboard() {
   const { currentPeriodData } = usePeriodFilter();
   const periods = useRetentionStore(selectPeriods);
+  const { t, translateMonth } = useTranslation();
 
   if (!currentPeriodData || !currentPeriodData.hasChannels) {
     return (
@@ -86,18 +88,19 @@ export function ChannelsDashboard() {
   const prevClicks = aggregateByMap(prevPeriodData, CLICKS_KEYS);
   const prevConversionRate = prevContacts > 0 ? (prevConversions / prevContacts) : null;
 
-  // Helper для вычисления строки дельты (например, "+15.2%")
+  // Helper для вычисления строки дельты (например, "+15.2% к пред.")
   const calcDiff = (curr, prev) => {
     if (prev === null || prev === undefined || prev === 0) return '';
     const diff = ((curr - prev) / Math.abs(prev)) * 100;
-    return `${diff > 0 ? '+' : ''}${diff.toFixed(1)}% vs prev.`;
+    // ИСПРАВЛЕНИЕ: Оборачиваем "vs prev." в t() -> найдет "к пред." в словаре
+    return `${diff > 0 ? '+' : ''}${diff.toFixed(1)}% ${t('к пред.', 'vs prev.')}`;
   };
 
   // Формируем KPI карточки
   const kpiMetrics = [
     {
       id: 'total_contacts',
-      title: 'Total Contacts',
+      title: t('✉️ Total Contacts', 'Total Contacts'),
       value: contacts,
       diff: calcDiff(contacts, prevContacts),
       valueFormat: 'integer',
@@ -105,7 +108,7 @@ export function ChannelsDashboard() {
     },
     {
       id: 'total_conversions',
-      title: 'Total Conversions',
+      title: t('🎯Total Conversions', 'Total Conversions'),
       value: conversions,
       diff: calcDiff(conversions, prevConversions),
       valueFormat: 'integer',
@@ -113,7 +116,7 @@ export function ChannelsDashboard() {
     },
     {
       id: 'conversion_rate',
-      title: 'Conversion Rate',
+      title: t('📊Total Conversion Rate', 'Conversion Rate'),
       value: conversionRate, // Не умножаем на 100, formatValue('percent') сделает это
       diff: calcDiff(conversionRate, prevConversionRate),
       valueFormat: 'percent',
@@ -121,7 +124,8 @@ export function ChannelsDashboard() {
     },
     {
       id: 'total_clicks',
-      title: 'Total Clicks',
+      // ИСПРАВЛЕНИЕ: Точное название из словаря (без эмодзи, просто Тотал клики)
+      title: t('Тотал клики', 'Total Clicks'),
       value: clicks,
       diff: calcDiff(clicks, prevClicks),
       valueFormat: 'integer',
@@ -134,8 +138,8 @@ export function ChannelsDashboard() {
       <div className={styles.header}>
         <h1>
           <span className={styles.headerIcon}>📈</span>
-          <span className={styles.headerTitle}>Communication Channels</span>
-          <span className={styles.periodBadge}>{currentPeriodData.label}</span>
+          <span className={styles.headerTitle}>{t('tab.channels', 'Communication Channels')}</span>
+          <span className={styles.periodBadge}>{translateMonth(currentPeriodData.label)}</span>
         </h1>
       </div>
 

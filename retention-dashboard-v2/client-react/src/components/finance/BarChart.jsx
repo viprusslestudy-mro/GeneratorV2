@@ -84,7 +84,8 @@ export function BarChart() {
     <div className={styles.legend}>
       <div className={styles.legendItem}>
         <div className={styles.legendDot} style={{ background: 'var(--primary-accent)' }} />
-        <span>💵 {t('metric.deposit_count', 'Deposits Count')}</span>
+        {/* ИСПРАВЛЕНИЕ: Перевод легенды */}
+        <span>💵 {t('Количество депозитов', 'Deposits Count')}</span>
         <span className={styles.legendValue}>{formatValue(total, 'integer')}</span>
       </div>
     </div>
