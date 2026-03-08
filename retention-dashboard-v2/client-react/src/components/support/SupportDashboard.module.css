@@ -390,12 +390,16 @@
 
 .kpiRightTop {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  gap: 16px;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+}
+
+.kpiRightTop > div {
+  min-height: 120px; /* Увеличенная высота */
 }
 
 .kpiRightBottom {
-  flex: 1; /* Чтобы кольцо заняло всю оставшуюся высоту */
+  flex: 0 1 auto; /* Убираем flex: 1, теперь не растягивается */
 }
 
 @media (max-width: 1024px) {

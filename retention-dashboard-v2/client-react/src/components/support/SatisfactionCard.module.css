@@ -6,20 +6,20 @@
 
 .card {
   background: linear-gradient(135deg, #ffffff 0%, #fafbfc 100%);
-  border-radius: 24px;
-  padding: 28px; /* Было 24px */
+  border-radius: 20px; /* Было 24px */
+  padding: 20px 24px; /* Было 28px */
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  height: 100%;
+  height: auto; /* Убираем height: 100% */
   border: 2px solid rgba(0, 0, 0, 0.08);
   transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease;
 }
 
 .card:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 8px 30px rgba(255, 179, 0, 0.15);
+  transform: translateY(-3px);
+  box-shadow: 0 6px 24px rgba(255, 179, 0, 0.15);
   border-color: rgba(255, 179, 0, 0.4);
 }
 
@@ -27,35 +27,29 @@
 .header {
   display: flex;
   align-items: center;
-  gap: 14px; /* Было 12px */
-  margin-bottom: 24px; /* Было 20px */
+  gap: 12px;
+  margin-bottom: 16px; /* Было 24px */
 }
 
 .iconWrapper {
-  width: 52px; /* Было 48px */
-  height: 52px;
+  width: 44px; /* Было 52px */
+  height: 44px;
   background: rgba(255, 179, 0, 0.15);
-  border-radius: 14px;
+  border-radius: 12px;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 1.6rem; /* Было 1.5rem */
-}
-
-.titleBlock {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
+  font-size: 1.4rem;
 }
 
 .label {
-  font-size: 1.2rem; /* Было 1.1rem */
+  font-size: 1.1rem;
   font-weight: 800;
   color: var(--text-main);
 }
 
 .sublabel {
-  font-size: 0.85rem; /* Было 0.8rem */
+  font-size: 0.8rem;
   font-weight: 600;
   color: var(--text-secondary);
 }
@@ -65,9 +59,9 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  margin-bottom: 24px; /* Было 20px */
-  padding: 16px 0; /* Было 10px */
-  gap: 40px; /* Было 16px */
+  margin-bottom: 16px; /* Было 24px */
+  padding: 8px 0; /* Было 16px 0 */
+  gap: 32px; /* Было 40px */
 }
 
 .percentBlock {
@@ -76,15 +70,15 @@
 }
 
 .bigValue {
-  font-size: 5rem; /* Было 4.5rem */
+  font-size: 3.8rem; /* Было 5rem */
   font-weight: 900;
   color: var(--text-main);
   line-height: 1;
-  letter-spacing: -3px;
+  letter-spacing: -2px;
 }
 
 .percentSign {
-  font-size: 1.8rem; /* Было 1.5rem */
+  font-size: 1.4rem; /* Было 1.8rem */
   font-weight: 700;
   color: #9ca3af;
   margin-left: 4px;
@@ -93,8 +87,8 @@
 /* RING SVG */
 .ringWrapper {
   position: relative;
-  width: 140px; /* Было 130px */
-  height: 140px;
+  width: 100px; /* Было 140px */
+  height: 100px;
   cursor: help;
 }
 
@@ -113,24 +107,24 @@
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  font-size: 2.5rem; /* Было 2.2rem */
+  font-size: 1.8rem; /* Было 2.5rem */
 }
 
 /* ═══ FOOTER ═══ */
 .footer {
   display: flex;
   justify-content: center;
-  gap: 20px; /* Было 12px */
+  gap: 16px; /* Было 20px */
   border-top: 2px dashed rgba(0, 0, 0, 0.05);
-  padding-top: 20px; /* Было 16px */
+  padding-top: 14px; /* Было 20px */
 }
 
 .thumbBlock {
   display: flex;
   align-items: center;
-  gap: 8px; /* Было 6px */
-  padding: 10px 16px; /* Было 6px 10px */
-  border-radius: 12px;
+  gap: 6px;
+  padding: 8px 12px; /* Было 10px 16px */
+  border-radius: 10px;
 }
 
 .thumbBlock.good {
@@ -142,17 +136,17 @@
 }
 
 .thumbIcon {
-  font-size: 1.2rem; /* Было 1.1rem */
+  font-size: 1rem; /* Было 1.2rem */
 }
 
 .thumbCount {
-  font-size: 1.2rem; /* Было 1.1rem */
+  font-size: 1rem; /* Было 1.2rem */
   font-weight: 800;
   color: var(--text-main);
 }
 
 .thumbLabel {
-  font-size: 0.85rem; /* Было 0.8rem */
+  font-size: 0.75rem; /* Было 0.85rem */
   font-weight: 700;
   color: var(--text-secondary);
   text-transform: uppercase;
@@ -161,51 +155,47 @@
 
 /* ═══ АДАПТИВНОСТЬ ═══ */
 @media (max-width: 1400px) {
-  .card {
-    padding: 24px;
-  }
-  
   .center {
-    gap: 32px;
+    gap: 24px;
   }
   
   .bigValue {
-    font-size: 4rem;
+    font-size: 3.2rem;
   }
   
   .ringWrapper {
-    width: 120px;
-    height: 120px;
+    width: 90px;
+    height: 90px;
   }
   
   .starIcon {
-    font-size: 2rem;
+    font-size: 1.6rem;
   }
 }
 
 @media (max-width: 1024px) {
   .center {
-    gap: 24px;
-    padding: 12px 0;
+    gap: 20px;
+    padding: 6px 0;
   }
   
   .bigValue {
-    font-size: 3.5rem;
+    font-size: 3rem;
   }
   
   .ringWrapper {
-    width: 100px;
-    height: 100px;
+    width: 85px;
+    height: 85px;
   }
   
   .starIcon {
-    font-size: 1.8rem;
+    font-size: 1.5rem;
   }
 }
 
 @media (max-width: 768px) {
   .card {
-    padding: 20px;
+    padding: 16px 20px;
   }
   
   .center {
@@ -214,20 +204,20 @@
   }
   
   .bigValue {
-    font-size: 3rem;
+    font-size: 2.8rem;
   }
   
   .ringWrapper {
-    width: 90px;
-    height: 90px;
+    width: 80px;
+    height: 80px;
   }
   
   .footer {
     flex-wrap: wrap;
-    gap: 12px;
+    gap: 10px;
   }
   
   .thumbBlock {
-    padding: 8px 12px;
+    padding: 6px 10px;
   }
 }
