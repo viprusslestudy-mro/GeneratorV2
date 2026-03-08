@@ -10,6 +10,7 @@ import { Card } from '../shared/Card/Card';
 import { useRetentionStore, selectPeriods } from '../../store/retentionStore';
 import { formatCompact } from '../../utils/formatters';
 import styles from './DoughnutChart.module.css';
+import { useTranslation } from '../../hooks/useTranslation';
 
 const COLORS = { 'Casino': '#ff9800', 'Sport': '#00bcd4' };
 
@@ -20,6 +21,7 @@ function getCardValueFromPeriod(period, cardId) {
 }
 
 export function DoughnutChart() {
+  const { t } = useTranslation();
   const periods = useRetentionStore(selectPeriods);
   const selectedPeriod = useRetentionStore(state => state.selectedPeriod);
 
@@ -72,8 +74,8 @@ export function DoughnutChart() {
     <Card>
       <div className={styles.container}>
         <div className={styles.header}>
-          <div className={styles.title}>💡 Bet Category</div>
-          <div className={styles.subtitle}>Bet sum distribution</div>
+          <div className={styles.title}>💡 {t('chart.bet_category', 'Bet Category')}</div>
+          <div className={styles.subtitle}>{t('label.bet_sum', 'Bet sum distribution')}</div>
         </div>
         
         {/* ИСПРАВЛЕНИЕ ПОЗИЦИОНИРОВАНИЯ ТЕКСТА */}

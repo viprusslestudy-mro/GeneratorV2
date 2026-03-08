@@ -5,6 +5,7 @@
  */
 import { useState } from 'react';
 import { useRetentionData } from './hooks/useRetentionData';
+import { useRetentionStore } from './store/retentionStore'; // <-- ДОБАВЛЕНО
 import { Loader } from './components/shared/Loader/Loader';
 import { Sidebar } from './components/shared/Sidebar/Sidebar';
 import { FinanceDashboard } from './components/finance/FinanceDashboard';
@@ -14,7 +15,10 @@ import './App.css';
 
 export default function App() {
   const { data, loading, error } = useRetentionData();
-  const [language, setLanguage] = useState('RU');
+  
+  // ДОБАВЛЕНО: Берем язык из глобального стора, а не из локального useState
+  const language = useRetentionStore(state => state.language);
+  const setLanguage = useRetentionStore(state => state.setLanguage);
   
   // Добавляем state для активного экрана (временно, потом перенесём в store/router)
   const [activeScreen, setActiveScreen] = useState('finance'); // 'finance' | 'channels'

@@ -143,10 +143,11 @@
 }
 
 .navItem.active {
-  background: white;
+  background: linear-gradient(135deg, #fffef5 0%, #fff8e1 100%);
   color: var(--text-main);
-  border-color: rgba(103, 58, 183, 0.15);
-  box-shadow: 0 4px 12px rgba(103, 58, 183, 0.08);
+  border-color: var(--primary-accent);
+  box-shadow: 0 4px 16px rgba(255, 179, 0, 0.2);
+  font-weight: 800;
 }
 
 .navItem.disabled {

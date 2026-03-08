@@ -9,6 +9,7 @@ import { Card } from '../shared/Card/Card';
 import { useRetentionStore, selectPeriods } from '../../store/retentionStore';
 import { formatCompact } from '../../utils/formatters';
 import styles from './ChannelsCharts.module.css';
+import { useTranslation } from '../../hooks/useTranslation';
 
 const CHANNEL_COLORS = {
   mail: '#FFD700', push: '#F06292', sms: '#00C853', tg: '#0097A7',
@@ -21,6 +22,7 @@ const CHANNEL_ICONS = {
 };
 
 export function ChannelsDoughnutChart() {
+  const { t } = useTranslation();
   const periods = useRetentionStore(selectPeriods);
   const selectedPeriod = useRetentionStore(state => state.selectedPeriod);
 
@@ -74,8 +76,9 @@ export function ChannelsDoughnutChart() {
     <Card>
       <div className={styles.container}>
         <div className={styles.header}>
-          <div className={styles.title}>🎯 Sent Distribution</div>
-          <div className={styles.subtitle}>By channels for current period</div>
+          {/* ИСПРАВЛЕНИЕ */}
+          <div className={styles.title}>🎯 {t('Распределение Sent', 'Sent Distribution')}</div>
+          <div className={styles.subtitle}>{t('По каналам', 'By channels for current period')}</div>
         </div>
         
         {/* ИСПРАВЛЕНИЕ ПОЗИЦИОНИРОВАНИЯ ТЕКСТА */}

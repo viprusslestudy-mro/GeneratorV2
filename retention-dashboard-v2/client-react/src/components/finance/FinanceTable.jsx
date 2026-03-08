@@ -9,8 +9,10 @@ import { useRetentionStore, selectFinanceTabs, selectPeriods } from '../../store
 import { formatValue, sanitizeDiffValue, getDiffClass, getCellBackground } from '../../utils/formatters';
 import styles from './FinanceTable.module.css';
 import { FINANCE_TABLE_CONFIGS } from '../../config/metricsConfig';
+import { useTranslation } from '../../hooks/useTranslation';
 
 export function FinanceTable() {
+  const { t, translateMonth } = useTranslation();
   const financeTabs = useRetentionStore(selectFinanceTabs);
   const periods = useRetentionStore(selectPeriods);
   const selectedPeriod = useRetentionStore(state => state.selectedPeriod);
@@ -123,10 +125,10 @@ export function FinanceTable() {
         <table className={styles.table}>
           <thead>
             <tr>
-              <th className={styles.metricHeader}>Metric</th>
+              <th className={styles.metricHeader}>{t('Метрика', 'Metric')}</th>
               {financePeriodsData.map(periodData => (
                 <th key={periodData.key} className={`${styles.periodHeader} ${periodData.key === selectedPeriod ? styles.selectedHeader : ''}`}>
-                  {periodData.label}
+                  {translateMonth(periodData.label)} {/* ПЕРЕВОД МЕСЯЦА */}
                 </th>
               ))}
             </tr>
@@ -134,7 +136,8 @@ export function FinanceTable() {
           <tbody>
             {visibleMetrics.map(metric => (
               <tr key={metric.key} className={styles.row}>
-                <td className={styles.metricCell}>{metric.label}</td>
+                {/* ИСПРАВЛЕНО: ПРОСТО ПЕРЕДАЕМ РУССКУЮ ФРАЗУ! */}
+                <td className={styles.metricCell}>{t(metric.label)}</td>
                 {financePeriodsData.map((periodData, index) => renderCell(metric, periodData, index, index === 0))}
               </tr>
             ))}

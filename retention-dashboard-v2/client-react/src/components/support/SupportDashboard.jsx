@@ -8,6 +8,7 @@ import { SupportLocaleTable } from './SupportLocaleTable';
 import { TagsAnalytics } from './TagsAnalytics';
 import { useRetentionStore } from '../../store/retentionStore';
 import styles from './SupportDashboard.module.css';
+import { useTranslation } from '../../hooks/useTranslation';
 
 const formatTime = (totalSeconds) => {
   if (totalSeconds === undefined || totalSeconds === null) return '-';
@@ -65,6 +66,8 @@ export function SupportDashboard({ type }) {
 
   const hasData = (chats) => (chats || 0) > 0;
 
+  const { t, translateMonth } = useTranslation();
+
   const handlePeriodSelect = (periodId, chats) => {
     if (hasData(chats)) {
       setActivePeriod(periodId);
@@ -79,10 +82,12 @@ export function SupportDashboard({ type }) {
           <h1>
             <span className={styles.headerIcon}>{type === 'stats' ? '📋' : '🏷️'}</span>
             &nbsp;
-            {type === 'stats' ? 'LiveChat KPI Dashboard' : 'Tags Analytics'}
+            {/* ИСПРАВЛЕНИЕ: ПЕРЕВОДИМ ЗАГОЛОВКИ */}
+            {type === 'stats' ? t('Support Dashboard', 'LiveChat KPI Dashboard') : t('tab.support_tags', 'Tags Analytics')}
             &nbsp;
           </h1>
-          <p className={styles.periodSubtitle}>{periodLabel}</p>
+          {/* ИСПРАВЛЕНИЕ: ПЕРЕВОДИМ МЕСЯЦ */}
+          <p className={styles.periodSubtitle}>{translateMonth(periodLabel)}</p>
         </div>
 
         <div className={styles.localeSwitcher}>

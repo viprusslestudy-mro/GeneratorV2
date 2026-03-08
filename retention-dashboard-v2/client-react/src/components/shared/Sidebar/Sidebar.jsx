@@ -1,7 +1,10 @@
+// ДОБАВЛЕНО: Импортируем наш хук перевода
+import { useTranslation } from '../../../hooks/useTranslation';
 import { useRetentionStore, selectPeriods, selectSupportPeriods } from '../../../store/retentionStore';
 import styles from './Sidebar.module.css';
 
 export function Sidebar({ activeScreen, onScreenChange }) {
+  const { t, translateMonth } = useTranslation(); // Инициализируем переводчик с функцией месяцев
   const projectSettings = useRetentionStore(state => state.projectSettings);
   
   // Читаем из стора ВСЕ данные
@@ -45,18 +48,18 @@ export function Sidebar({ activeScreen, onScreenChange }) {
 
       {/* Navigation - Retention */}
       <nav className={styles.nav}>
-        <div className={styles.navTitle}>Retention</div>
+        <div className={styles.navTitle}>Retention</div> {/* ИСПРАВЛЕНО: просто Retention */}
         <button 
           className={`${styles.navItem} ${activeScreen === 'finance' ? styles.active : ''}`}
           onClick={() => onScreenChange('finance')}
         >
-          💰 Main Dashboard
+          <span>💰</span> {t('tab.finance', 'Main Dashboard')}
         </button>
         <button 
           className={`${styles.navItem} ${activeScreen === 'channels' ? styles.active : ''}`}
           onClick={() => onScreenChange('channels')}
         >
-          📈 Channels
+          <span>📈</span> {t('tab.channels', 'Communication channels')}
         </button>
       </nav>
 
@@ -67,19 +70,19 @@ export function Sidebar({ activeScreen, onScreenChange }) {
           className={`${styles.navItem} ${activeScreen === 'support_stats' ? styles.active : ''}`}
           onClick={() => onScreenChange('support_stats')}
         >
-          📋 LiveChat KPI
+          <span>📋</span> {t('tab.support_stats', 'LiveChat KPI')}
         </button>
         <button 
           className={`${styles.navItem} ${activeScreen === 'support_tags' ? styles.active : ''}`}
           onClick={() => onScreenChange('support_tags')}
         >
-          🏷️ Issue Tags
+          <span>🏷️</span> {t('tab.support_tags', 'Issue Tags')}
         </button>
       </nav>
 
       {/* Period Selector */}
       <div className={styles.periodSelector}>
-        <div className={styles.selectorTitle}>📅 Select Period</div>
+        <div className={styles.selectorTitle}>{t('label.period', 'Select Period')}</div>
         <div className={styles.periodList}>
           {activePeriods.map(period => (
             <button
@@ -89,7 +92,8 @@ export function Sidebar({ activeScreen, onScreenChange }) {
               }`}
               onClick={() => activeSetPeriod(period.key)}
             >
-              <span className={styles.periodLabel}>{period.label}</span>
+              {/* ИСПРАВЛЕНО: УМНЫЙ ПЕРЕВОД МЕСЯЦА */}
+              <span className={styles.periodLabel}>{translateMonth(period.label)}</span>
               {activeSelectedPeriod === period.key && (
                 <span className={styles.checkmark}>✓</span>
               )}

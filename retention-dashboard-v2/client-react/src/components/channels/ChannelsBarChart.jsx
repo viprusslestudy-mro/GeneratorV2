@@ -18,6 +18,7 @@ import { Card } from '../shared/Card/Card';
 import { useRetentionStore, selectPeriods } from '../../store/retentionStore';
 import { formatCompact } from '../../utils/formatters';
 import styles from './ChannelsCharts.module.css';
+import { useTranslation } from '../../hooks/useTranslation';
 
 // Цвета каналов
 const CHANNEL_COLORS = {
@@ -31,6 +32,7 @@ const CHANNEL_ICONS = {
 };
 
 export function ChannelsBarChart() {
+  const { t, translateMonth } = useTranslation();
   const periods = useRetentionStore(selectPeriods);
   const selectedPeriod = useRetentionStore(state => state.selectedPeriod);
 
@@ -138,8 +140,9 @@ export function ChannelsBarChart() {
     <Card>
       <div className={styles.container}>
         <div className={styles.header}>
-          <div className={styles.title}>📊 Conversions by Channel</div>
-          <div className={styles.subtitle}>Stacked month comparison</div>
+          {/* ИСПРАВЛЕНИЕ */}
+          <div className={styles.title}>{t('📊 Конверсии по каналам', '📊 Conversions by Channel')}</div>
+          <div className={styles.subtitle}>{t('Конверсии по месяцам', 'Stacked month comparison')}</div>
         </div>
         
         <div className={styles.chartWrapper}>
@@ -153,6 +156,7 @@ export function ChannelsBarChart() {
                 dataKey="name" 
                 stroke="#666" 
                 style={{ fontSize: '15px', fontFamily: 'Montserrat, sans-serif', fontWeight: 700 }} 
+                tickFormatter={(val) => translateMonth(val)}
               />
               <YAxis 
                 stroke="#666" 

@@ -18,6 +18,7 @@ import { Card } from '../shared/Card/Card';
 import { useRetentionStore, selectPeriods } from '../../store/retentionStore';
 import { formatCompact } from '../../utils/formatters';
 import styles from './FinanceChart.module.css';
+import { useTranslation } from '../../hooks/useTranslation';
 
 // Helper: получить значение карточки
 function getCardValueFromPeriod(period, cardId) {
@@ -27,6 +28,7 @@ function getCardValueFromPeriod(period, cardId) {
 }
 
 export function FinanceChart() {
+  const { t, translateMonth } = useTranslation();
   // Простые селекторы
   const periods = useRetentionStore(selectPeriods);
   const selectedPeriod = useRetentionStore(state => state.selectedPeriod);
@@ -126,8 +128,9 @@ export function FinanceChart() {
         {/* Заголовок */}
         <div className={styles.header}>
           <div className={styles.titleBlock}>
-            <h3 className={styles.title}>📈 Deposits & Profit (Sum)</h3>
-            <p className={styles.subtitle}>Month comparison</p>
+            {/* ИСПРАВЛЕНИЕ */}
+            <h3 className={styles.title}>{t('📈 Депозиты и Профит', '📈 Deposits & Profit (Sum)')}</h3>
+            <p className={styles.subtitle}>{t('Сравнение по месяцам', 'Month comparison')}</p>
           </div>
         </div>
 
@@ -146,6 +149,7 @@ export function FinanceChart() {
                   dataKey="name" 
                   stroke="#666"
                   style={{ fontSize: '15px', fontFamily: 'Montserrat, sans-serif', fontWeight: 700 }} 
+                  tickFormatter={(val) => translateMonth(val)}
                 />
                 <YAxis 
                   stroke="#666"

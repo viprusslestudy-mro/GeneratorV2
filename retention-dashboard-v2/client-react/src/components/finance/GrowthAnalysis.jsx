@@ -14,6 +14,7 @@ import { formatCompact, parseDiffToNumber, getMomGrowth } from '../../utils/form
 import { SparklineChart } from './SparklineChart';
 import styles from './GrowthAnalysis.module.css';
 import { FINANCE_TABLE_CONFIGS } from '../../config/metricsConfig';
+import { useTranslation } from '../../hooks/useTranslation';
 
 const GROWTH_METRICS = [
   { id: 'deposits', label: 'Deposits', emoji: '💰', dataKey: 'total_deposits_amount', color: '#9c27b0', sectionKey: 'deposits' },
@@ -35,6 +36,7 @@ function getCardDiffFromPeriod(period, cardId) {
 }
 
 export function GrowthAnalysis() {
+  const { t, translateMonth } = useTranslation();
   const [selectedMetricIndex, setSelectedMetricIndex] = useState(0);
   const [showAllMetrics, setShowAllMetrics] = useState(false);
   const [selectedSubmetric, setSelectedSubmetric] = useState(GROWTH_METRICS[0].dataKey);
@@ -144,7 +146,7 @@ export function GrowthAnalysis() {
             className={`${styles.showAllBtn} ${showAllMetrics ? styles.active : ''}`}
             onClick={() => setShowAllMetrics(!showAllMetrics)}
           >
-            ✨ SHOW ALL
+            ✨ {t('label.show_all', 'SHOW ALL')}
           </button>
           
           <div className={styles.metricsList}>
@@ -183,7 +185,9 @@ export function GrowthAnalysis() {
                 disabled={showAllMetrics}
               >
                 {availableSubmetrics.map(sub => (
-                  <option key={sub.key} value={sub.key}>{sub.label}</option>
+                  <option key={sub.key} value={sub.key}>
+                    {t(sub.label)} {/* ИСПРАВЛЕНО: Просто передаем фразу! */}
+                  </option>
                 ))}
               </select>
             </div>
@@ -195,7 +199,7 @@ export function GrowthAnalysis() {
                 {showAllMetrics ? (
                   <LineChart data={detailChartData} margin={{ top: 20, right: 30, left: 20, bottom: 20 }}>
                     <CartesianGrid strokeDasharray="3 3" stroke="rgba(0,0,0,0.06)" />
-                    <XAxis dataKey="name" stroke="#666" style={{ fontSize: '15px', fontFamily: 'Montserrat, sans-serif', fontWeight: 700 }} />
+                    <XAxis dataKey="name" stroke="#666" style={{ fontSize: '15px', fontFamily: 'Montserrat, sans-serif', fontWeight: 700 }} tickFormatter={(val) => translateMonth(val)} /> {/* ИСПРАВЛЕНО: ПЕРЕВОД МЕСЯЦЕВ НА ОСИ Х */}
                     <YAxis stroke="#666" style={{ fontSize: '15px', fontFamily: 'Montserrat, sans-serif', fontWeight: 700 }} tickFormatter={(v) => `${v > 0 ? '+' : ''}${v}%`} />
                     <Tooltip content={<CustomTooltip />} />
                     {GROWTH_METRICS.map((metric) => (
@@ -211,7 +215,7 @@ export function GrowthAnalysis() {
                       </linearGradient>
                     </defs>
                     <CartesianGrid strokeDasharray="3 3" stroke="rgba(0,0,0,0.06)" />
-                    <XAxis dataKey="name" stroke="#666" style={{ fontSize: '15px', fontFamily: 'Montserrat, sans-serif', fontWeight: 700 }} />
+                    <XAxis dataKey="name" stroke="#666" style={{ fontSize: '15px', fontFamily: 'Montserrat, sans-serif', fontWeight: 700 }} tickFormatter={(val) => translateMonth(val)} /> {/* ИСПРАВЛЕНО: ПЕРЕВОД МЕСЯЦЕВ НА ОСИ Х */}
                     <YAxis stroke="#666" style={{ fontSize: '15px', fontFamily: 'Montserrat, sans-serif', fontWeight: 700 }} tickFormatter={(v) => `${v > 0 ? '+' : ''}${v}%`} />
                     <Tooltip content={<CustomTooltip />} />
                     <Area type="monotone" dataKey="value" stroke={currentMetric?.color || '#9c27b0'} strokeWidth={4} fill="url(#colorGrowth)" dot={{ r: 6, fill: '#fff', strokeWidth: 3, stroke: currentMetric?.color || '#9c27b0' }} activeDot={{ r: 10 }} />

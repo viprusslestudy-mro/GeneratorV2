@@ -104,12 +104,25 @@ export function ChannelsGrowth() {
     };
   }, [periods]);
 
-  // Список метрик для выпадающего списка (динамический!)
+  // Базовые метрики на случай, если канал абсолютно пустой (нет данных в JSON)
+  const FALLBACK_SUBMETRICS = [
+    { key: 'sent', label: 'Sent' },
+    { key: 'delivered', label: 'Delivered' },
+    { key: 'opened', label: 'Opened' },
+    { key: 'click', label: 'Clicked' },
+    { key: 'conversions', label: 'Conversions' }
+  ];
+
+  // Список метрик для выпадающего списка (динамический + fallback)
   const dynamicSubmetrics = useMemo(() => {
     if (showAllChannels || !selectedChannelKey) {
       return [{ key: 'sent', label: 'Sent' }, { key: 'conversions', label: 'Conversions' }];
     }
-    return channelConfigs[selectedChannelKey] || [];
+    
+    // Если для канала есть реальные метрики из данных — берем их. 
+    // Если канал пустой (массив 0 длины) — берем fallback.
+    const realMetrics = channelConfigs[selectedChannelKey] || [];
+    return realMetrics.length > 0 ? realMetrics : FALLBACK_SUBMETRICS;
   }, [showAllChannels, selectedChannelKey, channelConfigs]);
 
   // Устанавливаем первый канал по умолчанию

@@ -19,6 +19,7 @@ import { Card } from '../shared/Card/Card';
 import { useRetentionStore, selectPeriods } from '../../store/retentionStore';
 import { formatCompact, formatValue } from '../../utils/formatters';
 import styles from './BarChart.module.css';
+import { useTranslation } from '../../hooks/useTranslation';
 
 // Helper: получить значение карточки
 function getCardValueFromPeriod(period, cardId) {
@@ -28,6 +29,7 @@ function getCardValueFromPeriod(period, cardId) {
 }
 
 export function BarChart() {
+  const { t, translateMonth } = useTranslation();
   // Простые селекторы
   const periods = useRetentionStore(selectPeriods);
   const selectedPeriod = useRetentionStore(state => state.selectedPeriod);
@@ -82,7 +84,7 @@ export function BarChart() {
     <div className={styles.legend}>
       <div className={styles.legendItem}>
         <div className={styles.legendDot} style={{ background: 'var(--primary-accent)' }} />
-        <span>💵 Deposits Count</span>
+        <span>💵 {t('metric.deposit_count', 'Deposits Count')}</span>
         <span className={styles.legendValue}>{formatValue(total, 'integer')}</span>
       </div>
     </div>
@@ -92,8 +94,9 @@ export function BarChart() {
     <Card>
       <div className={styles.container}>
         <div className={styles.header}>
-          <div className={styles.title}>📊 Deposit Volume</div>
-          <div className={styles.subtitle}>Month comparison</div>
+          {/* ИСПРАВЛЕНИЕ: Передаем русскую фразу первым аргументом */}
+          <div className={styles.title}>{t('📊 Объём депозитов', '📊 Deposit Volume')}</div>
+          <div className={styles.subtitle}>{t('Сравнение по месяцам', 'Month comparison')}</div>
         </div>
         
         <div className={styles.chartWrapper} style={{ overflowX: 'auto', overflowY: 'hidden' }}>
@@ -110,6 +113,7 @@ export function BarChart() {
                   dataKey="name" 
                   stroke="#666"
                   style={{ fontSize: '15px', fontFamily: 'Montserrat, sans-serif', fontWeight: 700 }} 
+                  tickFormatter={(val) => translateMonth(val)}
                 />
                 <YAxis 
                   stroke="#666"

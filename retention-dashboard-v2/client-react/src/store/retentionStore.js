@@ -20,7 +20,9 @@ export const useRetentionStore = create(
       selectedPeriod: null,
       selectedSupportPeriod: null, // Отдельно для Support
       
-      // Настройки проекта
+      // ДОБАВЛЕНО: Текущий язык (по умолчанию из настроек браузера или RU)
+      language: 'RU',
+
       projectSettings: {
         name: 'SuperSpin',
         // ВАЖНО: Вставили твою реальную ссылку на логотип!
@@ -68,6 +70,9 @@ export const useRetentionStore = create(
         set({ selectedPeriod: periodKey });
       },
       setSupportPeriod: (periodKey) => set({ selectedSupportPeriod: periodKey }),
+      
+      // ДОБАВЛЕНО: Метод переключения языка
+      setLanguage: (lang) => set({ language: lang }),
 
       reset: () => {
         set({
@@ -84,7 +89,8 @@ export const useRetentionStore = create(
       name: 'retention-store',
       partialize: (state) => ({
         selectedPeriod: state.selectedPeriod,
-        selectedSupportPeriod: state.selectedSupportPeriod
+        selectedSupportPeriod: state.selectedSupportPeriod,
+        language: state.language // ДОБАВЛЕНО: Сохраняем язык при перезагрузке страницы
       })
     }
   )

@@ -9,6 +9,7 @@ import { Card } from '../shared/Card/Card';
 import { useRetentionStore, selectPeriods } from '../../store/retentionStore';
 import { formatCompact } from '../../utils/formatters';
 import styles from './ChannelsCharts.module.css';
+import { useTranslation } from '../../hooks/useTranslation';
 
 const CHANNEL_COLORS = {
   mail: '#FFD700', push: '#F06292', sms: '#00C853', tg: '#0097A7',
@@ -21,6 +22,7 @@ const CHANNEL_ICONS = {
 };
 
 export function ChannelsLineChart() {
+  const { t, translateMonth } = useTranslation();
   const periods = useRetentionStore(selectPeriods);
   const selectedPeriod = useRetentionStore(state => state.selectedPeriod);
 
@@ -109,8 +111,9 @@ export function ChannelsLineChart() {
     <Card>
       <div className={styles.container}>
         <div className={styles.header}>
-          <div className={styles.title}>📈 Sent Dynamics by Channel</div>
-          <div className={styles.subtitle}>Month comparison</div>
+          {/* ИСПРАВЛЕНИЕ */}
+          <div className={styles.title}>{t('📈 Динамика отправок по каналам', '📈 Sent Dynamics by Channel')}</div>
+          <div className={styles.subtitle}>{t('Sent по месяцам', 'Month comparison')}</div>
         </div>
         
         <div className={styles.chartWrapper}>
@@ -121,6 +124,7 @@ export function ChannelsLineChart() {
                 dataKey="name" 
                 stroke="#666" 
                 style={{ fontSize: '15px', fontFamily: 'Montserrat, sans-serif', fontWeight: 700 }} 
+                tickFormatter={(val) => translateMonth(val)}
               />
               <YAxis 
                 stroke="#666" 
