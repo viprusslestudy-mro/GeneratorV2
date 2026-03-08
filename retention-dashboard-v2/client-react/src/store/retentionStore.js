@@ -23,7 +23,8 @@ export const useRetentionStore = create(
       // Настройки проекта
       projectSettings: {
         name: 'SuperSpin',
-        logoUrl: 'https://via.placeholder.com/40/FF9800/FFFFFF?text=SS',
+        // ВАЖНО: Вставили твою реальную ссылку на логотип!
+        logoUrl: 'https://userimg-assets-eu.customeriomail.com/images/client-env-203844/1772793965054_Frame%202135561153%20(2)_01KK1C2ANEP1JRTVV437FZ913S.png',
         icon: '🎰'
       },
 

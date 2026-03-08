@@ -95,8 +95,8 @@ export function DoughnutChart() {
                 data={chartData}
                 cx="50%"
                 cy="50%"
-                innerRadius={90}
-                outerRadius={130}
+                innerRadius={110}
+                outerRadius={150}
                 paddingAngle={5}
                 dataKey="value"
                 stroke="none"

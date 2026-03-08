@@ -50,11 +50,33 @@ export function ChannelsGrowth() {
     const channelsMap = new Map();
     const configs = {};
 
+    // 1. ЖЕСТКИЙ ПОРЯДОК ИЗ АДМИНКИ (Мастер-таблица)
+    const REQUIRED_CHANNELS = [
+      { key: 'mail', name: 'E-mail', icon: '📧', color: '#FFD700' },
+      { key: 'push', name: 'App Push', icon: '📱', color: '#F06292' },
+      { key: 'sms', name: 'SMS', icon: '💬', color: '#00C853' },
+      { key: 'tg', name: 'Telegram', icon: '✈️', color: '#0097A7' },
+      { key: 'wa', name: 'WhatsApp', icon: '📞', color: '#25D366' },
+      { key: 'popup', name: 'Pop-up', icon: '🪟', color: '#FF9100' },
+      { key: 'webpush', name: 'Web-Push', icon: '🌐', color: '#29B6F6' },
+      { key: 'ai', name: 'AI', icon: '🤖', color: '#7C4DFF' },
+      { key: 'call_center', name: 'Call Center', icon: '🎧', color: '#FF6F00' },
+      { key: 'reactivation', name: 'Reactivation Team', icon: '🔁', color: '#00897B' }
+    ];
+
+    // 2. Сначала добавляем все каналы из списка (даже если они пустые)
+    REQUIRED_CHANNELS.forEach(ch => {
+      channelsMap.set(ch.key, ch);
+      configs[ch.key] = []; // Пустой массив метрик по умолчанию
+    });
+
+    // 3. Сканируем данные и добавляем метрики
     periods.forEach(p => {
       if (p.hasChannels && p.channelCards) {
         Object.entries(p.channelCards).forEach(([chKey, chData]) => {
           if (chKey === 'total' || chData.fullyDisabled) return;
           
+          // Если канал пришел из базы, но его нет в жестком списке - добавляем его тоже
           if (!channelsMap.has(chKey)) {
             channelsMap.set(chKey, {
               key: chKey,
@@ -62,9 +84,10 @@ export function ChannelsGrowth() {
               icon: chData.icon || CHANNEL_ICONS[chKey] || '📊',
               color: CHANNEL_COLORS[chKey] || '#9c27b0'
             });
+            configs[chKey] = [];
           }
 
-          if (!configs[chKey]) configs[chKey] = [];
+          // Добавляем метрики для канала
           (chData.cards || []).forEach(card => {
             const mKey = card.id.replace(`${chKey}_`, '');
             if (!configs[chKey].some(m => m.key === mKey)) {

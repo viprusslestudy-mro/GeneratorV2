@@ -6,6 +6,7 @@
 import { useState, useMemo } from 'react';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip as RechartsTooltip, Legend } from 'recharts';
 import { Card } from '../shared/Card/Card';
+import { useRetentionStore } from '../../store/retentionStore';
 import styles from './TagsAnalytics.module.css';
 
 const PIE_COLORS = ['#3b82f6', '#ef4444', '#10b981', '#a855f7', '#F5B800'];
@@ -148,6 +149,16 @@ export function TagsAnalytics({ tagsData, activeLocale, activePeriod, setActiveP
   return (
     <div className={styles.tagsContainer}>
       
+      {/* ═══ HEADER (ЦЕНТРИРОВАННЫЙ КАК В SUPPORT) ═══ */}
+      <div className={styles.headerRow}>
+        <div className={styles.titleBlock}>
+          <h1>
+            <span className={styles.headerIcon}>🏷️</span>
+            &nbsp;Tags Analytics&nbsp;
+          </h1>
+        </div>
+      </div>
+
       {/* ═══ PERIODS ═══ */}
       <Card>
         <div className={styles.periodsGrid}>
@@ -180,17 +191,25 @@ export function TagsAnalytics({ tagsData, activeLocale, activePeriod, setActiveP
             {weeksData.map((val, idx) => {
               const weekId = `week-${idx}`;
               const isDisabled = val === 0;
+              
+              // Достаем даты из liveChat (так как в tags дат нет)
+              const globalData = useRetentionStore.getState().supportData;
+              const periodData = globalData?.byPeriod?.[activePeriod] || globalData;
+              const weekDates = periodData?.liveChat?.weeklyKPI?.[idx]?.dates || '';
+
+              if (isDisabled) return null; // Прячем полностью пустые
 
               return (
                 <div 
                   key={weekId}
-                  className={`${styles.periodCard} ${activePeriod === weekId ? styles.active : ''} ${isDisabled ? styles.disabled : ''}`}
-                  onClick={() => handlePeriodSelect(weekId, !isDisabled)}
+                  className={`${styles.periodCard} ${activePeriod === weekId ? styles.active : ''}`}
+                  onClick={() => handlePeriodSelect(weekId, true)}
                 >
                   <div className={styles.weekHeader}>
-                    <span className={styles.weekTitle}>Week #{idx + 1}</span>
+                    <span className={styles.weekTitle}>Week {idx + 1}</span>
                   </div>
-                  <div className={styles.weekDates}>week dates</div>
+                  {/* ИСПРАВЛЕНИЕ: Выводим реальные даты вместо "week dates" */}
+                  <div className={styles.weekDates}>{weekDates}</div>
                   <div className={styles.weekBottom}>
                     <div className={styles.weekChats}>{val.toLocaleString()}</div>
                     <span className={styles.weekSub}>tags</span>
@@ -211,7 +230,7 @@ export function TagsAnalytics({ tagsData, activeLocale, activePeriod, setActiveP
             <ResponsiveContainer width="100%" height={350}>
               <PieChart>
                 <Pie
-                  data={pieData} cx="50%" cy="50%" innerRadius={0} outerRadius={120}
+                  data={pieData} cx="50%" cy="50%" innerRadius={110} outerRadius={150}
                   dataKey="value" stroke="#fff" strokeWidth={2}
                   label={!pieData[0].isEmpty ? ({name, percent}) => `${name} (${(percent*100).toFixed(0)}%)` : false}
                 >

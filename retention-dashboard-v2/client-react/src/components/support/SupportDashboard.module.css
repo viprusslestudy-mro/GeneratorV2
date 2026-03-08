@@ -18,8 +18,8 @@
   display: flex;
   flex-direction: column;
   gap: 16px;
-  margin-bottom: 8px;
-  align-items: center;
+  margin-bottom: 24px;
+  align-items: center; /* Центрирует всё по горизонтали */
   text-align: center;
 }
 
@@ -32,13 +32,14 @@
 }
 
 .titleBlock h1 {
-  font-size: 2rem;
-  font-weight: 800;
+  font-size: 2.5rem; /* Сделали заголовок крупнее */
+  font-weight: 900;
   color: var(--text-main);
-  margin: 0 0 4px 0;
+  margin: 0 0 8px 0;
   display: flex;
   align-items: center;
   justify-content: center;
+  gap: 12px;
 }
 
 .periodSubtitle {
@@ -102,11 +103,14 @@
 .periodCard {
   background: white;
   border-radius: 20px;
-  padding: 20px;
-  border: 2px solid rgba(0, 0, 0, 0.05); /* Рамка */
+  padding: 16px 20px; /* Уплотнили отступы, чтобы убрать дыры */
+  border: 2px solid rgba(0, 0, 0, 0.05);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04);
   cursor: pointer;
   transition: all 0.2s ease;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
 }
 
 .periodCard:hover:not(.disabled) {
@@ -186,11 +190,11 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 8px;
+  margin-bottom: 4px; /* Уменьшили дыру */
 }
 
 .weekTitle {
-  font-size: 0.9rem;
+  font-size: 1.1rem; /* Было 0.9rem - сделали крупнее */
   font-weight: 800;
   color: #a855f7;
   text-transform: uppercase;

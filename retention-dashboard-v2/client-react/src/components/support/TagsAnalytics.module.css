@@ -5,6 +5,29 @@
   font-family: 'Montserrat', sans-serif;
 }
 
+/* ═══ HEADER (ЦЕНТР) ═══ */
+.headerRow {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 8px;
+  align-items: center;
+  text-align: center;
+}
+
+.titleBlock h1 {
+  font-size: 2.5rem;
+  font-weight: 900;
+  color: var(--text-main);
+  margin: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.headerIcon {
+  font-size: 2.5rem;
+}
+
 /* ═══ PERIODS ═══ */
 .periodsGrid {
   display: grid;
@@ -56,8 +79,8 @@
 .statTileValue { font-size: 1.8rem; font-weight: 900; color: var(--text-main); }
 
 .weekHeader { margin-bottom: 8px; }
-.weekTitle { font-size: 0.9rem; font-weight: 800; color: #a855f7; text-transform: uppercase; }
-.weekDates { font-size: 0.85rem; font-weight: 800; color: var(--text-secondary); margin-bottom: 12px; }
+.weekTitle { font-size: 1.1rem; font-weight: 800; color: #a855f7; text-transform: uppercase; }
+.weekDates { font-size: 1rem; font-weight: 800; color: var(--text-secondary); margin-bottom: 8px; }
 .weekBottom { display: flex; justify-content: space-between; align-items: flex-end; }
 .weekChats { font-size: 1.8rem; font-weight: 900; color: var(--text-main); line-height: 1; }
 .weekSub { font-size: 0.75rem; font-weight: 700; color: var(--text-secondary); }

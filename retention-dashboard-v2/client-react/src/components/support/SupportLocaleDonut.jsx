@@ -77,7 +77,7 @@ export function SupportLocaleDonut({ kpiData, activePeriod, locales }) {
             <PieChart>
               <Pie
                 data={chartData.length > 0 ? chartData : [{ name: 'No data', value: 1 }]}
-                cx="50%" cy="50%" innerRadius={90} outerRadius={130} paddingAngle={2}
+                cx="50%" cy="50%" innerRadius={110} outerRadius={150} paddingAngle={2}
                 dataKey="value" stroke="none"
                 labelLine={false}
                 label={chartData.length > 0 ? renderCustomizedLabel : false} /* ДОБАВЛЕНО */
