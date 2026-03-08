@@ -10,12 +10,12 @@ import { useTranslation } from '../../hooks/useTranslation';
 
 // Конфигурация строк таблицы
 const METRICS = [
-  { id: 'totalChats', label: 'Total Chats', icon: '💬', color: '#F5B800', format: 'number' },
-  { id: 'firstResponse', label: 'First Response', icon: '⚡', color: '#3b82f6', format: 'time' },
-  { id: 'avgResponse', label: 'Avg Response', icon: '⏱️', color: '#a855f7', format: 'time' },
-  { id: 'chatDuration', label: 'Chat Duration', icon: '⏳', color: '#f43f5e', format: 'duration' },
-  { id: 'missedChats', label: 'Missed Chats', icon: '⚠️', color: '#10b981', format: 'number' },
-  { id: 'satisfaction', label: 'Satisfaction', icon: '😊', color: '#F5B800', format: 'percent' }
+  { id: 'totalChats', label: 'total_chats', fallback: 'Total Chats', icon: '💬', color: '#F5B800', format: 'number' },
+  { id: 'firstResponse', label: 'first_response', fallback: 'First Response', icon: '⚡', color: '#3b82f6', format: 'time' },
+  { id: 'avgResponse', label: 'avg_response', fallback: 'Avg Response', icon: '⏱️', color: '#a855f7', format: 'time' },
+  { id: 'chatDuration', label: 'avg_duration', fallback: 'Chat Duration', icon: '⏳', color: '#f43f5e', format: 'duration' },
+  { id: 'missedChats', label: 'missed_chats', fallback: 'Missed Chats', icon: '⚠️', color: '#10b981', format: 'number' },
+  { id: 'satisfaction', label: 'chat_satisfaction', fallback: 'Satisfaction', icon: '😊', color: '#F5B800', format: 'percent' }
 ];
 
 // Форматирование значений (специфично для Support)
@@ -135,7 +135,7 @@ export function SupportLocaleTable({ kpiData, activePeriod, activeLocale }) {
                       <div className={styles.metricIcon} style={{ background: `${m.color}20`, color: m.color }}>
                         {m.icon}
                       </div>
-                      <span>{t(m.label)}</span>
+                      <span>{t(m.label, m.fallback)}</span>
                     </div>
                   </td>
                   

@@ -47,8 +47,11 @@ export const useRetentionStore = create(
           console.log('[Store] Support loaded:', supportData);
           
           // Дефолтные периоды
-          const lastRetentionPeriod = retentionData.periods?.[retentionData.periods.length - 1]?.key || null;
-          const lastSupportPeriod = supportData.availablePeriods?.[supportData.availablePeriods.length - 1]?.key || null;
+          // Дефолтные периоды (самые свежие!)
+          const lastRetentionPeriod = retentionData.periods?.[0]?.key || null;
+          const lastSupportPeriod = supportData.byPeriod 
+            ? Object.keys(supportData.byPeriod).sort().reverse()[0] 
+            : null;
           
           set({ 
             data: retentionData, 
@@ -122,7 +125,7 @@ export const selectSupportPeriods = (state) => {
   
   // 2. Если его нет, собираем периоды из ключей byPeriod
   if (state.supportData.byPeriod) {
-    const keys = Object.keys(state.supportData.byPeriod).sort();
+    const keys = Object.keys(state.supportData.byPeriod).sort().reverse();
     return keys.map(key => {
       const periodObj = state.supportData.byPeriod[key]?.period || {};
       return {

@@ -2,10 +2,13 @@ import { useMemo } from 'react';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from 'recharts';
 import { Card } from '../shared/Card/Card';
 import styles from './SupportCharts.module.css';
+import { useTranslation } from '../../hooks/useTranslation';
 
 const COLORS = ['#3b82f6', '#10b981', '#F5B800', '#ec4899', '#a855f7', '#06b6d4', '#f43f5e', '#6b7280'];
 
 export function SupportLocaleDonut({ kpiData, activePeriod, locales }) {
+  
+  const { t } = useTranslation();
   
   const chartData = useMemo(() => {
     if (!kpiData || !kpiData.byLocale) return [];
@@ -62,8 +65,8 @@ export function SupportLocaleDonut({ kpiData, activePeriod, locales }) {
       <div className={styles.container}>
         <div className={styles.header}>
           <div>
-            <div className={styles.title}>By Locale</div>
-            <div className={styles.subtitle}>Chat distribution</div>
+            <div className={styles.title}>{t('By Locale')}</div>
+            <div className={styles.subtitle}>{t('Chat distribution')}</div>
           </div>
         </div>
         

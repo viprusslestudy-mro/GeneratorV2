@@ -2,8 +2,10 @@ import { useMemo } from 'react';
 import { ComposedChart, Area, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { Card } from '../shared/Card/Card';
 import styles from './SupportCharts.module.css';
+import { useTranslation } from '../../hooks/useTranslation';
 
 export function SupportTrendChart({ weeklyKPI = [], activePeriod }) {
+  const { t } = useTranslation();
   const chartData = useMemo(() => {
     return weeklyKPI.map((w, idx) => ({
       name: w.label || `Week ${idx + 1}`,
@@ -19,10 +21,10 @@ export function SupportTrendChart({ weeklyKPI = [], activePeriod }) {
       <div className={styles.tooltip}>
         <div className={styles.tooltipTitle}>{label}</div>
         <div className={styles.tooltipRow} style={{ color: '#F5B800' }}>
-          💬 Chats: {payload[0].value}
+          💬 {t('total_chats', 'Chats')}: {payload[0].value}
         </div>
         <div className={styles.tooltipRow} style={{ color: '#a855f7' }}>
-          😊 Satisfaction: {payload[1].value}%
+          😊 {t('chat_satisfaction', 'Satisfaction')}: {payload[1].value}%
         </div>
       </div>
     );
@@ -42,15 +44,15 @@ export function SupportTrendChart({ weeklyKPI = [], activePeriod }) {
       <div className={styles.container}>
         <div className={styles.header}>
           <div>
-            <div className={styles.title}>Performance Trend</div>
-            <div className={styles.subtitle}>Chats and Satisfaction over time</div>
+            <div className={styles.title}>{t('Performance Trend')}</div>
+            <div className={styles.subtitle}>{t('Chats and Satisfaction over time')}</div>
           </div>
           <div className={styles.legend}>
             <div className={styles.legendItem}>
-              <div className={styles.dot} style={{ background: '#F5B800' }} /> Chats
+              <div className={styles.dot} style={{ background: '#F5B800' }} /> {t('total_chats', 'Chats')}
             </div>
             <div className={styles.legendItem}>
-              <div className={styles.dot} style={{ background: '#a855f7' }} /> Satisfaction
+              <div className={styles.dot} style={{ background: '#a855f7' }} /> {t('chat_satisfaction', 'Satisfaction')}
             </div>
           </div>
         </div>
