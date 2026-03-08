@@ -100,11 +100,11 @@
 }
 
 .periodCard {
-  background: white;
+  background: linear-gradient(135deg, #ffffff 0%, #fafbfc 100%);
   border-radius: 20px;
-  padding: 16px 20px; /* Уплотнили отступы, чтобы убрать дыры */
-  border: 2px solid rgba(0, 0, 0, 0.05);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04);
+  padding: 16px 20px;
+  border: 2px solid rgba(0, 0, 0, 0.08);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06);
   cursor: pointer;
   transition: all 0.2s ease;
   display: flex;
