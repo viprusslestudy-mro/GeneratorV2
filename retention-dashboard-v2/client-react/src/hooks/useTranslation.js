@@ -11,6 +11,10 @@ export function useTranslation() {
     state.data?.localization?.translations?.[language] || {}
   );
 
+  const devMode = useRetentionStore(state => state.devMode);
+  const currentScreen = useRetentionStore(state => state.currentScreen);
+  const addMissingTranslation = useRetentionStore(state => state.addMissingTranslation);
+
   const t = (key, fallback) => {
     if (!key) return fallback || '';
 
@@ -43,6 +47,11 @@ export function useTranslation() {
           return translations[dictKey];
         }
       }
+    }
+
+    // ДОБАВЛЕНО: Логируем непереведённое в Dev Mode
+    if (devMode && language === 'RU') {
+      addMissingTranslation(key, currentScreen);
     }
 
     // Если ничего не нашли - возвращаем оригинал (на EN возвращаем fallback, если он есть)

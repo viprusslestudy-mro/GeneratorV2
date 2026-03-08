@@ -6,6 +6,7 @@ import { Sidebar } from './components/shared/Sidebar/Sidebar';
 import { FinanceDashboard } from './components/finance/FinanceDashboard';
 import { ChannelsDashboard } from './components/channels/ChannelsDashboard';
 import { SupportDashboard } from './components/support/SupportDashboard';
+import { DevModePanel } from './components/shared/DevModePanel/DevModePanel';
 import './App.css';
 
 export default function App() {
@@ -14,6 +15,13 @@ export default function App() {
   const setLanguage = useRetentionStore(state => state.setLanguage);
   
   const [activeScreen, setActiveScreen] = useState('finance');
+
+  const setCurrentScreen = useRetentionStore(state => state.setCurrentScreen);
+
+  // Добавить useEffect для синхронизации
+  useEffect(() => {
+    setCurrentScreen(activeScreen);
+  }, [activeScreen, setCurrentScreen]);
 
   // Читаем только необходимые функции
   const setSupportPeriod = useRetentionStore(state => state.setSupportPeriod);
@@ -92,6 +100,8 @@ export default function App() {
         {activeScreen === 'support_stats' && <SupportDashboard type="stats" />}
         {activeScreen === 'support_tags' && <SupportDashboard type="tags" />}
       </main>
+
+      <DevModePanel />
     </div>
   );
 }

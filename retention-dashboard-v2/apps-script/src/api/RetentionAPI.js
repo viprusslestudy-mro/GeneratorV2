@@ -91,3 +91,15 @@ function api_getSources() {
     return JSON.stringify([]);
   }
 }
+
+/**
+ * API: Получить переводы
+ */
+function api_getTranslations() {
+  try {
+    return JSON.stringify(getTranslations());
+  } catch (e) {
+    Logger.log('[API] getTranslations error: ' + e.message);
+    return JSON.stringify({ RU: {}, EN: {}, devMode: false });
+  }
+}

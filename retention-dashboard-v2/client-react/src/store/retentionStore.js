@@ -24,6 +24,11 @@ export const useRetentionStore = create(
       // ДОБАВЛЕНО: Текущий язык (по умолчанию из настроек браузера или RU)
       language: 'RU',
 
+      // Dev Mode для поиска непереведённых фраз
+      devMode: false,
+      missingTranslations: new Set(), // Используем Set для уникальности
+      currentScreen: 'finance', // Текущая активная вкладка
+
       projectSettings: {
         name: 'SuperSpin',
         // ВАЖНО: Вставили твою реальную ссылку на логотип!
@@ -38,10 +43,19 @@ export const useRetentionStore = create(
         set({ loading: true, error: null });
         
         try {
-          const [retentionData, supportData] = await Promise.all([
+          const [retentionData, supportData, translationsData] = await Promise.all([
             retentionApi.getReport(),
-            retentionApi.getSupportReport()
+            retentionApi.getSupportReport(),
+            retentionApi.getTranslations()
           ]);
+          
+          // Сохраняем флаг devMode
+          const devMode = translationsData?.devMode || false;
+          
+          // Добавляем переводы в retentionData
+          if (retentionData) {
+            retentionData.localization = translationsData;
+          }
           
           // 1. ПЕРЕВОРАЧИВАЕМ ПЕРИОДЫ RETENTION (Новые сверху)
           if (retentionData && retentionData.periods) {
@@ -83,6 +97,7 @@ export const useRetentionStore = create(
             supportData: supportData,
             supportPeriodsCache: supportPeriodsCache,
             loading: false,
+            devMode: devMode,
             // Если сохраненный период не найден или это первый запуск — берем САМЫЙ СВЕЖИЙ
             selectedPeriod: isSavedRetentionValid ? savedRetention : latestRetentionPeriod,
             selectedSupportPeriod: isSavedSupportValid ? savedSupport : latestSupportPeriod
@@ -102,6 +117,47 @@ export const useRetentionStore = create(
       
       // ДОБАВЛЕНО: Метод переключения языка
       setLanguage: (lang) => set({ language: lang }),
+
+      // Dev Mode actions
+      addMissingTranslation: (key, screen) => {
+        const state = get();
+        if (!state.devMode) return;
+        
+        const newSet = new Set(state.missingTranslations);
+        newSet.add(JSON.stringify({ key, screen }));
+        set({ missingTranslations: newSet });
+      },
+
+      setCurrentScreen: (screen) => {
+        set({ currentScreen: screen });
+      },
+
+      clearMissingTranslations: () => {
+        set({ missingTranslations: new Set() });
+      },
+
+      sendMissingTranslations: async () => {
+        const state = get();
+        const missing = Array.from(state.missingTranslations).map(item => JSON.parse(item));
+        
+        if (missing.length === 0) {
+          alert('Нет непереведённых фраз');
+          return;
+        }
+        
+        try {
+          const result = await retentionApi.addMissingTranslations(missing);
+          
+          if (result.success) {
+            alert(`✅ Добавлено: ${result.added}\n⚠️ Пропущено (уже есть): ${result.skipped}`);
+            set({ missingTranslations: new Set() });
+          } else {
+            alert('❌ Ошибка: ' + result.error);
+          }
+        } catch (error) {
+          alert('❌ Ошибка отправки: ' + error.message);
+        }
+      },
 
       reset: () => {
         set({
