@@ -50,7 +50,12 @@ function onOpen() {
     )
     .addSeparator()
     
-    // 6. Старый проект (Спрятан в подменю, чтобы не мешал)
+    // 6. Переводы
+    .addItem('🌐 Отформатировать лист переводов', 'formatTranslationsSheet')
+    
+    .addSeparator()
+    
+    // 7. Старый проект (Спрятан в подменю, чтобы не мешал)
     .addSubMenu(ui.createMenu('📦 Архив (Старый HTML)')
       .addItem('🏠 Открыть старый Dashboard', 'showDashboardPreview')
       .addItem('💾 Сгенерировать весь Сайт', 'generateFullDashboardReport')

@@ -41,8 +41,7 @@ export function FinanceDashboard() {
       {/* Заголовок */}
       <div className={styles.header}>
         <h1>
-          <span className={styles.headerIcon}>📊</span>
-          <span className={styles.headerTitle}>{t('tab.finance', 'Main Dashboard')} {new Date().getFullYear()}</span>
+          <span className={styles.headerTitle}>{t('tab.finance', '💰 Main Dashboard')} {new Date().getFullYear()}</span>
           {/* ПЕРЕВОДИМ МЕСЯЦ В ЗНАЧКЕ */}
           <span className={styles.periodBadge}>{t(currentPeriodData.label)}</span>
         </h1>

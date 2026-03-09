@@ -146,8 +146,7 @@ export function ChannelsDashboard() {
     <div className="page-container">
       <div className={styles.header}>
         <h1>
-          <span className={styles.headerIcon}>📈</span>
-          <span className={styles.headerTitle}>{t('tab.channels', 'Communication Channels')}</span>
+          <span className={styles.headerTitle}>{t('tab.channels', '📈 Communication channels')}</span>
           <span className={styles.periodBadge}>{translateMonth(currentPeriodData.label)}</span>
         </h1>
       </div>
