@@ -1309,6 +1309,7 @@ function setupAppSettingsSheet(sheet) {
     ['Название проекта (Project Name)', 'Analytics'],
     ['Иконка (Emoji Icon)', '🎰'],
     ['URL Логотипа (Image URL)', ''],
+    ['site_url', 'https://ваш-проект.vercel.app'],
     ['--- НАЗВАНИЯ ТАБОВ (TABS) ---', ''],
     ['Tab: Support Stats', '📊 Статистика LiveChat'],
     ['Tab: Support Tags', '🏷️ Теги обращений'],

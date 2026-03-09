@@ -5,6 +5,11 @@
 ```
 GeneratorV2/
 ├── retention-dashboard-v2/
+│   ├── BUILD_GUIDE.md
+│   ├── STRUCTURE.md
+│   ├── taskmanager.md
+│   ├── .env.example
+│   ├── .gitignore
 │   ├── apps-script/
 │   │   ├── src/
 │   │   │   ├── api/
@@ -37,6 +42,8 @@ GeneratorV2/
 │   │   │   ├── MetricsConfigManager.js
 │   │   │   ├── SettingsManager.js
 │   │   │   ├── test.js
+│   │   │   ├── TranslationsFormatter.js
+│   │   │   ├── TranslationsManager.js
 │   │   │   └── Utils.js
 │   │   └── .clasp.json
 │   ├── client-react/
@@ -44,12 +51,14 @@ GeneratorV2/
 │   │   │   ├── mocks/
 │   │   │   │   ├── api_getRetentionReport.json
 │   │   │   │   ├── api_getSources.json
+│   │   │   │   ├── api_getTranslations.json
 │   │   │   │   └── api_getUISettings.json
 │   │   │   └── vite.svg
 │   │   ├── src/
 │   │   │   ├── api/
 │   │   │   │   ├── gasApi.js
-│   │   │   │   └── retentionApi.js
+│   │   │   │   ├── retentionApi.js
+│   │   │   │   └── supabaseApi.js
 │   │   │   ├── assets/
 │   │   │   │   └── react.svg
 │   │   │   ├── components/
@@ -60,8 +69,12 @@ GeneratorV2/
 │   │   │   │   │   ├── ChannelsDashboard.module.css
 │   │   │   │   │   ├── ChannelsDoughnutChart.jsx
 │   │   │   │   │   ├── ChannelsDoughnutChart.module.css
+│   │   │   │   │   ├── ChannelsGrowth.jsx
 │   │   │   │   │   ├── ChannelsLineChart.jsx
-│   │   │   │   │   └── ChannelsLineChart.module.css
+│   │   │   │   │   ├── ChannelsLineChart.module.css
+│   │   │   │   │   ├── ChannelsTable.jsx
+│   │   │   │   │   ├── ChannelsTable.module.css
+│   │   │   │   │   └── ChannelsLineChart.jsx
 │   │   │   │   ├── finance/
 │   │   │   │   │   ├── BarChart.jsx
 │   │   │   │   │   ├── BarChart.module.css
@@ -71,12 +84,25 @@ GeneratorV2/
 │   │   │   │   │   ├── FinanceChart.module.css
 │   │   │   │   │   ├── FinanceDashboard.jsx
 │   │   │   │   │   ├── FinanceDashboard.module.css
+│   │   │   │   │   ├── FinanceTable.jsx
 │   │   │   │   │   ├── GrowthAnalysis.jsx
 │   │   │   │   │   └── GrowthAnalysis.module.css
 │   │   │   │   ├── shared/
-│   │   │   │   │   └── Card/
-│   │   │   │   │       ├── Card.jsx
-│   │   │   │   │       └── Card.module.css
+│   │   │   │   │   ├── Card/
+│   │   │   │   │   │   ├── Card.jsx
+│   │   │   │   │   │   └── Card.module.css
+│   │   │   │   │   ├── DevModePanel/
+│   │   │   │   │   │   ├── DevModePanel.jsx
+│   │   │   │   │   │   └── DevModePanel.module.css
+│   │   │   │   │   ├── Loader/
+│   │   │   │   │   │   ├── Loader.jsx
+│   │   │   │   │   │   └── Loader.module.css
+│   │   │   │   │   ├── MetricCard/
+│   │   │   │   │   │   ├── MetricCard.jsx
+│   │   │   │   │   │   └── MetricCard.module.css
+│   │   │   │   │   └── Sidebar/
+│   │   │   │   │       ├── Sidebar.jsx
+│   │   │   │   │       └── Sidebar.module.css
 │   │   │   │   └── support/
 │   │   │   │       ├── SatisfactionCard.jsx
 │   │   │   │       ├── SatisfactionCard.module.css
@@ -94,7 +120,8 @@ GeneratorV2/
 │   │   │   │       └── TagsAnalytics.module.css
 │   │   │   ├── hooks/
 │   │   │   │   ├── usePeriodFilter.js
-│   │   │   │   └── useRetentionData.js
+│   │   │   │   ├── useRetentionData.js
+│   │   │   │   └── useTranslation.js
 │   │   │   ├── store/
 │   │   │   │   └── retentionStore.js
 │   │   │   ├── styles/
@@ -113,7 +140,7 @@ GeneratorV2/
 │   │   ├── README.md
 │   │   └── vite.config.js
 │   ├── .gitignore
-│   └── STRUCTURE.md
+│   └── taskmanager.md
 ├── .gitignore
 └── taskmanager.md
 ```

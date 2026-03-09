@@ -56,10 +56,69 @@ function onOpen() {
     
     .addSeparator()
     
-    // 7. Старый проект (Спрятан в подменю, чтобы не мешал)
+    // 7. Сайт
+    .addItem('🌍 Открыть готовый сайт (Vercel)', 'openVercelSite')
+    
+    .addSeparator()
+    
+    // 8. Старый проект (Спрятан в подменю, чтобы не мешал)
     .addSubMenu(ui.createMenu('📦 Архив (Старый HTML)')
       .addItem('🏠 Открыть старый Dashboard', 'showDashboardPreview')
       .addItem('💾 Сгенерировать весь Сайт', 'generateFullDashboardReport')
     )
     .addToUi();
+}
+
+/**
+ * Функция открытия готового сайта (динамическая ссылка из настроек)
+ */
+function openVercelSite() {
+  const ui = SpreadsheetApp.getUi();
+  try {
+    const ss = getSettingsSpreadsheet();
+    let sheet = ss.getSheetByName('⚙️ APP_SETTINGS');
+    if (!sheet) sheet = ss.getSheetByName('APP_SETTINGS');
+    
+    if (!sheet) {
+      ui.alert('❌ Ошибка', 'Лист APP_SETTINGS не найден.', ui.ButtonSet.OK);
+      return;
+    }
+    
+    const data = sheet.getDataRange().getValues();
+    let siteUrl = '';
+    
+    // Ищем ключ 'site_url' или 'vercel_url'
+    for (let i = 0; i < data.length; i++) {
+      const key = String(data[i][0] || '').trim().toLowerCase();
+      if (key === 'site_url' || key === 'vercel_url' || key === 'url дашборда') {
+        siteUrl = String(data[i][1] || '').trim();
+        break;
+      }
+    }
+    
+    if (!siteUrl) {
+      ui.alert(
+        '⚠️ Ссылка не найдена', 
+        'Чтобы эта кнопка работала, добавьте в лист "⚙️ APP_SETTINGS" строку:\n\n' +
+        'Колонка A: site_url\n' +
+        'Колонка B: https://ваш-сайт.vercel.app', 
+        ui.ButtonSet.OK
+      );
+      return;
+    }
+    
+    // Добавляем https:// если пользователь забыл
+    if (!siteUrl.startsWith('http')) {
+      siteUrl = 'https://' + siteUrl;
+    }
+    
+    const htmlOutput = HtmlService.createHtmlOutput(
+      '<script>window.open("' + siteUrl + '", "_blank"); google.script.host.close();</script>'
+    ).setWidth(10).setHeight(10);
+    
+    ui.showModalDialog(htmlOutput, 'Открываем дашборд...');
+    
+  } catch (error) {
+    ui.alert('❌ Ошибка', error.message, ui.ButtonSet.OK);
+  }
 }
