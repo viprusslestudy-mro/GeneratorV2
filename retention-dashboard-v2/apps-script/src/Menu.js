@@ -17,6 +17,7 @@ function onOpen() {
       .addItem('📤 Отправить ВСЁ', 'exportAllToSupabaseUI')
       .addItem('💰 Только Retention', 'exportRetentionToSupabaseUI')
       .addItem('🎧 Только Support', 'exportSupportToSupabaseUI')
+      .addItem('📤 Отправить Переводы (Translations)', 'uploadTranslationsToDB')
     )
     .addSeparator()
 

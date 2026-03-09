@@ -84,5 +84,32 @@ export const supabaseApi = {
       console.error('[Supabase] ❌ Ошибка Support:', error);
       throw error;
     }
+  },
+
+  /**
+   * Получить переводы из базы данных
+   */
+  async getTranslations() {
+    try {
+      console.log(`[Supabase] 📥 Загрузка Переводов...`);
+      const response = await fetch(`${SUPABASE_URL}/rest/v1/report_cache?report_key=eq.translations&select=report_data`, {
+        headers: {
+          'apikey': SUPABASE_KEY,
+          'Authorization': `Bearer ${SUPABASE_KEY}` 
+        }
+      });
+      
+      if (!response.ok) throw new Error('Network response was not ok');
+      const data = await response.json();
+      
+      if (data && data.length > 0) {
+        console.log(`[Supabase] ✅ Переводы успешно загружены!`);
+        return data[0].report_data;
+      }
+      return null;
+    } catch (error) {
+      console.error('[Supabase] ❌ Ошибка загрузки Переводов:', error);
+      return null;
+    }
   }
 };

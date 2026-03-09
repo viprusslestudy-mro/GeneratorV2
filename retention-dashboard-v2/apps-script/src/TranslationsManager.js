@@ -240,3 +240,69 @@ function api_addMissingTranslations_internal(missingKeysJson) {
     });
   }
 }
+
+/**
+ * Отправить переводы в Supabase
+ */
+function uploadTranslationsToDB() {
+  const ui = SpreadsheetApp.getUi();
+  try {
+    // 1. Получаем переводы
+    const translationsData = getTranslations();
+    // Принудительно ставим devMode = false для продакшена
+    translationsData.devMode = false;
+    
+    // 2. Отправляем в Supabase (в таблицу report_cache с ключом 'translations')
+    const config = getSupabaseConfig();
+    const url = config.url + '/rest/v1/report_cache';
+    
+    const payload = {
+      report_key: 'translations',
+      report_data: translationsData,
+      updated_at: new Date().toISOString()
+    };
+    
+    const options = {
+      method: 'post',
+      headers: {
+        'apikey': config.key,
+        'Authorization': 'Bearer ' + config.key,
+        'Content-Type': 'application/json',
+        'Prefer': 'resolution=merge-duplicates'
+      },
+      payload: JSON.stringify(payload),
+      muteHttpExceptions: true
+    };
+    
+    const response = UrlFetchApp.fetch(url, options);
+    const code = response.getResponseCode();
+    
+    if (code >= 200 && code < 300) {
+      ui.alert('✅ Успех', 'Переводы успешно отправлены в базу данных!', ui.ButtonSet.OK);
+    } else {
+      throw new Error('Supabase error: ' + response.getContentText());
+    }
+    
+  } catch (error) {
+    Logger.log('[uploadTranslationsToDB] Error: ' + error.message);
+    ui.alert('❌ Ошибка', error.message, ui.ButtonSet.OK);
+  }
+}
+
+/**
+ * Обновленная функция отправки ВСЕГО (добавляем переводы)
+ */
+function uploadAllToDB() {
+  try {
+    // Твои функции отправки
+    if (typeof uploadRetentionToDB === 'function') uploadRetentionToDB();
+    if (typeof uploadSupportToDB === 'function') uploadSupportToDB();
+    
+    // Наша новая функция
+    uploadTranslationsToDB();
+    
+    SpreadsheetApp.getUi().alert('🚀 ВСЕ данные (Retention, Support, Переводы) успешно отправлены в базу!');
+  } catch (error) {
+    SpreadsheetApp.getUi().alert('❌ Ошибка отправки ВСЕГО: ' + error.message);
+  }
+}

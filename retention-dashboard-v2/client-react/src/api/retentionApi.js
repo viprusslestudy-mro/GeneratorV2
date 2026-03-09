@@ -44,8 +44,15 @@ async function getUISettings() {
  */
 async function getTranslations() {
   try {
-    // В локальном режиме нужен мок api_getTranslations.json
-    const response = await gasApi.call('api_getTranslations');
+    // ПРОДАКШЕН: Берем из Supabase!
+    const response = await supabaseApi.getTranslations();
+    
+    // Если в БД почему-то пусто - пробуем старый метод (GAS) или отдаем дефолт
+    if (!response) {
+      console.warn('[retentionApi] Переводы в БД не найдены, используем дефолт');
+      return { RU: {}, EN: {}, devMode: false };
+    }
+    
     return response;
   } catch (error) {
     console.error('[retentionApi] getTranslations error:', error);
