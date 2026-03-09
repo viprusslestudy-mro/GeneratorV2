@@ -17,9 +17,14 @@ export function useTranslation() {
   const currentScreen = useRetentionStore(state => state.currentScreen);
 
   // ИСПРАВЛЕНИЕ: Используем EMPTY_TRANSLATIONS вместо создания нового объекта {}
-  const translations = useRetentionStore(state =>
-    state.data?.localization?.translations?.[language] || EMPTY_TRANSLATIONS
-  );
+  const translations = useRetentionStore(state => {
+    // Сначала пробуем новый формат
+    if (state.translations && Object.keys(state.translations).length > 0) {
+      return state.translations[language] || EMPTY_TRANSLATIONS;
+    }
+    // Фолбек на старый формат
+    return state.data?.localization?.translations?.[language] || EMPTY_TRANSLATIONS;
+  });
 
   // Используем useCallback, чтобы функция не пересоздавалась при каждом рендере
   const t = useCallback((key, fallback) => {

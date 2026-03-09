@@ -29,6 +29,8 @@ export const useRetentionStore = create(
       missingTranslations: new Set(), // Используем Set для уникальности
       currentScreen: 'finance', // Текущая активная вкладка
 
+      translations: { RU: {}, EN: {} }, // <-- ДОБАВЛЕНО
+
       projectSettings: {
         name: 'SuperSpin',
         // ВАЖНО: Вставили твою реальную ссылку на логотип!
@@ -49,12 +51,37 @@ export const useRetentionStore = create(
             retentionApi.getTranslations()
           ]);
           
-          // Сохраняем флаг devMode
-          const devMode = translationsData?.devMode || false;
+          console.log('[Store] Fetched translationsData:', translationsData); // <-- ЛОГИРУЕМ ЧТО ПРИШЛО
           
-          // Добавляем переводы в retentionData
+          // Вытаскиваем переводы. Иногда они могут быть обернуты еще в один объект (зависит от того, как парсится JSON)
+          let actualTranslations = { RU: {}, EN: {} };
+          let devMode = false;
+
+          if (translationsData) {
+            devMode = translationsData.devMode === true || translationsData.devMode === 'true';
+            
+            // Если структура { RU: {...}, EN: {...} }
+            if (translationsData.RU) {
+              actualTranslations = {
+                RU: translationsData.RU || {},
+                EN: translationsData.EN || {}
+              };
+            } 
+            // Если структура { translations: { RU: {...}, EN: {...} } } (бывает при миграции старого кода)
+            else if (translationsData.translations && translationsData.translations.RU) {
+              actualTranslations = {
+                RU: translationsData.translations.RU || {},
+                EN: translationsData.translations.EN || {}
+              };
+            }
+          }
+          
+          console.log('[Store] Processed translations:', actualTranslations); // <-- ЛОГИРУЕМ ЧТО ИДЕТ В СТЕЙТ
+          
+          // Добавляем переводы в retentionData (для обратной совместимости старых компонентов)
           if (retentionData) {
-            retentionData.localization = translationsData;
+            if (!retentionData.localization) retentionData.localization = {};
+            retentionData.localization.translations = actualTranslations;
           }
           
           // 1. ПЕРЕВОРАЧИВАЕМ ПЕРИОДЫ RETENTION (Новые сверху)
@@ -96,6 +123,7 @@ export const useRetentionStore = create(
             data: retentionData, 
             supportData: supportData,
             supportPeriodsCache: supportPeriodsCache,
+            translations: actualTranslations, // <-- ИСПОЛЬЗУЕМ ОБРАБОТАННЫЙ ОБЪЕКТ
             loading: false,
             devMode: devMode,
             // Если сохраненный период не найден или это первый запуск — берем САМЫЙ СВЕЖИЙ

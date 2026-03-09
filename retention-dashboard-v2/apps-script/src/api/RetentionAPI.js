@@ -103,3 +103,11 @@ function api_getTranslations() {
     return JSON.stringify({ RU: {}, EN: {}, devMode: false });
   }
 }
+
+/**
+ * API: Добавить пропущенные переводы
+ */
+function api_addMissingTranslations(missingKeysJson) {
+  // Вызываем функцию из TranslationsManager.js
+  return api_addMissingTranslations_internal(missingKeysJson);
+}

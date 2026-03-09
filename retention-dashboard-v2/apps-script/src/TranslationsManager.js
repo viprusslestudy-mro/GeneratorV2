@@ -88,7 +88,7 @@ function getDevModeFlag() {
  * @param {Array} missingKeys - [{ key, context, screen }]
  * @returns {Object} { success, added, skipped }
  */
-function api_addMissingTranslations(missingKeysJson) {
+function api_addMissingTranslations_internal(missingKeysJson) {
   try {
     var missingKeys = JSON.parse(missingKeysJson);
     
