@@ -5,8 +5,9 @@
  */
 
 // ЗАМЕНИ НА СВОИ РЕАЛЬНЫЕ ДАННЫЕ ИЗ НАСТРОЕК SUPABASE (Settings -> API)
-const SUPABASE_URL = 'https://rbtnrwdaococoveuwags.supabase.co'; // Например: 'https://qwertyuiop.supabase.co'
-const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJidG5yd2Rhb2NvY292ZXV3YWdzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzI4Mzg3OTMsImV4cCI6MjA4ODQxNDc5M30.1ONtWm1TEaCOfrrKcmrCJoItc_S8ZV-eAYfA639Xvdg';
+const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
+const SUPABASE_KEY = import.meta.env.VITE_SUPABASE_KEY;
+const SUPABASE_TABLE = import.meta.env.VITE_SUPABASE_TABLE || 'reports'; // <-- ДОБАВЛЕНО
 
 export const supabaseApi = {
   /**
@@ -91,8 +92,10 @@ export const supabaseApi = {
    */
   async getTranslations() {
     try {
-      console.log(`[Supabase] 📥 Загрузка Переводов...`);
-      const response = await fetch(`${SUPABASE_URL}/rest/v1/report_cache?report_key=eq.translations&select=report_data`, {
+      console.log(`[Supabase] 📥 Загрузка Переводов из таблицы ${SUPABASE_TABLE}...`);
+      
+      // ИЩЕМ по колонке id (значение translations_latest), берем колонку data
+      const response = await fetch(`${SUPABASE_URL}/rest/v1/${SUPABASE_TABLE}?id=eq.translations_latest&select=data`, {
         headers: {
           'apikey': SUPABASE_KEY,
           'Authorization': `Bearer ${SUPABASE_KEY}` 
@@ -100,11 +103,11 @@ export const supabaseApi = {
       });
       
       if (!response.ok) throw new Error('Network response was not ok');
-      const data = await response.json();
+      const jsonResponse = await response.json();
       
-      if (data && data.length > 0) {
+      if (jsonResponse && jsonResponse.length > 0 && jsonResponse[0].data) {
         console.log(`[Supabase] ✅ Переводы успешно загружены!`);
-        return data[0].report_data;
+        return jsonResponse[0].data;
       }
       return null;
     } catch (error) {

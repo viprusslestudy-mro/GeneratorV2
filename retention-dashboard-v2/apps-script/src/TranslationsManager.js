@@ -239,7 +239,7 @@ function api_addMissingTranslations_internal(missingKeysJson) {
       error: e.message
     });
   }
-}
+} // <-- ИМЕННО ЭТА СКОБКА БЫЛА ПРОПУЩЕНА!
 
 /**
  * Отправить переводы в Supabase
@@ -247,26 +247,63 @@ function api_addMissingTranslations_internal(missingKeysJson) {
 function uploadTranslationsToDB() {
   const ui = SpreadsheetApp.getUi();
   try {
-    // 1. Получаем переводы
-    const translationsData = getTranslations();
-    // Принудительно ставим devMode = false для продакшена
-    translationsData.devMode = false;
+    Logger.log('[uploadTranslationsToDB] Начало отправки переводов...');
     
-    // 2. Отправляем в Supabase (в таблицу report_cache с ключом 'translations')
-    const config = getSupabaseConfig();
-    const url = config.url + '/rest/v1/report_cache';
+    // 1. Получаем настройки Supabase из листа APP_SETTINGS
+    const ss = getSettingsSpreadsheet();
+    let sheet = ss.getSheetByName('⚙️ APP_SETTINGS');
+    if (!sheet) sheet = ss.getSheetByName('APP_SETTINGS');
+    
+    if (!sheet) throw new Error('Лист APP_SETTINGS не найден');
+    
+    const settingsData = sheet.getDataRange().getValues();
+    let supabaseUrl = '';
+    let supabaseKey = '';
+    let supabaseTable = 'reports'; 
+    let projectName = 'Analytics'; // Для колонки project
+    
+    for (let i = 0; i < settingsData.length; i++) {
+      const keyStr = String(settingsData[i][0] || '').trim().toLowerCase();
+      
+      if (keyStr === 'supabase_url' || keyStr === 'supabase url') {
+        supabaseUrl = String(settingsData[i][1] || '').trim();
+      }
+      if (keyStr === 'supabase_key' || keyStr === 'supabase_anon_key' || keyStr === 'supabase key') {
+        supabaseKey = String(settingsData[i][1] || '').trim();
+      }
+      if (keyStr === 'supabase_table' || keyStr === 'supabase table') {
+        supabaseTable = String(settingsData[i][1] || '').trim();
+      }
+      // Ищем название проекта (Project Name)
+      if (keyStr.indexOf('название проекта') >= 0 || keyStr.indexOf('project name') >= 0) {
+        projectName = String(settingsData[i][1] || '').trim();
+      }
+    }
+    
+    if (!supabaseUrl) throw new Error('Supabase URL не найден в листе APP_SETTINGS');
+    if (!supabaseKey) throw new Error('Supabase KEY не найден в листе APP_SETTINGS');
+    
+    if (supabaseUrl.endsWith('/')) supabaseUrl = supabaseUrl.slice(0, -1);
+    
+    // 2. Получаем переводы
+    const translationsData = getTranslations();
+    translationsData.devMode = false; // Выключаем DevMode для продакшена
+    
+    // 3. Отправляем в Supabase под новую структуру таблицы (id, project, data)
+    const url = supabaseUrl + '/rest/v1/' + supabaseTable;
     
     const payload = {
-      report_key: 'translations',
-      report_data: translationsData,
+      id: 'translations_latest',    // Совпадает с твоим паттерном (retention_latest, support_latest)
+      project: projectName,
+      data: translationsData,       // ИМЕННО СЮДА кладем JSON
       updated_at: new Date().toISOString()
     };
     
     const options = {
       method: 'post',
       headers: {
-        'apikey': config.key,
-        'Authorization': 'Bearer ' + config.key,
+        'apikey': supabaseKey,
+        'Authorization': 'Bearer ' + supabaseKey,
         'Content-Type': 'application/json',
         'Prefer': 'resolution=merge-duplicates'
       },
@@ -278,13 +315,16 @@ function uploadTranslationsToDB() {
     const code = response.getResponseCode();
     
     if (code >= 200 && code < 300) {
-      ui.alert('✅ Успех', 'Переводы успешно отправлены в базу данных!', ui.ButtonSet.OK);
+      Logger.log('[uploadTranslationsToDB] Успешно!');
+      ui.alert('✅ Успех', 'Переводы успешно отправлены в Supabase!', ui.ButtonSet.OK);
     } else {
-      throw new Error('Supabase error: ' + response.getContentText());
+      const errText = response.getContentText();
+      Logger.log('[uploadTranslationsToDB] Ошибка Supabase: ' + errText);
+      throw new Error('Supabase вернул ошибку ' + code + ': ' + errText);
     }
     
   } catch (error) {
-    Logger.log('[uploadTranslationsToDB] Error: ' + error.message);
+    Logger.log('[uploadTranslationsToDB] Ошибка: ' + error.message);
     ui.alert('❌ Ошибка', error.message, ui.ButtonSet.OK);
   }
 }
@@ -293,16 +333,26 @@ function uploadTranslationsToDB() {
  * Обновленная функция отправки ВСЕГО (добавляем переводы)
  */
 function uploadAllToDB() {
+  const ui = SpreadsheetApp.getUi();
   try {
-    // Твои функции отправки
-    if (typeof uploadRetentionToDB === 'function') uploadRetentionToDB();
-    if (typeof uploadSupportToDB === 'function') uploadSupportToDB();
+    let successCount = 0;
+    
+    if (typeof uploadRetentionToDB === 'function') {
+      uploadRetentionToDB();
+      successCount++;
+    }
+    
+    if (typeof uploadSupportToDB === 'function') {
+      uploadSupportToDB();
+      successCount++;
+    }
     
     // Наша новая функция
     uploadTranslationsToDB();
+    successCount++;
     
-    SpreadsheetApp.getUi().alert('🚀 ВСЕ данные (Retention, Support, Переводы) успешно отправлены в базу!');
+    ui.alert('🚀 Успех', `Все данные успешно отправлены в базу (${successCount} отчетов)!`, ui.ButtonSet.OK);
   } catch (error) {
-    SpreadsheetApp.getUi().alert('❌ Ошибка отправки ВСЕГО: ' + error.message);
+    ui.alert('❌ Ошибка отправки ВСЕГО:\n' + error.message);
   }
 }

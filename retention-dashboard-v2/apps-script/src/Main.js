@@ -950,3 +950,32 @@ function getReactAppHTML() {
   // Читаем собранный Vite файл. Важно: при сборке он должен попасть в apps-script/src/dist/index.html
   return HtmlService.createHtmlOutputFromFile('dist/index').getContent();
 }
+
+/**
+ * Создает оболочку для скачиваемого HTML отчета (React-версия)
+ * @param {string} type - Тип отчета (retention/support)
+ * @returns {string} Готовый HTML код
+ */
+function buildAppShell(type) {
+  try {
+    Logger.log('[buildAppShell] Чтение файла dist/index.html');
+    
+    // Пытаемся взять собранный React-билд (если он был запушен через clasp push)
+    var htmlContent = HtmlService.createHtmlOutputFromFile('dist/index').getContent();
+    
+    return htmlContent;
+    
+  } catch (e) {
+    Logger.log('[buildAppShell] Ошибка: ' + e.message);
+    
+    // Фолбэк, если забыли сделать npm run build
+    return '<!DOCTYPE html>' +
+      '<html><head><meta charset="UTF-8"><title>Dashboard Error</title></head>' +
+      '<body style="font-family: sans-serif; padding: 50px; text-align: center; background: #f8f9fa;">' +
+      '<h2 style="color: #e74c3c;">Сборка React не найдена</h2>' +
+      '<p>Файл <b>dist/index.html</b> отсутствует на сервере Google.</p>' +
+      '<p>Пожалуйста, выполните команду <code>npm run build</code> в папке client-react, ' +
+      'а затем <code>clasp push</code>, чтобы загрузить интерфейс.</p>' +
+      '</body></html>';
+  }
+}
