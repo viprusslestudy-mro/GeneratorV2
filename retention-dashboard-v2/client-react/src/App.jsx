@@ -23,6 +23,36 @@ export default function App() {
     setCurrentScreen(activeScreen);
   }, [activeScreen, setCurrentScreen]);
 
+  // ═══ ДИНАМИЧЕСКИЙ TITLE И FAVICON ═══
+  const projectSettings = useRetentionStore(state => state.projectSettings);
+
+  useEffect(() => {
+    if (!projectSettings) return;
+
+    // 1. Смена названия вкладки
+    document.title = projectSettings.pageTitle || projectSettings.name || 'Dashboard';
+
+    // 2. Смена Favicon
+    let link = document.querySelector("link[rel~='icon']");
+    if (!link) {
+      link = document.createElement('link');
+      link.rel = 'icon';
+      document.head.appendChild(link);
+    }
+
+    if (projectSettings.logoUrl) {
+      // Приоритет 1: Картинка логотипа
+      link.href = projectSettings.logoUrl;
+    } else if (projectSettings.icon) {
+      // Приоритет 2: Emoji конвертируется в SVG
+      const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><text y=".9em" font-size="90">${projectSettings.icon}</text></svg>`;
+      link.href = `data:image/svg+xml,${encodeURIComponent(svg)}`;
+    } else {
+      // Фолбэк по умолчанию
+      link.href = '/vite.svg';
+    }
+  }, [projectSettings]);
+
   // Читаем только необходимые функции
   const setSupportPeriod = useRetentionStore(state => state.setSupportPeriod);
   const setRetentionPeriod = useRetentionStore(state => state.setPeriod);

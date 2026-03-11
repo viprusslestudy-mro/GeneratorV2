@@ -142,13 +142,13 @@ function getActiveDataSourcesV3() {
  */
 function getAppSettings() {
   const ss = getSettingsSpreadsheet();
-  const sheet = ss.getSheetByName(SHEETS.APP_SETTINGS);
+  const sheet = ss.getSheetByName('⚙️ APP_SETTINGS') || ss.getSheetByName('APP_SETTINGS');
 
   const defaults = {
     projectName: 'Analytics',
+    pageTitle: 'Dashboard', // <-- ДОБАВЛЕНО
     projectIcon: '🎰',
     logoUrl: '',
-    // Support settings
     supportAutoCalcAllGeo: true
   };
 
@@ -159,36 +159,21 @@ function getAppSettings() {
   
   var data = sheet.getRange(3, 1, lastRow - 2, 2).getValues();
   var settings = {};
-  var currentSection = '';
 
   for (var i = 0; i < data.length; i++) {
     var rawKey = String(data[i][0] || '').trim();
     var val = String(data[i][1] || '').trim();
     var keyLower = rawKey.toLowerCase();
 
-    // Определяем секцию по разделителям или заголовкам
-    if (rawKey.indexOf('---') >= 0 || rawKey.indexOf('===') >= 0) {
-      if (keyLower.indexOf('support') >= 0) {
-        currentSection = 'support';
-      } else if (keyLower.indexOf('tab') >= 0) {
-        currentSection = 'tabs';
-      } else {
-        currentSection = rawKey;
-      }
-      continue;
-    }
-    
-    // Секция по ключевому слову SUPPORT / GENERAL
-    if (rawKey === rawKey.toUpperCase() && rawKey.length >= 3 && !val) {
-      currentSection = keyLower;
-      continue;
-    }
-
-    if (!val) continue;
+    if (!val || keyLower.startsWith('---') || keyLower.startsWith('===')) continue;
 
     // ═══ ОСНОВНЫЕ НАСТРОЙКИ ═══
-    if (keyLower.includes('название') || keyLower.includes('name') || keyLower.includes('project_name')) {
+    if (keyLower.includes('название проекта') || keyLower.includes('project name') || keyLower === 'project_name') {
       settings.projectName = val;
+    }
+    // НОВОЕ ПОЛЕ ДЛЯ ВКЛАДКИ:
+    if (keyLower.includes('название вкладки') || keyLower.includes('page title') || keyLower === 'page_title') {
+      settings.pageTitle = val;
     }
     if (keyLower.includes('иконка') || keyLower.includes('icon') || keyLower.includes('project_icon')) {
       settings.projectIcon = val;
@@ -199,7 +184,7 @@ function getAppSettings() {
 
     // ═══ SUPPORT SETTINGS ═══
     if (keyLower === 'auto_calc_allgeo') {
-      settings.supportAutoCalcAllGeo = parseSettingBoolean(data[i][1]);
+      settings.supportAutoCalcAllGeo = parseSettingBoolean(val);
     }
   }
 
