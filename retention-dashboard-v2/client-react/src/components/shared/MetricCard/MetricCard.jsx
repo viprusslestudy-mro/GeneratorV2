@@ -1,22 +1,33 @@
 import styles from './MetricCard.module.css';
 import { formatValue } from '../../../utils/formatters';
+import { useTranslation } from '../../../hooks/useTranslation';
 
 export function MetricCard({ metric }) {
   const { icon, title, value, diff, valueFormat, disabled } = metric;
+  const { t } = useTranslation();
 
   const diffClass = getDiffClass(diff);
 
+  // Форматируем дельту: добавляем "к пред.", если его там еще нет
+  let displayDiff = diff;
+  if (diff && typeof diff === 'string' && !diff.includes('пред.') && !diff.includes('prev.')) {
+    const suffix = t('к пред.', 'vs prev.');
+    displayDiff = `${diff} ${suffix}`;
+  }
+
   return (
     <div className={`${styles.metric} ${disabled ? styles.disabled : ''}`}>
-      <div className={styles.icon}>{icon}</div>
       <div className={styles.content}>
-        <div className={styles.title}>{title}</div>
+        <div className={styles.title}>
+          <span className={styles.icon}>{icon}</span>
+          <span>{title}</span>
+        </div>
         <div className={styles.value}>
           {disabled ? '—' : formatValue(value, valueFormat)}
         </div>
-        {diff && !disabled && (
+        {displayDiff && !disabled && (
           <div className={`${styles.diff} ${styles[diffClass]}`}>
-            {diff}
+            {displayDiff}
           </div>
         )}
       </div>

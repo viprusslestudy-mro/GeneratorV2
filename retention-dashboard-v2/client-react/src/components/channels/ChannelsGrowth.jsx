@@ -131,6 +131,8 @@ export function ChannelsGrowth() {
       const diffs = periods.map(p => getChannelDiff(p, ch.key, 'sent'));
       
       const filteredValues = channelIndices.map(i => values[i] || 0);
+      const sparklineData = [...filteredValues].reverse(); 
+      
       const filteredDiffs = channelIndices.map(i => diffs[i] || '');
       
       const selectedIndex = periods.findIndex(p => p.key === selectedPeriod);
@@ -148,7 +150,7 @@ export function ChannelsGrowth() {
 
       return {
         ...ch,
-        momData: getMomGrowth(filteredValues),
+        momData: getMomGrowth(sparklineData), 
         displayValue
       };
     });
@@ -157,31 +159,54 @@ export function ChannelsGrowth() {
   const chartData = useMemo(() => {
     const metricKey = selectedSubmetric;
     
-    return channelIndices.map((periodIndex, idx) => {
-      const isFirst = idx === 0; 
+    // 1. Собираем данные (они идут от новых к старым)
+    const rawData = channelIndices.map((periodIndex, idx) => {
+      // ИСПРАВЛЕНИЕ: Так как мы идем от новых к старым, "предыдущий месяц" (для дельты) - это следующий в массиве (idx + 1)
+      const isOldest = idx === channelIndices.length - 1; // Самый старый месяц
+      
       const period = periods[periodIndex];
+      const isTarget = period.key === selectedPeriod;
+      
       const dataPoint = {
         name: period.label.split(' ').map((p,i) => i===0 ? p.substring(0,3) : p.substring(2)).join(' '),
-        periodIndex
+        periodIndex,
+        isTarget
       };
 
       if (showAllChannels) {
         availableChannels.forEach(ch => {
           const diffStr = getChannelDiff(period, ch.key, metricKey);
           const val = getChannelValue(period, ch.key, metricKey) || 0;
-          dataPoint[ch.key] = chartMode === 'absolute' ? val : (isFirst ? 0 : parseDiffToNumber(diffStr));
+          dataPoint[ch.key] = chartMode === 'absolute' ? val : (isOldest ? 0 : parseDiffToNumber(diffStr));
         });
       } else if (selectedChannelKey) {
         const diffStr = getChannelDiff(period, selectedChannelKey, metricKey);
         const val = getChannelValue(period, selectedChannelKey, metricKey) || 0;
-        dataPoint.value = chartMode === 'absolute' ? val : (isFirst ? 0 : parseDiffToNumber(diffStr));
+        dataPoint.value = chartMode === 'absolute' ? val : (isOldest ? 0 : parseDiffToNumber(diffStr));
       }
 
       return dataPoint;
     });
-  }, [channelIndices, periods, showAllChannels, availableChannels, selectedChannelKey, selectedSubmetric, chartMode]);
+    
+    // 2. ПЕРЕВОРАЧИВАЕМ РЕЗУЛЬТАТ (чтобы было слева направо: от старых к новым)
+    return rawData.reverse();
+    
+  }, [channelIndices, periods, showAllChannels, availableChannels, selectedChannelKey, selectedSubmetric, chartMode, selectedPeriod]);
 
   const currentChannel = availableChannels.find(c => c.key === selectedChannelKey);
+
+  // ═══ ИСПРАВЛЕНИЕ: Кастомная функция для точек графика ═══
+  const renderDot = (color) => (props) => {
+    const { cx, cy, payload } = props;
+    
+    if (payload.isTarget) {
+      // Подсвечиваем красным цветом выбранный в сайдбаре месяц (ЗАПОЛНЕНАЯ)
+      return <circle key={`${cx}-${cy}`} cx={cx} cy={cy} r={8} fill="#ff4757" stroke="#fff" strokeWidth={2} />;
+    }
+    
+    // Обычная точка (ПРОЗРАЧНАЯ ВНУТРИ, цветная обводка)
+    return <circle key={`${cx}-${cy}`} cx={cx} cy={cy} r={6} fill="#fff" stroke={color} strokeWidth={3} />;
+  };
 
   const CustomTooltip = ({ active, payload }) => {
     if (!active || !payload || !payload.length) return null;
@@ -205,6 +230,7 @@ export function ChannelsGrowth() {
       </div>
     );
   };
+
 
   return (
     <Card>
@@ -303,7 +329,8 @@ export function ChannelsGrowth() {
                         dataKey={ch.key}
                         stroke={ch.color}
                         strokeWidth={3}
-                        dot={{ r: 5, fill: '#fff', strokeWidth: 2, stroke: ch.color }}
+                        activeDot={{ r: 9, strokeWidth: 0, fill: ch.color }}
+                        dot={renderDot(ch.color)}
                       />
                     ))}
                   </LineChart>
@@ -329,7 +356,8 @@ export function ChannelsGrowth() {
                       stroke={currentChannel?.color || '#9c27b0'}
                       strokeWidth={4}
                       fill="url(#colorChannels)"
-                      dot={{ r: 6, fill: '#fff', strokeWidth: 3, stroke: currentChannel?.color || '#9c27b0' }}
+                      activeDot={{ r: 10 }}
+                      dot={renderDot(currentChannel?.color || '#9c27b0')} // <-- ИСПРАВЛЕНИЕ
                     />
                   </AreaChart>
                 )}

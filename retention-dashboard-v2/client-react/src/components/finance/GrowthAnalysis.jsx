@@ -103,8 +103,11 @@ export function GrowthAnalysis() {
 
   const detailChartData = useMemo(() => {
     return financeIndices.map((periodIndex, idx) => {
-      const isFirst = idx === 0; // БАЗОВЫЙ МЕСЯЦ
-      const dataPoint = { name: monthLabels[periodIndex], periodIndex };
+      const isFirst = idx === 0;
+      // ДОБАВЛЯЕМ isTarget (true, если это выбранный месяц)
+      const isTarget = periods[periodIndex].key === selectedPeriod; 
+      
+      const dataPoint = { name: monthLabels[periodIndex], periodIndex, isTarget }; // <-- ПЕРЕДАЕМ СЮДА
 
       GROWTH_METRICS.forEach(metric => {
         const diffStr = getCardDiffFromPeriod(periods[periodIndex], metric.dataKey);
@@ -122,6 +125,15 @@ export function GrowthAnalysis() {
   }, [periods, financeIndices, monthLabels, selectedSubmetric, currentMetric]);
 
   const availableSubmetrics = currentMetric ? (FINANCE_TABLE_CONFIGS[currentMetric.sectionKey] || []) : [];
+
+  // Кастомная точка: обычные точки прозрачные внутри, выбранная - заполненная красная
+  const renderDot = (color) => (props) => {
+    const { cx, cy, payload } = props;
+    if (payload.isTarget) {
+      return <circle key={`${cx}-${cy}`} cx={cx} cy={cy} r={8} fill="#ff4757" stroke="#fff" strokeWidth={2} />;
+    }
+    return <circle key={`${cx}-${cy}`} cx={cx} cy={cy} r={6} fill="#fff" stroke={color} strokeWidth={3} />;
+  };
 
   const handleMetricClick = (index) => {
     setShowAllMetrics(false);
@@ -223,7 +235,7 @@ export function GrowthAnalysis() {
                     <YAxis stroke="#666" style={{ fontSize: '15px', fontFamily: 'Montserrat, sans-serif', fontWeight: 700 }} tickFormatter={(v) => `${v > 0 ? '+' : ''}${v}%`} />
                     <Tooltip content={<CustomTooltip />} />
                     {GROWTH_METRICS.map((metric) => (
-                      <Line key={metric.id} type="monotone" dataKey={metric.id} name={metric.label} stroke={metric.color} strokeWidth={3} dot={{ r: 5, fill: '#fff', strokeWidth: 2, stroke: metric.color }} />
+                      <Line key={metric.id} type="monotone" dataKey={metric.id} name={metric.label} stroke={metric.color} strokeWidth={3} dot={renderDot(metric.color)} />
                     ))}
                   </LineChart>
                 ) : (
@@ -238,7 +250,7 @@ export function GrowthAnalysis() {
                     <XAxis dataKey="name" stroke="#666" style={{ fontSize: '15px', fontFamily: 'Montserrat, sans-serif', fontWeight: 700 }} tickFormatter={(val) => translateMonth(val)} />
                     <YAxis stroke="#666" style={{ fontSize: '15px', fontFamily: 'Montserrat, sans-serif', fontWeight: 700 }} tickFormatter={(v) => `${v > 0 ? '+' : ''}${v}%`} />
                     <Tooltip content={<CustomTooltip />} />
-                    <Area type="monotone" dataKey="value" stroke={currentMetric?.color || '#9c27b0'} strokeWidth={4} fill="url(#colorGrowth)" dot={{ r: 6, fill: '#fff', strokeWidth: 3, stroke: currentMetric?.color || '#9c27b0' }} activeDot={{ r: 10 }} />
+                    <Area type="monotone" dataKey="value" stroke={currentMetric?.color || '#9c27b0'} strokeWidth={4} fill="url(#colorGrowth)" dot={renderDot(currentMetric?.color || '#9c27b0')} activeDot={{ r: 10 }} />
                   </AreaChart>
                 )}
               </ResponsiveContainer>
