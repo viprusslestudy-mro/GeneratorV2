@@ -40,12 +40,12 @@ export function GrowthAnalysis() {
   const [selectedMetricIndex, setSelectedMetricIndex] = useState(0);
   const [showAllMetrics, setShowAllMetrics] = useState(false);
   const [selectedSubmetric, setSelectedSubmetric] = useState(GROWTH_METRICS[0].dataKey);
+  // НОВОЕ: Режим отображения - по умолчанию значения
+  const [displayMode, setDisplayMode] = useState('values'); // 'values' | 'percent'
 
-  // ИСПРАВЛЕНИЕ: Берем обычный селектор
   const rawPeriods = useRetentionStore(selectPeriods);
   const selectedPeriod = useRetentionStore(state => state.selectedPeriod);
 
-  // ИСПРАВЛЕНИЕ: Разворачиваем периоды для графиков (Хронологически) ВНУТРИ useMemo
   const periods = useMemo(() => {
     return [...rawPeriods].reverse();
   }, [rawPeriods]);
@@ -66,13 +66,12 @@ export function GrowthAnalysis() {
       const selectedIndex = periods.findIndex(p => p.key === selectedPeriod);
       const filteredIndex = financeIndices.indexOf(selectedIndex);
       
-      const isFirstPeriod = filteredIndex === 0; // БАЗОВЫЙ МЕСЯЦ
+      const isFirstPeriod = filteredIndex === 0;
       const currentDiff = filteredIndex > 0 ? filteredDiffs[filteredIndex] : '';
       const currentValue = filteredIndex >= 0 ? filteredValues[filteredIndex] : 0;
       
       const diffNum = parseDiffToNumber(currentDiff);
 
-      // Если это первый месяц ИЛИ текущее значение = 0, показываем просто цифру, а не %
       const hasValidData = currentValue > 0;
       const hasValidDiff = currentDiff && currentDiff !== '—' && !isFirstPeriod;
 
@@ -101,32 +100,35 @@ export function GrowthAnalysis() {
     });
   }, [periods]);
 
+  // ИСПРАВЛЕНО: Добавляем оба типа данных - absValue и value (проценты)
   const detailChartData = useMemo(() => {
     return financeIndices.map((periodIndex, idx) => {
       const isFirst = idx === 0;
-      // ДОБАВЛЯЕМ isTarget (true, если это выбранный месяц)
       const isTarget = periods[periodIndex].key === selectedPeriod; 
       
-      const dataPoint = { name: monthLabels[periodIndex], periodIndex, isTarget }; // <-- ПЕРЕДАЕМ СЮДА
+      const dataPoint = { name: monthLabels[periodIndex], periodIndex, isTarget };
 
       GROWTH_METRICS.forEach(metric => {
         const diffStr = getCardDiffFromPeriod(periods[periodIndex], metric.dataKey);
+        const absValue = getCardValueFromPeriod(periods[periodIndex], metric.dataKey);
         dataPoint[metric.id] = isFirst ? 0 : parseDiffToNumber(diffStr);
+        dataPoint[`${metric.id}_abs`] = absValue || 0;
       });
 
       const metricKey = selectedSubmetric || currentMetric?.dataKey;
       if (metricKey) {
         const diffStr = getCardDiffFromPeriod(periods[periodIndex], metricKey);
+        const absValue = getCardValueFromPeriod(periods[periodIndex], metricKey);
         dataPoint.value = isFirst ? 0 : parseDiffToNumber(diffStr);
+        dataPoint.absValue = absValue || 0;
       }
 
       return dataPoint;
     });
-  }, [periods, financeIndices, monthLabels, selectedSubmetric, currentMetric]);
+  }, [periods, financeIndices, monthLabels, selectedSubmetric, currentMetric, selectedPeriod]);
 
   const availableSubmetrics = currentMetric ? (FINANCE_TABLE_CONFIGS[currentMetric.sectionKey] || []) : [];
 
-  // Кастомная точка: обычные точки прозрачные внутри, выбранная - заполненная красная
   const renderDot = (color) => (props) => {
     const { cx, cy, payload } = props;
     if (payload.isTarget) {
@@ -141,10 +143,22 @@ export function GrowthAnalysis() {
     if (metricsData[index]) setSelectedSubmetric(metricsData[index].dataKey);
   };
 
+  // ИСПРАВЛЕНО: Tooltip с поддержкой обоих режимов
   const CustomTooltip = ({ active, payload }) => {
     if (!active || !payload || !payload.length) return null;
     const data = payload[0].payload;
-    const val = data.value || payload[0].value;
+    
+    if (displayMode === 'values') {
+      const val = data.absValue ?? payload[0].value;
+      return (
+        <div className={styles.tooltip}>
+          <div className={styles.tooltipLabel}>📅 {translateMonth(data.name)}</div>
+          <div className={styles.tooltipValue}>💰 {formatCompact(val)}</div>
+        </div>
+      );
+    }
+    
+    const val = data.value ?? payload[0].value;
     const arrow = val >= 0 ? '↗' : '↘';
     
     return (
@@ -158,6 +172,12 @@ export function GrowthAnalysis() {
   if (metricsData.length === 0) {
     return <Card><div className={styles.empty}><p>📊 No finance metrics available</p></div></Card>;
   }
+
+  // Определяем dataKey в зависимости от режима
+  const chartDataKey = displayMode === 'values' ? 'absValue' : 'value';
+  const yAxisFormatter = displayMode === 'values' 
+    ? (v) => formatCompact(v) 
+    : (v) => `${v > 0 ? '+' : ''}${v}%`;
 
   return (
     <Card>
@@ -218,8 +238,20 @@ export function GrowthAnalysis() {
                 </select>
               </div>
 
+              {/* НОВОЕ: Переключатель режима отображения */}
               <div className={styles.modeToggle}>
-                <div className={styles.modeLabel}>📈 {t('Процент изменений по месяцам', 'Percentage change by month')}</div>
+                <button 
+                  className={`${styles.modeBtn} ${displayMode === 'values' ? styles.active : ''}`}
+                  onClick={() => setDisplayMode('values')}
+                >
+                  💰 {t('Значения', 'Values')}
+                </button>
+                <button 
+                  className={`${styles.modeBtn} ${displayMode === 'percent' ? styles.active : ''}`}
+                  onClick={() => setDisplayMode('percent')}
+                >
+                  📈 {t('Проценты', 'Percent')}
+                </button>
               </div>
 
             </div>
@@ -232,10 +264,18 @@ export function GrowthAnalysis() {
                   <LineChart data={detailChartData} margin={{ top: 20, right: 30, left: 20, bottom: 20 }}>
                     <CartesianGrid strokeDasharray="3 3" stroke="rgba(0,0,0,0.06)" />
                     <XAxis dataKey="name" stroke="#666" style={{ fontSize: '15px', fontFamily: 'Montserrat, sans-serif', fontWeight: 700 }} tickFormatter={(val) => translateMonth(val)} /> 
-                    <YAxis stroke="#666" style={{ fontSize: '15px', fontFamily: 'Montserrat, sans-serif', fontWeight: 700 }} tickFormatter={(v) => `${v > 0 ? '+' : ''}${v}%`} />
+                    <YAxis stroke="#666" style={{ fontSize: '15px', fontFamily: 'Montserrat, sans-serif', fontWeight: 700 }} tickFormatter={yAxisFormatter} />
                     <Tooltip content={<CustomTooltip />} />
                     {GROWTH_METRICS.map((metric) => (
-                      <Line key={metric.id} type="monotone" dataKey={metric.id} name={metric.label} stroke={metric.color} strokeWidth={3} dot={renderDot(metric.color)} />
+                      <Line 
+                        key={metric.id} 
+                        type="monotone" 
+                        dataKey={displayMode === 'values' ? `${metric.id}_abs` : metric.id} 
+                        name={metric.label} 
+                        stroke={metric.color} 
+                        strokeWidth={3} 
+                        dot={renderDot(metric.color)} 
+                      />
                     ))}
                   </LineChart>
                 ) : (
@@ -248,9 +288,17 @@ export function GrowthAnalysis() {
                     </defs>
                     <CartesianGrid strokeDasharray="3 3" stroke="rgba(0,0,0,0.06)" />
                     <XAxis dataKey="name" stroke="#666" style={{ fontSize: '15px', fontFamily: 'Montserrat, sans-serif', fontWeight: 700 }} tickFormatter={(val) => translateMonth(val)} />
-                    <YAxis stroke="#666" style={{ fontSize: '15px', fontFamily: 'Montserrat, sans-serif', fontWeight: 700 }} tickFormatter={(v) => `${v > 0 ? '+' : ''}${v}%`} />
+                    <YAxis stroke="#666" style={{ fontSize: '15px', fontFamily: 'Montserrat, sans-serif', fontWeight: 700 }} tickFormatter={yAxisFormatter} />
                     <Tooltip content={<CustomTooltip />} />
-                    <Area type="monotone" dataKey="value" stroke={currentMetric?.color || '#9c27b0'} strokeWidth={4} fill="url(#colorGrowth)" dot={renderDot(currentMetric?.color || '#9c27b0')} activeDot={{ r: 10 }} />
+                    <Area 
+                      type="monotone" 
+                      dataKey={chartDataKey} 
+                      stroke={currentMetric?.color || '#9c27b0'} 
+                      strokeWidth={4} 
+                      fill="url(#colorGrowth)" 
+                      dot={renderDot(currentMetric?.color || '#9c27b0')} 
+                      activeDot={{ r: 10 }} 
+                    />
                   </AreaChart>
                 )}
               </ResponsiveContainer>
