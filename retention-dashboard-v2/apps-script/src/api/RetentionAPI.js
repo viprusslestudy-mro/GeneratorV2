@@ -46,6 +46,39 @@ function api_getRetentionReport() {
 }
 
 /**
+ * Получить JSON данные Support отчёта
+ * @returns {Object} { periods, kpi, tags, ... }
+ */
+function api_getSupportReport() {
+  try {
+    Logger.log('[API] getSupportReport called');
+    
+    // Получаем конфиг источника Support
+    var sourceConfig = getSourceByKey('support');
+    
+    if (!sourceConfig) {
+      Logger.log('[API] Support source not found, returning empty data');
+      return JSON.stringify({ periods: [], error: 'Support source not configured' });
+    }
+    
+    // Собираем данные Support (используем существующую функцию)
+    var supportData = collectAllSupportPeriods(sourceConfig);
+    
+    Logger.log('[API] Support data generated: ' + (supportData.periods ? supportData.periods.length : 0) + ' periods');
+    
+    // Возвращаем строку JSON
+    return JSON.stringify(supportData);
+    
+  } catch (e) {
+    Logger.log('[API] getSupportReport ERROR: ' + e.message);
+    return JSON.stringify({ 
+      periods: [], 
+      error: 'Failed to load support data: ' + e.message 
+    });
+  }
+}
+
+/**
  * Получить настройки UI (табы, лейблы)
  * @returns {Object} { financeTabs, channelTabs, showEmptyMetrics, disabledLabel }
  */

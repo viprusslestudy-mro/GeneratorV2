@@ -1,6 +1,7 @@
 /**
  * ═══════════════════════════════════════════════════════════════════════════
- *  MENU.gs - Application menu v2.0 (React + Supabase Edition)
+ *  Menu.js - Меню приложения v2.0 (React + Supabase Edition)
+ *  Путь: apps-script/src/Menu.js
  * ═══════════════════════════════════════════════════════════════════════════
  */
 
@@ -8,20 +9,20 @@ function onOpen() {
   const ui = SpreadsheetApp.getUi();
 
   ui.createMenu('🚀 SaaS Dashboard v2.0')
-    // 1. Главные функции (Современная архитектура)
+    // 1. Главные функции
     .addItem('💻 Открыть React Dashboard', 'showReactDashboard')
     .addSeparator()
     
-    // 2. Экспорт в Базу Данных (Supabase)
+    // 2. Экспорт в БД (Supabase)
     .addSubMenu(ui.createMenu('☁️ Отправить данные в БД')
       .addItem('📤 Отправить ВСЁ', 'exportAllToSupabaseUI')
       .addItem('💰 Только Retention', 'exportRetentionToSupabaseUI')
       .addItem('🎧 Только Support', 'exportSupportToSupabaseUI')
-      .addItem('📤 Отправить Переводы (Translations)', 'uploadTranslationsToDB')
+      .addItem('📤 Отправить Переводы', 'uploadTranslationsToDB')
     )
     .addSeparator()
 
-    // 3. Настройки
+    // 3. Настройки источников
     .addSubMenu(ui.createMenu('⚙️ Настройки источников')
       .addItem('➕ Добавить источник', 'showAddSourceDialog')
       .addItem('🔧 Создать/Обновить Settings', 'createSettingsSheetMenu')
@@ -33,7 +34,7 @@ function onOpen() {
       .addItem('📝 Настроить автоформатирование...', 'showAutoFormatDialog')
     )
     
-    // 4. Мастер-таблица
+    // 4. Мастер-таблица Settings
     .addSubMenu(ui.createMenu('🗂️ Мастер Settings')
       .addItem('ℹ️ Показать текущие настройки', 'showCurrentSettingsInfo')
       .addItem('🔗 Подключить другую таблицу', 'configureMasterSettings')
@@ -41,10 +42,10 @@ function onOpen() {
       .addItem('🔄 Сбросить к дефолтной', 'resetToDefaultMasterSettings')
     )
     
-    // 5. Тестирование и Обслуживание
+    // 5. Обслуживание и Тесты
     .addSubMenu(ui.createMenu('🛠️ Обслуживание и Тесты')
       .addItem('🔍 Универсальный Анализатор v2', 'showUniversalAnalyzerDialogV2')
-      .addItem('🧹 Очистить старые отчеты', 'cleanupAppStorage')
+      .addItem('🧹 Очистить хранилище', 'cleanupAppStorage')
       .addItem('🐞 DEBUG: LiveChat Data', 'debugLiveChatData')
       .addItem('🧪 Тест всех источников', 'testBothSources')
       .addItem('🧨 Полный сброс (Hard Reset)', 'forceResetAppStorage')
@@ -53,27 +54,24 @@ function onOpen() {
     
     // 6. Переводы
     .addItem('🌐 Отформатировать лист переводов', 'formatTranslationsSheet')
-    
     .addSeparator()
     
-    // 7. Сайт
+    // 7. Внешний сайт
     .addItem('🌍 Открыть готовый сайт (Vercel)', 'openVercelSite')
-    
     .addSeparator()
     
-    // 8. Старый проект (Спрятан в подменю, чтобы не мешал)
-    .addSubMenu(ui.createMenu('📦 Архив (Старый HTML)')
-      .addItem('🏠 Открыть старый Dashboard', 'showDashboardPreview')
-      .addItem('💾 Сгенерировать весь Сайт', 'generateFullDashboardReport')
-    )
+    // 8. Экспорт HTML
+    .addItem('📦 Скачать Dashboard (HTML)', 'downloadReactDashboard')
+
     .addToUi();
 }
 
 /**
- * Функция открытия готового сайта (динамическая ссылка из настроек)
+ * Открыть готовый сайт (динамическая ссылка из настроек)
  */
 function openVercelSite() {
   const ui = SpreadsheetApp.getUi();
+  
   try {
     const ss = getSettingsSpreadsheet();
     let sheet = ss.getSheetByName('⚙️ APP_SETTINGS');
@@ -113,7 +111,7 @@ function openVercelSite() {
     }
     
     const htmlOutput = HtmlService.createHtmlOutput(
-      '<script>window.open("' + siteUrl + '", "_blank"); google.script.host.close();</script>'
+      `<script>window.open("${siteUrl}", "_blank"); google.script.host.close();</script>`
     ).setWidth(10).setHeight(10);
     
     ui.showModalDialog(htmlOutput, 'Открываем дашборд...');
