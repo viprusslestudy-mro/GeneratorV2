@@ -72,12 +72,18 @@ export function GrowthAnalysis() {
       
       const diffNum = parseDiffToNumber(currentDiff);
 
-      const hasValidData = currentValue > 0;
+    // ИЗМЕНЕНО: Синхронизация с displayMode
+    let displayValue;
+    if (displayMode === 'values') {
+      // Всегда показываем абсолютные значения
+      displayValue = formatCompact(currentValue);
+    } else {
+      // Показываем проценты (если есть)
       const hasValidDiff = currentDiff && currentDiff !== '—' && !isFirstPeriod;
-
-      const displayValue = (hasValidDiff && hasValidData) 
+      displayValue = hasValidDiff 
         ? `${diffNum >= 0 ? '+' : ''}${diffNum.toFixed(1)}%` 
-        : formatCompact(currentValue);
+        : '—';
+    }
       
       return {
         ...metric,
@@ -87,7 +93,7 @@ export function GrowthAnalysis() {
         hasData: filteredValues.some(v => v > 0)
       };
     }).filter(m => m.hasData);
-  }, [periods, financeIndices, selectedPeriod]);
+  }, [periods, financeIndices, selectedPeriod, displayMode]);
 
   const currentMetric = metricsData[selectedMetricIndex] || metricsData[0];
 

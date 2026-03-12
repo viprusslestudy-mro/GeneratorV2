@@ -31,7 +31,8 @@ export function ChannelsGrowth() {
   const [selectedChannelKey, setSelectedChannelKey] = useState(null);
   const [showAllChannels, setShowAllChannels] = useState(false);
   const [selectedSubmetric, setSelectedSubmetric] = useState('sent');
-  const [chartMode, setChartMode] = useState('auto'); 
+  // ИЗМЕНЕНО: По умолчанию 'absolute' (значения)
+  const [chartMode, setChartMode] = useState('absolute');
 
   const periods = useRetentionStore(selectPeriods);
   const selectedPeriod = useRetentionStore(state => state.selectedPeriod);
@@ -144,9 +145,17 @@ export function ChannelsGrowth() {
       
       const diffNum = parseDiffToNumber(currentDiff);
       
-      const displayValue = (currentDiff && currentDiff !== '—' && !isFirstPeriod)
-        ? `${diffNum >= 0 ? '+' : ''}${diffNum.toFixed(1)}%` 
-        : formatCompact(currentValue);
+      let displayValue;
+      if (chartMode === 'absolute') {
+        // Всегда показываем абсолютные значения
+        displayValue = formatCompact(currentValue);
+      } else {
+        // Показываем проценты (если есть)
+        const hasValidDiff = currentDiff && currentDiff !== '—' && !isFirstPeriod;
+        displayValue = hasValidDiff 
+          ? `${diffNum >= 0 ? '+' : ''}${diffNum.toFixed(1)}%` 
+          : '—';
+      }
 
       return {
         ...ch,
@@ -154,15 +163,13 @@ export function ChannelsGrowth() {
         displayValue
       };
     });
-  }, [availableChannels, periods, channelIndices, selectedPeriod]);
+  }, [availableChannels, periods, channelIndices, selectedPeriod, chartMode]);
 
   const chartData = useMemo(() => {
     const metricKey = selectedSubmetric;
     
-    // 1. Собираем данные (они идут от новых к старым)
     const rawData = channelIndices.map((periodIndex, idx) => {
-      // ИСПРАВЛЕНИЕ: Так как мы идем от новых к старым, "предыдущий месяц" (для дельты) - это следующий в массиве (idx + 1)
-      const isOldest = idx === channelIndices.length - 1; // Самый старый месяц
+      const isOldest = idx === channelIndices.length - 1;
       
       const period = periods[periodIndex];
       const isTarget = period.key === selectedPeriod;
@@ -188,23 +195,19 @@ export function ChannelsGrowth() {
       return dataPoint;
     });
     
-    // 2. ПЕРЕВОРАЧИВАЕМ РЕЗУЛЬТАТ (чтобы было слева направо: от старых к новым)
     return rawData.reverse();
     
   }, [channelIndices, periods, showAllChannels, availableChannels, selectedChannelKey, selectedSubmetric, chartMode, selectedPeriod]);
 
   const currentChannel = availableChannels.find(c => c.key === selectedChannelKey);
 
-  // ═══ ИСПРАВЛЕНИЕ: Кастомная функция для точек графика ═══
   const renderDot = (color) => (props) => {
     const { cx, cy, payload } = props;
     
     if (payload.isTarget) {
-      // Подсвечиваем красным цветом выбранный в сайдбаре месяц (ЗАПОЛНЕНАЯ)
       return <circle key={`${cx}-${cy}`} cx={cx} cy={cy} r={8} fill="#ff4757" stroke="#fff" strokeWidth={2} />;
     }
     
-    // Обычная точка (ПРОЗРАЧНАЯ ВНУТРИ, цветная обводка)
     return <circle key={`${cx}-${cy}`} cx={cx} cy={cy} r={6} fill="#fff" stroke={color} strokeWidth={3} />;
   };
 
@@ -231,6 +234,10 @@ export function ChannelsGrowth() {
     );
   };
 
+  // Форматтер для оси Y
+  const yAxisFormatter = chartMode === 'absolute' 
+    ? (v) => formatCompact(v) 
+    : (v) => `${v > 0 ? '+' : ''}${v}%`;
 
   return (
     <Card>
@@ -270,10 +277,11 @@ export function ChannelsGrowth() {
             <div className={styles.detailTitle}>
               <span className={styles.detailEmoji}>{showAllChannels ? '✨' : currentChannel?.icon}</span>
               <span className={styles.detailName}>{showAllChannels ? t('Все каналы', 'All Channels') : t(currentChannel?.name)}</span>
+              <span className={styles.detailSuffix}>{t('— детальный график', '— dynamic report')}</span>
             </div>
 
             <div className={styles.controlsRow}>
-              {/* Красивый блок с подметрикой СЛЕВА */}
+              {/* Подметрика СЛЕВА */}
               <div className={styles.submetricSelector}>
                 <label className={styles.submetricLabel}>
                   <span className={styles.submetricIcon}>⚙️</span>
@@ -291,19 +299,19 @@ export function ChannelsGrowth() {
                 </select>
               </div>
 
-              {/* Стильный переключатель режимов СПРАВА */}
-              <div className={styles.segmentedControl}>
+              {/* ИЗМЕНЕНО: Переключатель в стиле GrowthAnalysis */}
+              <div className={styles.modeToggle}>
                 <button 
-                  className={`${styles.segmentBtn} ${chartMode === 'percent' || chartMode === 'auto' ? styles.active : ''}`}
-                  onClick={() => setChartMode('percent')}
-                >
-                  <span className={styles.segmentIcon}>📊</span> %
-                </button>
-                <button 
-                  className={`${styles.segmentBtn} ${chartMode === 'absolute' ? styles.active : ''}`}
+                  className={`${styles.modeBtn} ${chartMode === 'absolute' ? styles.active : ''}`}
                   onClick={() => setChartMode('absolute')}
                 >
-                  <span className={styles.segmentIcon}>📈</span> Values
+                  💰 {t('Значения', 'Values')}
+                </button>
+                <button 
+                  className={`${styles.modeBtn} ${chartMode === 'percent' ? styles.active : ''}`}
+                  onClick={() => setChartMode('percent')}
+                >
+                  📈 {t('Проценты', 'Percent')}
                 </button>
               </div>
             </div>
@@ -316,11 +324,7 @@ export function ChannelsGrowth() {
                   <LineChart data={chartData} margin={{ top: 20, right: 30, left: 20, bottom: 20 }}>
                     <CartesianGrid strokeDasharray="3 3" stroke="rgba(0,0,0,0.06)" />
                     <XAxis dataKey="name" stroke="#666" style={{ fontSize: '15px', fontFamily: 'Montserrat, sans-serif', fontWeight: 700 }} tickFormatter={(val) => translateMonth(val)} />
-                    <YAxis 
-                      stroke="#666" 
-                      style={{ fontSize: '15px', fontFamily: 'Montserrat, sans-serif', fontWeight: 700 }}
-                      tickFormatter={v => chartMode === 'absolute' ? formatCompact(v) : `${v > 0 ? '+' : ''}${v}%`}
-                    />
+                    <YAxis stroke="#666" style={{ fontSize: '15px', fontFamily: 'Montserrat, sans-serif', fontWeight: 700 }} tickFormatter={yAxisFormatter} />
                     <Tooltip content={<CustomTooltip />} />
                     {availableChannels.map(ch => (
                       <Line
@@ -344,11 +348,7 @@ export function ChannelsGrowth() {
                     </defs>
                     <CartesianGrid strokeDasharray="3 3" stroke="rgba(0,0,0,0.06)" />
                     <XAxis dataKey="name" stroke="#666" style={{ fontSize: '15px', fontFamily: 'Montserrat, sans-serif', fontWeight: 700 }} tickFormatter={(val) => translateMonth(val)} />
-                    <YAxis 
-                      stroke="#666" 
-                      style={{ fontSize: '15px', fontFamily: 'Montserrat, sans-serif', fontWeight: 700 }}
-                      tickFormatter={v => chartMode === 'absolute' ? formatCompact(v) : `${v > 0 ? '+' : ''}${v}%`}
-                    />
+                    <YAxis stroke="#666" style={{ fontSize: '15px', fontFamily: 'Montserrat, sans-serif', fontWeight: 700 }} tickFormatter={yAxisFormatter} />
                     <Tooltip content={<CustomTooltip />} />
                     <Area
                       type="monotone"
@@ -357,7 +357,7 @@ export function ChannelsGrowth() {
                       strokeWidth={4}
                       fill="url(#colorChannels)"
                       activeDot={{ r: 10 }}
-                      dot={renderDot(currentChannel?.color || '#9c27b0')} // <-- ИСПРАВЛЕНИЕ
+                      dot={renderDot(currentChannel?.color || '#9c27b0')}
                     />
                   </AreaChart>
                 )}
