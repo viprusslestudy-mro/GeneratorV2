@@ -128,33 +128,58 @@ export function ChannelsGrowth() {
 
   const sidebarData = useMemo(() => {
     return availableChannels.map(ch => {
-      const values = periods.map(p => getChannelValue(p, ch.key, 'sent'));
-      const diffs = periods.map(p => getChannelDiff(p, ch.key, 'sent'));
+      // Собираем значения и diff для ВСЕХ периодов с каналами
+      const valuesAndDiffs = channelIndices.map(i => {
+        const period = periods[i];
+        return {
+          value: getChannelValue(period, ch.key, 'sent') || 0,
+          diff: getChannelDiff(period, ch.key, 'sent') || ''
+        };
+      });
       
-      const filteredValues = channelIndices.map(i => values[i] || 0);
+      const filteredValues = valuesAndDiffs.map(d => d.value);
+      const filteredDiffs = valuesAndDiffs.map(d => d.diff);
+      
+      // Для sparkline - переворачиваем (от старых к новым)
       const sparklineData = [...filteredValues].reverse(); 
       
-      const filteredDiffs = channelIndices.map(i => diffs[i] || '');
-      
+      // Находим индекс выбранного периода
       const selectedIndex = periods.findIndex(p => p.key === selectedPeriod);
       const filteredIndex = channelIndices.indexOf(selectedIndex);
       
-      const isFirstPeriod = filteredIndex === 0;
-      const currentDiff = filteredIndex > 0 ? filteredDiffs[filteredIndex] : '';
+      // Самый старый период = последний в channelIndices (после него нет данных для сравнения)
+      const isOldestPeriod = filteredIndex === channelIndices.length - 1;
+      
+      // Текущие данные для выбранного периода
       const currentValue = filteredIndex >= 0 ? filteredValues[filteredIndex] : 0;
+      const currentDiff = filteredIndex >= 0 ? filteredDiffs[filteredIndex] : '';
       
       const diffNum = parseDiffToNumber(currentDiff);
       
       let displayValue;
       if (chartMode === 'absolute') {
-        // Всегда показываем абсолютные значения
+        // Режим "Значения" - всегда абсолютные числа
         displayValue = formatCompact(currentValue);
       } else {
-        // Показываем проценты (если есть)
-        const hasValidDiff = currentDiff && currentDiff !== '—' && !isFirstPeriod;
-        displayValue = hasValidDiff 
-          ? `${diffNum >= 0 ? '+' : ''}${diffNum.toFixed(1)}%` 
-          : '—';
+        // Режим "Проценты"
+        const hasValidDiff = currentDiff && 
+                             currentDiff !== '—' && 
+                             currentDiff !== '' && 
+                             !isOldestPeriod;
+        
+        if (hasValidDiff) {
+          // Есть валидный diff - показываем процент
+          displayValue = `${diffNum >= 0 ? '+' : ''}${diffNum.toFixed(1)}%`;
+        } else if (isOldestPeriod) {
+          // Базовый месяц - показываем индикатор
+          displayValue = '— база';
+        } else if (diffNum === 0) {
+          // diff = 0%
+          displayValue = '0.0%';
+        } else {
+          // Нет данных для сравнения
+          displayValue = '—';
+        }
       }
 
       return {
@@ -247,7 +272,7 @@ export function ChannelsGrowth() {
             className={`${styles.showAllBtn} ${showAllChannels ? styles.active : ''}`}
             onClick={() => setShowAllChannels(!showAllChannels)}
           >
-            ✨ {t('✨ ОТОБРАЗИТЬ ВСЕ', 'SHOW ALL')}
+            {t('✨ ОТОБРАЗИТЬ ВСЕ', 'SHOW ALL')}
           </button>
           
           <div className={styles.metricsList}>

@@ -17,7 +17,10 @@ export function FinanceTable() {
   const periods = useRetentionStore(selectPeriods);
   const selectedPeriod = useRetentionStore(state => state.selectedPeriod);
 
-  const financePeriodsData = useMemo(() => periods.filter(p => p.hasFinance), [periods]);
+  // ИСПРАВЛЕНО: Переворачиваем порядок - от старых к новым (слева направо)
+  const financePeriodsData = useMemo(() => {
+    return [...periods].filter(p => p.hasFinance).reverse();
+  }, [periods]);
 
   // Доступные вкладки (скрываем те, где все метрики выключены)
   const availableSections = useMemo(() => {
@@ -139,6 +142,7 @@ export function FinanceTable() {
               <tr key={metric.key} className={styles.row}>
                 {/* ИСПРАВЛЕНО: ПРОСТО ПЕРЕДАЕМ РУССКУЮ ФРАЗУ! */}
                 <td className={styles.metricCell}>{t(metric.label)}</td>
+                {/* ИСПРАВЛЕНО: После reverse index 0 = самый старый (базовый месяц без diff) */}
                 {financePeriodsData.map((periodData, index) => renderCell(metric, periodData, index, index === 0))}
               </tr>
             ))}

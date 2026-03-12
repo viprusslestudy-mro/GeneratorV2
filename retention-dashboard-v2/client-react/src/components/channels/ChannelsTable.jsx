@@ -18,7 +18,10 @@ export function ChannelsTable() {
   const channelTabsMap = uiSettings.channelTabs || {};
 
   // Оставляем только периоды с Channels данными
-  const channelsPeriodsData = useMemo(() => periods.filter(p => p.hasChannels), [periods]);
+  // ИСПРАВЛЕНО: Переворачиваем порядок - от старых к новым (слева направо)
+  const channelsPeriodsData = useMemo(() => {
+    return [...periods].filter(p => p.hasChannels).reverse();
+  }, [periods]);
 
   // ДИНАМИЧЕСКИ: собираем каналы, которые ДОСТУПНЫ В ВЫБРАННОМ ПЕРИОДЕ
   // (чтобы не показывать SMS, если в этом месяце его не рассылали)
@@ -173,6 +176,7 @@ export function ChannelsTable() {
                 {activePeriodsForChannel.map((periodData, index) => {
                   const cellData = getMetricData(metric.key, periodData);
                   const isSelected = periodData.key === selectedPeriod;
+                  // ИСПРАВЛЕНО: После reverse index 0 = самый старый (базовый месяц без diff)
                   const isFirstPeriod = index === 0;
 
                   if (cellData.disabled || cellData.value === null) {

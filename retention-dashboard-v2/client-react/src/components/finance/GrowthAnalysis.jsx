@@ -66,24 +66,27 @@ export function GrowthAnalysis() {
       const selectedIndex = periods.findIndex(p => p.key === selectedPeriod);
       const filteredIndex = financeIndices.indexOf(selectedIndex);
       
-      const isFirstPeriod = filteredIndex === 0;
-      const currentDiff = filteredIndex > 0 ? filteredDiffs[filteredIndex] : '';
+      // ИСПРАВЛЕНО: Первый в массиве (после reverse) - самый старый
+      const isOldestPeriod = filteredIndex === 0;
+      
+      // Берём diff напрямую для текущего периода
+      const currentDiff = filteredIndex >= 0 ? filteredDiffs[filteredIndex] : '';
       const currentValue = filteredIndex >= 0 ? filteredValues[filteredIndex] : 0;
       
       const diffNum = parseDiffToNumber(currentDiff);
 
-    // ИЗМЕНЕНО: Синхронизация с displayMode
-    let displayValue;
-    if (displayMode === 'values') {
-      // Всегда показываем абсолютные значения
-      displayValue = formatCompact(currentValue);
-    } else {
-      // Показываем проценты (если есть)
-      const hasValidDiff = currentDiff && currentDiff !== '—' && !isFirstPeriod;
-      displayValue = hasValidDiff 
-        ? `${diffNum >= 0 ? '+' : ''}${diffNum.toFixed(1)}%` 
-        : '—';
-    }
+      // ИЗМЕНЕНО: Синхронизация с displayMode + fallback на значение
+      let displayValue;
+      if (displayMode === 'values') {
+        // Всегда показываем абсолютные значения
+        displayValue = formatCompact(currentValue);
+      } else {
+        // Показываем проценты (если есть и это не самый старый период)
+        const hasValidDiff = currentDiff && currentDiff !== '—' && currentDiff !== '' && !isOldestPeriod;
+        displayValue = hasValidDiff 
+          ? `${diffNum >= 0 ? '+' : ''}${diffNum.toFixed(1)}%` 
+          : formatCompact(currentValue); // Fallback на значение вместо "—"
+      }
       
       return {
         ...metric,
@@ -193,7 +196,7 @@ export function GrowthAnalysis() {
             className={`${styles.showAllBtn} ${showAllMetrics ? styles.active : ''}`}
             onClick={() => setShowAllMetrics(!showAllMetrics)}
           >
-            ✨ {t('✨ ОТОБРАЗИТЬ ВСЕ', 'SHOW ALL')}
+            {t('✨ ОТОБРАЗИТЬ ВСЕ', '✨ SHOW ALL')}
           </button>
           
           <div className={styles.metricsList}>
