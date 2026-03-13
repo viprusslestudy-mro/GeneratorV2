@@ -44,12 +44,20 @@ export function SupportDashboard({ type }) {
   const tagsData = periodData.tags || {};
   const periodLabel = periodData.period?.label || 'Current Month';
 
+  const hasData = (chats) => (chats || 0) > 0;
+
   // ═══ ЛОКАЛИ ДЛЯ LIVECHAT KPI ═══
+  // ИСПРАВЛЕНО: Берем ВСЕ локали, даже с нулями
   const kpiLocales = useMemo(() => {
-    return Object.keys(kpiData.byLocale || {}).filter((loc) => {
-      return kpiData.byLocale[loc].totalChats > 0 || (kpiData.byLocale[loc].weeklyKPI || []).some((w) => w.totalChats > 0);
-    }).sort();
+    return Object.keys(kpiData.byLocale || {}).sort();
   }, [kpiData]);
+
+  // Функция проверки наличия данных у локали
+  const isLocaleActive = (loc) => {
+    if (loc === 'ALL') return kpiAllGeoHasData;
+    const locData = kpiData.byLocale?.[loc] || {};
+    return locData.totalChats > 0 || (locData.weeklyKPI || []).some(w => w.totalChats > 0);
+  };
 
   const kpiAllGeoHasData = (kpiData.totalChats || 0) > 0 || (kpiData.weeklyKPI || []).some(w => (w.totalChats || 0) > 0);
 
@@ -61,14 +69,10 @@ export function SupportDashboard({ type }) {
     categories.forEach(cat => {
       (cat.tags || []).forEach(tag => {
         if (tag.byGeo) {
-          Object.entries(tag.byGeo).forEach(([loc, val]) => { 
-            if (val > 0) locSet.add(loc); 
-          });
+          Object.keys(tag.byGeo).forEach(loc => locSet.add(loc));
         }
         if (tag.byWeekByGeo) {
-          Object.entries(tag.byWeekByGeo).forEach(([loc, weeks]) => { 
-            if (weeks.some(w => w > 0)) locSet.add(loc); 
-          });
+          Object.keys(tag.byWeekByGeo).forEach(loc => locSet.add(loc));
         }
       });
     });
@@ -76,24 +80,38 @@ export function SupportDashboard({ type }) {
     return Array.from(locSet).sort();
   }, [tagsData]);
 
-  const tagsAllGeoHasData = useMemo(() => {
+  const isTagLocaleActive = (loc) => {
     const categories = tagsData?.categories || [];
     return categories.some(cat => 
-      (cat.tags || []).some(tag => (tag.allGeo || 0) > 0)
+      (cat.tags || []).some(tag => {
+        if (loc === 'ALL') return (tag.allGeo || 0) > 0;
+        return (tag.byGeo?.[loc] || 0) > 0 || Object.values(tag.byWeekByGeo?.[loc] || {}).some(v => v > 0);
+      })
     );
-  }, [tagsData]);
+  };
+
+  const tagsAllGeoHasData = isTagLocaleActive('ALL');
 
   // ═══ ВЫБИРАЕМ ЛОКАЛИ В ЗАВИСИМОСТИ ОТ ТИПА ВКЛАДКИ ═══
   const locales = type === 'tags' ? tagsLocales : kpiLocales;
   const allGeoHasData = type === 'tags' ? tagsAllGeoHasData : kpiAllGeoHasData;
+  const checkLocaleActive = type === 'tags' ? isTagLocaleActive : isLocaleActive;
 
-  // Валидация текущей локали
+  // Валидация текущей локали (если текущая не имеет данных - ищем первую с данными)
   let actualLocale = activeLocale;
   if (actualLocale !== 'ALL' && !locales.includes(actualLocale)) {
     actualLocale = 'ALL';
   }
-  if (actualLocale === 'ALL' && !allGeoHasData && locales.length > 0) {
-    actualLocale = locales[0];
+  // Если ALL пустой, ищем первую активную
+  if (actualLocale === 'ALL' && !allGeoHasData) {
+    const firstActive = locales.find(loc => checkLocaleActive(loc));
+    if (firstActive) actualLocale = firstActive;
+  }
+  // Если текущая локаль пустая, ищем первую активную
+  if (!checkLocaleActive(actualLocale)) {
+    const firstActive = locales.find(loc => checkLocaleActive(loc));
+    if (firstActive) actualLocale = firstActive;
+    else if (allGeoHasData) actualLocale = 'ALL';
   }
 
   const currentLocaleData = actualLocale === 'ALL' 
@@ -121,16 +139,14 @@ export function SupportDashboard({ type }) {
     statsToShow = weeklyKPI[weekIdx] || {};
   }
 
-  const hasData = (chats) => (chats || 0) > 0;
-
-  // ═══ АВТОВЫБОР ПРИ СМЕНЕ МЕСЯЦА ═══
+  // ═══ АВТОВЫБОР ПРИ СМЕНЕ МЕСЯЦА ИЛИ ВКЛАДКИ ═══
   useEffect(() => {
     let newLocale = activeLocale;
-    if (newLocale === 'ALL' && !allGeoHasData && locales.length > 0) {
-      newLocale = locales[0];
-      setActiveLocale(newLocale);
-    } else if (newLocale !== 'ALL' && !locales.includes(newLocale)) {
-      newLocale = allGeoHasData ? 'ALL' : (locales[0] || 'ALL');
+    
+    // Если текущая локаль не активна, ищем активную
+    if (!checkLocaleActive(newLocale)) {
+      const firstActive = locales.find(loc => checkLocaleActive(loc));
+      newLocale = firstActive || (allGeoHasData ? 'ALL' : locales[0] || 'ALL');
       setActiveLocale(newLocale);
     }
     
@@ -158,18 +174,7 @@ export function SupportDashboard({ type }) {
         }
       }
     }
-  }, [selectedSupportPeriod, type]);
-
-  // ═══ АВТОВЫБОР ПРИ СМЕНЕ ТИПА ВКЛАДКИ ═══
-  useEffect(() => {
-    // При переключении между stats и tags — сбрасываем локаль если она недоступна
-    if (!locales.includes(activeLocale) && activeLocale !== 'ALL') {
-      setActiveLocale(allGeoHasData ? 'ALL' : (locales[0] || 'ALL'));
-    }
-    if (activeLocale === 'ALL' && !allGeoHasData && locales.length > 0) {
-      setActiveLocale(locales[0]);
-    }
-  }, [type, locales, allGeoHasData]);
+  }, [selectedSupportPeriod, type, kpiData, tagsData]);
 
   const handlePeriodSelect = (periodId, chats) => {
     if (hasData(chats)) {
@@ -178,9 +183,11 @@ export function SupportDashboard({ type }) {
   };
 
   const handleLocaleSelect = (loc) => {
+    // ИСПРАВЛЕНО: Нельзя выбрать отключенную локаль
+    if (!checkLocaleActive(loc)) return;
+    
     setActiveLocale(loc);
     
-    // Для KPI — выбираем период с данными
     if (type === 'stats') {
       const newLocaleData = loc === 'ALL' ? kpiData : (kpiData.byLocale?.[loc] || {});
       const newWeeklyKPI = newLocaleData.weeklyKPI || [];
@@ -196,7 +203,6 @@ export function SupportDashboard({ type }) {
         }
       }
     } else {
-      // Для Tags — сбрасываем на total, период выберется автоматически в TagsAnalytics
       setActivePeriod('total');
     }
   };
@@ -216,21 +222,26 @@ export function SupportDashboard({ type }) {
 
         <div className={styles.localeSwitcher}>
           <button 
-            className={`${styles.localeBtn} ${actualLocale === 'ALL' ? styles.active : ''}`}
+            className={`${styles.localeBtn} ${actualLocale === 'ALL' ? styles.active : ''} ${!allGeoHasData ? styles.disabledBtn : ''}`}
             onClick={() => handleLocaleSelect('ALL')}
             disabled={!allGeoHasData}
           >
             {t('ALL GEO', 'ALL GEO')}
           </button>
-          {locales.map((loc) => (
-            <button 
-              key={loc}
-              className={`${styles.localeBtn} ${actualLocale === loc ? styles.active : ''}`}
-              onClick={() => handleLocaleSelect(loc)}
-            >
-              {loc}
-            </button>
-          ))}
+          {locales.map((loc) => {
+            const isActive = checkLocaleActive(loc);
+            return (
+              <button 
+                key={loc}
+                className={`${styles.localeBtn} ${actualLocale === loc ? styles.active : ''} ${!isActive ? styles.disabledBtn : ''}`}
+                onClick={() => handleLocaleSelect(loc)}
+                disabled={!isActive}
+                title={!isActive ? 'Нет данных' : ''}
+              >
+                {loc}
+              </button>
+            );
+          })}
         </div>
       </div>
 
@@ -263,6 +274,9 @@ export function SupportDashboard({ type }) {
                     </div>
                   </div>
                 </div>
+                {!hasData(currentLocaleData.totalChats) && (
+                  <div className={styles.noDataOverlay}>{t('нет данных', 'no data')}</div>
+                )}
               </div>
 
               {/* Week Cards */}
