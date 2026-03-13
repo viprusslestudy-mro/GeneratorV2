@@ -127,68 +127,101 @@ export function ChannelsGrowth() {
   };
 
   const sidebarData = useMemo(() => {
-    return availableChannels.map(ch => {
-      // Собираем значения и diff для ВСЕХ периодов с каналами
-      const valuesAndDiffs = channelIndices.map(i => {
-        const period = periods[i];
-        return {
-          value: getChannelValue(period, ch.key, 'sent') || 0,
-          diff: getChannelDiff(period, ch.key, 'sent') || ''
-        };
-      });
+  // Используем выбранную подметрику
+  const metricToShow = selectedSubmetric || 'sent';
+  
+  // ИСПРАВЛЕНО: Проверяем нормализованный ключ метрики (как он хранится в данных)
+  const normalizedMetric = metricToShow.toLowerCase().replace(/\s+/g, '_');
+  
+  // Rate-метрики: open_rate, delivery_rate, click_rate, conversion_rate, etc.
+  const isRateMetric = normalizedMetric.includes('rate') || 
+                       normalizedMetric.includes('_rate') ||
+                       metricToShow.toLowerCase().includes(' rate');
+  
+  console.log('[ChannelsGrowth sidebarData] metricToShow:', metricToShow, 'isRateMetric:', isRateMetric);
+  
+  return availableChannels.map(ch => {
+    const valuesAndDiffs = channelIndices.map(i => {
+      const period = periods[i];
+      const value = getChannelValue(period, ch.key, metricToShow);
+      const diff = getChannelDiff(period, ch.key, metricToShow) || '';
       
-      const filteredValues = valuesAndDiffs.map(d => d.value);
-      const filteredDiffs = valuesAndDiffs.map(d => d.diff);
-      
-      // Для sparkline - переворачиваем (от старых к новым)
-      const sparklineData = [...filteredValues].reverse(); 
-      
-      // Находим индекс выбранного периода
-      const selectedIndex = periods.findIndex(p => p.key === selectedPeriod);
-      const filteredIndex = channelIndices.indexOf(selectedIndex);
-      
-      // Самый старый период = последний в channelIndices (после него нет данных для сравнения)
-      const isOldestPeriod = filteredIndex === channelIndices.length - 1;
-      
-      // Текущие данные для выбранного периода
-      const currentValue = filteredIndex >= 0 ? filteredValues[filteredIndex] : 0;
-      const currentDiff = filteredIndex >= 0 ? filteredDiffs[filteredIndex] : '';
-      
-      const diffNum = parseDiffToNumber(currentDiff);
-      
-      let displayValue;
-      if (chartMode === 'absolute') {
-        // Режим "Значения" - всегда абсолютные числа
-        displayValue = formatCompact(currentValue);
-      } else {
-        // Режим "Проценты"
-        const hasValidDiff = currentDiff && 
-                             currentDiff !== '—' && 
-                             currentDiff !== '' && 
-                             !isOldestPeriod;
-        
-        if (hasValidDiff) {
-          // Есть валидный diff - показываем процент
-          displayValue = `${diffNum >= 0 ? '+' : ''}${diffNum.toFixed(1)}%`;
-        } else if (isOldestPeriod) {
-          // Базовый месяц - показываем индикатор
-          displayValue = '— база';
-        } else if (diffNum === 0) {
-          // diff = 0%
-          displayValue = '0.0%';
-        } else {
-          // Нет данных для сравнения
-          displayValue = '—';
-        }
+      // DEBUG для первого канала
+      if (ch.key === 'mail' && i === channelIndices[0]) {
+        console.log('[DEBUG mail]', {
+          metric: metricToShow,
+          value,
+          type: typeof value,
+          diff,
+          isRateMetric
+        });
       }
-
-      return {
-        ...ch,
-        momData: getMomGrowth(sparklineData), 
-        displayValue
-      };
+      
+      return { value, diff };
     });
-  }, [availableChannels, periods, channelIndices, selectedPeriod, chartMode]);
+    
+    const filteredValues = valuesAndDiffs.map(d => d.value ?? 0);
+    const filteredDiffs = valuesAndDiffs.map(d => d.diff);
+    
+    // Для sparkline - переворачиваем (от старых к новым)
+    const sparklineData = [...filteredValues].reverse(); 
+    
+    // Находим индекс выбранного периода
+    const selectedIndex = periods.findIndex(p => p.key === selectedPeriod);
+    const filteredIndex = channelIndices.indexOf(selectedIndex);
+    
+    // Самый старый период = последний в channelIndices
+    const isOldestPeriod = filteredIndex === channelIndices.length - 1;
+    
+    // Текущие данные для выбранного периода
+    const currentValue = filteredIndex >= 0 ? filteredValues[filteredIndex] : 0;
+    const currentDiff = filteredIndex >= 0 ? filteredDiffs[filteredIndex] : '';
+    
+    const diffNum = parseDiffToNumber(currentDiff);
+    
+    let displayValue;
+    if (chartMode === 'absolute') {
+      // ИСПРАВЛЕНО: Для rate-метрик показываем как процент (значения уже в процентах: 0.27, 0.35)
+      if (isRateMetric && currentValue !== null && currentValue !== undefined) {
+        const numVal = typeof currentValue === 'number' ? currentValue : parseFloat(currentValue) || 0;
+        // Если значение уже больше 1 (например 27 вместо 0.27), не умножаем
+        if (numVal >= 1) {
+          displayValue = `${numVal.toFixed(2)}%`;
+        } else {
+          // Значение меньше 1 — это уже процент (0.27% как есть)
+          displayValue = `${numVal.toFixed(2)}%`;
+        }
+      } else if (currentValue !== null && currentValue !== undefined && currentValue < 1 && currentValue > 0) {
+        // Маленькие числа (меньше 1) - показываем с 2 знаками
+        displayValue = currentValue.toFixed(2);
+      } else {
+        displayValue = formatCompact(currentValue);
+      }
+    } else {
+      // Режим "Проценты" - показываем изменение
+      const hasValidDiff = currentDiff && 
+                           currentDiff !== '—' && 
+                           currentDiff !== '' && 
+                           !isOldestPeriod;
+      
+      if (hasValidDiff) {
+        displayValue = `${diffNum >= 0 ? '+' : ''}${diffNum.toFixed(1)}%`;
+      } else if (isOldestPeriod) {
+        displayValue = '— база';
+      } else if (diffNum === 0) {
+        displayValue = '0.0%';
+      } else {
+        displayValue = '—';
+      }
+    }
+
+    return {
+      ...ch,
+      momData: getMomGrowth(sparklineData), 
+      displayValue
+    };
+  });
+}, [availableChannels, periods, channelIndices, selectedPeriod, chartMode, selectedSubmetric]);
 
   const chartData = useMemo(() => {
     const metricKey = selectedSubmetric;
@@ -226,28 +259,28 @@ export function ChannelsGrowth() {
 
   const currentChannel = availableChannels.find(c => c.key === selectedChannelKey);
 
-  const renderDot = (color) => (props) => {
-    const { cx, cy, payload } = props;
-    
-    if (payload.isTarget) {
-      return <circle key={`${cx}-${cy}`} cx={cx} cy={cy} r={8} fill="#ff4757" stroke="#fff" strokeWidth={2} />;
-    }
-    
-    return <circle key={`${cx}-${cy}`} cx={cx} cy={cy} r={6} fill="#fff" stroke={color} strokeWidth={3} />;
-  };
-
   const CustomTooltip = ({ active, payload }) => {
     if (!active || !payload || !payload.length) return null;
     
+    // Проверяем, rate-метрика ли это
+    const isRateMetric = selectedSubmetric?.toLowerCase().includes('rate');
+    
     return (
       <div className={styles.tooltip}>
-        <div className={styles.tooltipLabel}>📅 {translateMonth(payload[0].payload.name)}</div>
+        <div className={styles.tooltipLabel}> {translateMonth(payload[0].payload.name)}</div>
         {payload.map((entry, idx) => {
           const val = entry.value;
           const isPercent = chartMode !== 'absolute';
-          const displayVal = isPercent 
-            ? `${val >= 0 ? '↗ +' : '↘ '}${val.toFixed(1)}%`
-            : formatCompact(val);
+          
+          let displayVal;
+          if (isPercent) {
+            displayVal = `${val >= 0 ? '+' : ''}${val.toFixed(1)}%`;
+          } else if (isRateMetric) {
+            // Rate-метрики показываем как проценты
+            displayVal = `${val.toFixed(2)}%`;
+          } else {
+            displayVal = formatCompact(val);
+          }
             
           return (
             <div key={idx} className={styles.tooltipValue} style={{ color: entry.color }}>
@@ -259,10 +292,23 @@ export function ChannelsGrowth() {
     );
   };
 
-  // Форматтер для оси Y
+  // ИСПРАВЛЕНО: Форматтер для оси Y с учетом rate-метрик
+  const isCurrentMetricRate = selectedSubmetric?.toLowerCase().includes('rate') || 
+                              selectedSubmetric?.toLowerCase().includes('_rate');
+
   const yAxisFormatter = chartMode === 'absolute' 
-    ? (v) => formatCompact(v) 
+    ? (v) => isCurrentMetricRate ? `${v.toFixed(2)}%` : formatCompact(v)
     : (v) => `${v > 0 ? '+' : ''}${v}%`;
+
+  const renderDot = (color) => (props) => {
+    const { cx, cy, payload } = props;
+    
+    if (payload.isTarget) {
+      return <circle key={`${cx}-${cy}`} cx={cx} cy={cy} r={8} fill="#ff4757" stroke="#fff" strokeWidth={2} />;
+    } else {
+      return <circle key={`${cx}-${cy}`} cx={cx} cy={cy} r={4} fill={color} />;
+    }
+  };
 
   return (
     <Card>

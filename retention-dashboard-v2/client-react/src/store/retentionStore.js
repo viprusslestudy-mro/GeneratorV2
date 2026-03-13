@@ -16,6 +16,7 @@ export const useRetentionStore = create(
       data: null, // Retention Data
       supportData: null, // Support Data
       supportPeriodsCache: [], // <-- ДОБАВЛЕНО
+      sources: [], // <-- ДОБАВЛЕНО: Храним активные источники
       loading: false,
       error: null,
       selectedPeriod: null,
@@ -45,13 +46,17 @@ export const useRetentionStore = create(
         set({ loading: true, error: null });
         
         try {
-          const [retentionData, supportData, translationsData] = await Promise.all([
+          // ИСПРАВЛЕНО: Добавили получение источников
+          const [retentionData, supportData, translationsData, sourcesData] = await Promise.all([
             retentionApi.getReport(),
             retentionApi.getSupportReport(),
-            retentionApi.getTranslations()
+            retentionApi.getTranslations(),
+            retentionApi.getSources() // Вызов нового API
           ]);
           
           console.log('[Store] Fetched translationsData:', translationsData); // <-- ЛОГИРУЕМ ЧТО ПРИШЛО
+          
+          console.log('[Store] Fetched sources:', sourcesData);
           
           // Вытаскиваем переводы. Иногда они могут быть обернуты еще в один объект (зависит от того, как парсится JSON)
           let actualTranslations = { RU: {}, EN: {} };
@@ -119,11 +124,16 @@ export const useRetentionStore = create(
           const isSavedRetentionValid = retentionData.periods?.some(p => p.key === savedRetention);
           const isSavedSupportValid = supportPeriodsCache.some(p => p.key === savedSupport);
           
+          // ИСПРАВЛЕНО: Сохраняем sources в стейт
+          // Определяем безопасный массив источников (иногда API может вернуть строку JSON)
+          const parsedSources = typeof sourcesData === 'string' ? JSON.parse(sourcesData) : (sourcesData || []);
+          
           set({ 
             data: retentionData, 
             supportData: supportData,
             supportPeriodsCache: supportPeriodsCache,
             translations: actualTranslations, // <-- ИСПОЛЬЗУЕМ ОБРАБОТАННЫЙ ОБЪЕКТ
+            sources: parsedSources, // <-- СОХРАНЯЕМ ИСТОЧНИКИ
             loading: false,
             devMode: devMode,
             // Если сохраненный период не найден или это первый запуск — берем САМЫЙ СВЕЖИЙ
@@ -196,6 +206,7 @@ export const useRetentionStore = create(
         set({
           data: null,
           supportData: null,
+          sources: [],
           loading: false,
           error: null,
           selectedPeriod: null,

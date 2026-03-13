@@ -55,9 +55,24 @@ export function GrowthAnalysis() {
   }, [periods]);
 
   const metricsData = useMemo(() => {
+    // Находим к какой секции относится текущая выбранная подметрика
+    let activeSection = null;
+    for (const [sectionKey, metrics] of Object.entries(FINANCE_TABLE_CONFIGS)) {
+      if (metrics.some(m => m.key === selectedSubmetric)) {
+        activeSection = sectionKey;
+        break;
+      }
+    }
+    
     return GROWTH_METRICS.map(metric => {
-      const values = periods.map(p => getCardValueFromPeriod(p, metric.dataKey));
-      const diffs = periods.map(p => getCardDiffFromPeriod(p, metric.dataKey));
+      // Если выбранная подметрика относится к секции этой метрики - используем её
+      // Иначе используем основную метрику секции (dataKey)
+      const metricKeyToUse = (activeSection === metric.sectionKey) 
+        ? selectedSubmetric 
+        : metric.dataKey;
+      
+      const values = periods.map(p => getCardValueFromPeriod(p, metricKeyToUse));
+      const diffs = periods.map(p => getCardDiffFromPeriod(p, metricKeyToUse));
       
       const filteredValues = financeIndices.map(i => values[i] || 0);
       const filteredDiffs = financeIndices.map(i => diffs[i] || '');
@@ -66,26 +81,32 @@ export function GrowthAnalysis() {
       const selectedIndex = periods.findIndex(p => p.key === selectedPeriod);
       const filteredIndex = financeIndices.indexOf(selectedIndex);
       
-      // ИСПРАВЛЕНО: Первый в массиве (после reverse) - самый старый
       const isOldestPeriod = filteredIndex === 0;
       
-      // Берём diff напрямую для текущего периода
       const currentDiff = filteredIndex >= 0 ? filteredDiffs[filteredIndex] : '';
       const currentValue = filteredIndex >= 0 ? filteredValues[filteredIndex] : 0;
       
       const diffNum = parseDiffToNumber(currentDiff);
 
-      // ИЗМЕНЕНО: Синхронизация с displayMode + fallback на значение
+      // Проверяем, это процентная метрика (rate, margin и т.д.)
+      const isRateMetric = metricKeyToUse.includes('rate') || 
+                           metricKeyToUse.includes('margin') ||
+                           metricKeyToUse.includes('_rate');
+
       let displayValue;
       if (displayMode === 'values') {
-        // Всегда показываем абсолютные значения
-        displayValue = formatCompact(currentValue);
+        // Для процентных метрик показываем как процент
+        if (isRateMetric && currentValue !== null && currentValue !== undefined) {
+          const numVal = typeof currentValue === 'number' ? currentValue : parseFloat(currentValue) || 0;
+          displayValue = `${numVal.toFixed(2)}%`;
+        } else {
+          displayValue = formatCompact(currentValue);
+        }
       } else {
-        // Показываем проценты (если есть и это не самый старый период)
         const hasValidDiff = currentDiff && currentDiff !== '—' && currentDiff !== '' && !isOldestPeriod;
         displayValue = hasValidDiff 
           ? `${diffNum >= 0 ? '+' : ''}${diffNum.toFixed(1)}%` 
-          : formatCompact(currentValue); // Fallback на значение вместо "—"
+          : formatCompact(currentValue);
       }
       
       return {
@@ -93,10 +114,12 @@ export function GrowthAnalysis() {
         values: filteredValues,
         momData,
         displayValue,
-        hasData: filteredValues.some(v => v > 0)
+        hasData: filteredValues.some(v => v > 0),
+        // Добавляем флаг что это активная секция
+        isActiveSection: activeSection === metric.sectionKey
       };
     }).filter(m => m.hasData);
-  }, [periods, financeIndices, selectedPeriod, displayMode]);
+  }, [periods, financeIndices, selectedPeriod, displayMode, selectedSubmetric]);
 
   const currentMetric = metricsData[selectedMetricIndex] || metricsData[0];
 
@@ -157,12 +180,17 @@ export function GrowthAnalysis() {
     if (!active || !payload || !payload.length) return null;
     const data = payload[0].payload;
     
+    // Проверяем, rate-метрика ли это
+    const isRateMetric = selectedSubmetric?.toLowerCase().includes('rate') || 
+                         selectedSubmetric?.toLowerCase().includes('margin');
+    
     if (displayMode === 'values') {
       const val = data.absValue ?? payload[0].value;
+      const displayVal = isRateMetric ? `${val.toFixed(2)}%` : formatCompact(val);
       return (
         <div className={styles.tooltip}>
           <div className={styles.tooltipLabel}>📅 {translateMonth(data.name)}</div>
-          <div className={styles.tooltipValue}>💰 {formatCompact(val)}</div>
+          <div className={styles.tooltipValue}>💰 {displayVal}</div>
         </div>
       );
     }
@@ -182,11 +210,14 @@ export function GrowthAnalysis() {
     return <Card><div className={styles.empty}><p>📊 No finance metrics available</p></div></Card>;
   }
 
-  // Определяем dataKey в зависимости от режима
-  const chartDataKey = displayMode === 'values' ? 'absValue' : 'value';
-  const yAxisFormatter = displayMode === 'values' 
-    ? (v) => formatCompact(v) 
-    : (v) => `${v > 0 ? '+' : ''}${v}%`;
+// ИСПРАВЛЕНО: Форматтер для оси Y с учетом rate-метрик
+const isCurrentMetricRate = selectedSubmetric?.toLowerCase().includes('rate') || 
+                            selectedSubmetric?.toLowerCase().includes('margin');
+
+const chartDataKey = displayMode === 'values' ? 'absValue' : 'value';
+const yAxisFormatter = displayMode === 'values' 
+  ? (v) => isCurrentMetricRate ? `${v.toFixed(2)}%` : formatCompact(v)
+  : (v) => `${v > 0 ? '+' : ''}${v}%`;
 
   return (
     <Card>

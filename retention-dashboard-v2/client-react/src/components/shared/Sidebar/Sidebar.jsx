@@ -15,9 +15,27 @@ export function Sidebar({ activeScreen, onScreenChange }) {
   const setPeriod = useRetentionStore(state => state.setPeriod);
   const setSupportPeriod = useRetentionStore(state => state.setSupportPeriod);
 
+  // ДОБАВЛЕНО: Получаем активные источники из стейта
+  const sources = useRetentionStore(state => state.sources || []);
+  
+  // Проверяем, включены ли Retention и Support (по умолчанию считаем что включены, если данных еще нет)
+  const isRetentionEnabled = sources.length === 0 || sources.some(s => s.key === 'retention' || s.template === 'Retention');
+  const isSupportModuleEnabled = sources.length === 0 || sources.some(s => s.key === 'support' || s.template === 'Support');
+
   const isSupport = activeScreen.startsWith('support');
   const isChannels = activeScreen === 'channels';
   const isFinance = activeScreen === 'finance';
+
+  // Если пользователь находится на экране выключенного модуля, перекидываем его
+  useMemo(() => {
+    if (sources.length > 0) {
+      if (isSupport && !isSupportModuleEnabled && isRetentionEnabled) {
+        onScreenChange('finance');
+      } else if (!isSupport && !isRetentionEnabled && isSupportModuleEnabled) {
+        onScreenChange('support_stats');
+      }
+    }
+  }, [sources, isSupport, isSupportModuleEnabled, isRetentionEnabled, onScreenChange]);
 
   // 2. МЕМОИЗИРУЕМ РАСЧЕТ ПЕРИОДОВ RETENTION С ФИЛЬТРАЦИЕЙ
   const retentionPeriods = useMemo(() => {
@@ -86,44 +104,47 @@ export function Sidebar({ activeScreen, onScreenChange }) {
           </div>
         </div>
         <div className={styles.projectInfo}>
-          <span className={styles.projectLabel}>Dashboard</span>
           <span className={styles.projectName}>{projectSettings.name}</span>
         </div>
       </div>
 
       {/* Navigation - Retention */}
-      <nav className={styles.nav}>
-        <div className={styles.navTitle}>Retention</div>
-        <button 
-          className={`${styles.navItem} ${activeScreen === 'finance' ? styles.active : ''}`}
-          onClick={() => onScreenChange('finance')}
-        >
-          {t('tab.finance', '💰 Main Dashboard')}
-        </button>
-        <button 
-          className={`${styles.navItem} ${activeScreen === 'channels' ? styles.active : ''}`}
-          onClick={() => onScreenChange('channels')}
-        >
-          {t('tab.channels', '📈 Communication channels')}
-        </button>
-      </nav>
+      {isRetentionEnabled && (
+        <nav className={styles.nav}>
+          <div className={styles.navTitle}>Retention</div>
+          <button 
+            className={`${styles.navItem} ${activeScreen === 'finance' ? styles.active : ''}`}
+            onClick={() => onScreenChange('finance')}
+          >
+            {t('tab.finance', '💰 Main Dashboard')}
+          </button>
+          <button 
+            className={`${styles.navItem} ${activeScreen === 'channels' ? styles.active : ''}`}
+            onClick={() => onScreenChange('channels')}
+          >
+            {t('tab.channels', '📈 Communication channels')}
+          </button>
+        </nav>
+      )}
 
       {/* Navigation - Support */}
-      <nav className={styles.nav}>
-        <div className={styles.navTitle}>Support</div>
-        <button 
-          className={`${styles.navItem} ${activeScreen === 'support_stats' ? styles.active : ''}`}
-          onClick={() => onScreenChange('support_stats')}
-        >
-          {t('tab.support_stats', '📋 LiveChat KPI')}
-        </button>
-        <button 
-          className={`${styles.navItem} ${activeScreen === 'support_tags' ? styles.active : ''}`}
-          onClick={() => onScreenChange('support_tags')}
-        >
-          {t('tab.support_tags', '🏷️ Issue Tags')}
-        </button>
-      </nav>
+      {isSupportModuleEnabled && (
+        <nav className={styles.nav}>
+          <div className={styles.navTitle}>Support</div>
+          <button 
+            className={`${styles.navItem} ${activeScreen === 'support_stats' ? styles.active : ''}`}
+            onClick={() => onScreenChange('support_stats')}
+          >
+            {t('tab.support_stats', '📋 LiveChat KPI')}
+          </button>
+          <button 
+            className={`${styles.navItem} ${activeScreen === 'support_tags' ? styles.active : ''}`}
+            onClick={() => onScreenChange('support_tags')}
+          >
+            {t('tab.support_tags', '🏷️ Issue Tags')}
+          </button>
+        </nav>
+      )}
 
       {/* Period Selector */}
       <div className={styles.periodSelector}>
